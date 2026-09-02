@@ -1,66 +1,86 @@
-## 🛡️ UniGuard
+# 🛡️ UniGuard — Gestão de Segurança Universitária Georreferenciada
 
-https://uniguardvercelapp.vercel.app/
+> ⚠️ **Aviso Importante:** O UniGuard é um **protótipo conceitual acadêmico**. Todos os dados, mapas e localizações apresentados são simulados e a plataforma **não** possui integração oficial com o sistema corporativo ou com a Superintendência de Segurança da UFPB.
+> 
 
-
-O **UniGuard** é um projeto em desenvolvimento com o objetivo de contribuir para a segurança de estudantes e servidores dentro do campus da Universidade Federal da Paraíba.
-
-Na primeira utilização, o usuário realiza sua identificação e autoriza o acesso à localização do dispositivo. A partir dessa autorização, o sistema pode utilizar a geolocalização para identificar a presença do usuário dentro da área do campus.
-
-Em uma situação de emergência, o usuário pode acionar o **botão SOS**, enviando um alerta para a equipe de segurança da universidade juntamente com sua última localização disponível.
-
-O projeto também prevê a identificação de situações em que o acesso à localização seja interrompido inesperadamente, permitindo que a equipe responsável tenha como referência o último ponto registrado pelo sistema.
-
-Para a equipe de segurança, foi pensado um painel específico para acompanhamento dos alertas e identificação da última localização conhecida do usuário, auxiliando em uma resposta mais rápida durante uma possível ocorrência.
+O **UniGuard** é uma plataforma de segurança preventiva projetada para apoiar discentes, docentes e servidores técnicos-administrativos dentro dos campi da **Universidade Federal da Paraíba (UFPB)**. O sistema utiliza geolocalização e automação digital para otimizar o tempo de resposta das equipes de vigilância patrimonial em situações de vulnerabilidade ou risco eminente.
 
 
-### 🎯 Objetivo
+🔗 **Acesse o Protótipo:** [uniguardvercelapp.vercel.app](https://uniguardvercelapp.vercel.app/)
 
-Utilizar tecnologia e geolocalização como apoio à segurança no ambiente universitário, criando uma forma simples e rápida de solicitar ajuda e facilitar a localização do estudante ou servidor em situações de risco.
+---
 
-### 📝 Resumo das Etapas Chave do Sistema
+## 🎯 Objetivo Estratégico
+Empregar tecnologia de geofencing e telemetria móvel para criar um canal ágil de comunicação entre a comunidade acadêmica e a central de operações, acelerando o despacho de patrulhas e mitigando incidentes nos turnos de maior criticidade.
 
-O **UniGuard** opera por meio de um ciclo integrado de proteção comunitária, resposta tática rápida e preservação probatória, estruturado em **7 fases principais**:
+---
 
-1. **Acesso, Identificação e Autorizações**
-   - **Ator:** Discente, Docente ou Servidor Técnico-Administrativo.
-   - **Operação:** Autenticação via credenciais institucionais SIGAA/UFPB (`@academicos.ufpb.br` ou `@ufpb.br`), cadastro de contatos de confiança para notificação de emergência e concessão das permissões de geolocalização e câmera. Suporte a fluxo de redefinição de senha e seleção do campus de atuação (João Pessoa, Areia, Bananeiras, Litoral Norte ou Mangabeira).
+## ⚙️ Arquitetura Funcional (Ciclo em 7 Etapas)
 
-2. **Monitoramento Georreferenciado Preventivo & Zonas Seguras**
-   - **Ator:** Módulo de Telemetria GPS & Algoritmo de Geofencing.
-   - **Operação:** Rastreamento do rastro de deslocamento (*breadcrumbs*) e identificação contínua de proximidade com **Zonas Seguras** (guaritas, postos da segurança universitária, bibliotecas centrais e prédios administrativos iluminados). Fixação automática da *Última Localização Conhecida* em caso de queda de sinal ou bateria fraca.
+O ecossistema opera através de um fluxo cíclico integrado que conecta a ponta (usuário) à base operacional (central de monitoramento):
 
-3. **Gatilho de Emergência (Botão de Pânico SOS Inteligente)**
-   - **Ator:** Vítima ou Usuário em Situação de Risco.
-   - **Operação:** Disparo imediato com toque único ou trava de segurança de 2 segundos quando em Zonas Seguras (evitando falsos acionamentos em áreas de grande fluxo). Opção de categorização rápida do incidente (ameaça física, perseguição, emergência médica, assédio ou iluminação deficiente).
+### 1. Autenticação e Seleção de Contexto
+* **Identificação Institucional:** Fluxo projetado para integração com credenciais `@academicos.ufpb.br` ou `@ufpb.br`.
+* **Configuração de Escopo:** O usuário seleciona seu campus base:
+  * 📍 Campus I (João Pessoa)
+  * 📍 Campus II (Areia)
+  * 📍 Campus III (Bananeiras)
+  * 📍 Campus IV (Litoral Norte)
+  * 📍 Unidade Mangabeira
 
-4. **Captura Fotográfica Autorizada & Carimbo Forense**
-   - **Ator:** Câmera do Dispositivo & Sensores Locais.
-   - **Operação:** No instante do acionamento, a câmera do aparelho captura uma foto instantânea do entorno/ocorrência. A imagem recebe um selo digital inviolável com: número de protocolo único, coordenadas geográficas (latitude/longitude), data/hora sincronizada e nível de bateria do dispositivo. Em paralelo, é disparado SMS automático aos contatos de emergência cadastrados.
+### 2. Telemetria e Monitoramento de Proximidade (*Geofencing*)
+* **Rastro de Deslocamento:** Registro contínuo de coordenadas (*breadcrumbs*) em segundo plano.
+* **Mapeamento de Áreas Seguras:** Algoritmo calcula a distância do usuário em relação a pontos estratégicos (guaritas, blocos iluminados e secretarias).
+* **Salvaguarda Faltosa:** Fixação automática da *Última Localização Conhecida (Last Known Location)* caso ocorra perda súbita de rede ou desligamento por bateria fraca.
 
-5. **Transmissão Tática & Alerta Prioritário na Central**
-   - **Ator:** Rede de Comunicação & Central de Segurança UFPB.
-   - **Operação:** O chamado é transmitido com prioridade máxima para a tela de comando dos operadores de segurança do campus correspondente, acionando alarme sonoro, mapa tático em tempo real, visualização da foto e telemetria da vítima.
+### 3. Acionamento de Vetor de Pânico (Botão SOS)
+* **Gatilho Inteligente:** Disparo simplificado por toque único ou trava de segurança antierro de 2 segundos.
+* **Categorização Dinâmica de Incidentes:**
+  * 🚨 Ameaça Física / Perseguição
+  * 🩺 Emergência Médica
+  * 👤 Assédio / Importunação
+  * 💡 Alerta de Infraestrutura (Área sem iluminação)
 
-6. **Despacho Operacional & Resgate no Local**
-   - **Ator:** Viaturas, Motopatrulhas e Vigilantes Patrimoniais.
-   - **Operação:** A viatura ou patrulha mais próxima é despachada com a melhor rota viária até as coordenadas do chamado. O operador e os agentes em campo monitoram o status do atendimento (*Despachado* ➔ *A Caminho* ➔ *No Local* ➔ *Atendido*), com linha direta de contato com a vítima e com órgãos externos (Polícia Militar 190 e SAMU 192, se necessário).
+### 4. Carimbo Forense e Comunicação de Emergência
+* **Captura de Mídia Ambental:** Acionamento automático da câmera para registro fotográfico do entorno.
+* **Metadados Invioláveis:** Aplicação de marca d'água digital com ID do protocolo, latitude/longitude exatas, carimbo de data/hora (timestamp) e status de energia.
+* **Notificação Externa:** Envio imediato de alertas via SMS para a lista de contatos de confiança previamente cadastrados.
 
-7. **Auditoria Forense & Inteligência Preventiva**
-   - **Ator:** Comissão de Segurança Universitária e Gestão de Campi.
-   - **Operação:** Arquivamento do histórico do chamado com protocolo e logs inalteráveis, viabilizando a exportação de relatórios para inquéritos e a geração de mapas de calor para subsidiar reforços na iluminação pública e na ronda preventiva dos campi.
+### 5. Centralização Tática e Triagem de Alarmes
+* **Painel da Central de Segurança:** Telas operacionais recebem os chamados em regime de prioridade absoluta.
+* **Disparo Sonoro:** Alarmes visuais e auditivos piscam no painel do operador exibindo o mapa tático integrado, a telemetria atual da vítima e a foto capturada.
 
-
-
-
-> [!CAUTION]
-> **Aviso Importante:** Atualmente, o UniGuard é um protótipo conceitual. Os dados e localizações apresentados são simulados e não representam um sistema oficial da UFPB.
-
+### 6. Logística de Despacho e Resgate de Campo
+* **Roteamento de Viaturas:** Cálculo do trajeto viário mais rápido para motocicletas e viaturas da guarda até o ponto do chamado.
+* **Ciclo de Vida do Atendimento:**
 
 
+* **Pontes Externas:** Linha direta para acionamento automatizado do SAMU (192) ou Polícia Militar (190).
 
+### 7. Auditoria e Inteligência de Segurança Pública
+* **Registros de Log Históricos:** Banco de dados imutável para posterior exportação de relatórios que podem apoiar inquéritos oficiais.
+* **Mapas de Calor (Heatmaps):** Agrupamento estatístico de ocorrências para subsidiar decisões de engenharia urbana no campus (ex: reforço de iluminação e mudança nas rotas de rondas a pé).
 
+---
 
+## 🛠️ Stack Tecnológica
+
+O projeto foi inicializado utilizando uma arquitetura moderna focada em performance de execução e tipagem estática:
+
+*   **Linguagem Core:** [TypeScript](https://typescriptlang.org) (Garantia de segurança em tempo de compilação)
+*   **Ambiente de Construção:** [Vite](https://vitejs.dev) & [Bun](https://bun.sh) (Gerenciamento ultra-rápido de pacotes)
+*   **Hospedagem & CI/CD:** [Vercel](https://vercel.com)
+
+---
+
+## 👥 Autoria e Desenvolvimento
+
+O desenvolvimento deste ecossistema conceitual foi planejado e executado por:
+
+*   **Priscilla Cahino** — *Concepção, Arquitetura e Desenvolvimento*
+
+---
+Desenvolvido com fins estritamente acadêmicos para a comunidade da **Universidade Federal da Paraíba**. 🛡️
 
 
 
