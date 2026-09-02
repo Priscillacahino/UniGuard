@@ -1,0 +1,23 @@
+================================================================================
+GUARDIÃO UFPB - SISTEMA DE SEGURANÇA E GEOLOCALIZAÇÃO UNIVERSITÁRIA
+================================================================================
+
+Projeto Conceitual e Tecnológico voltado para o apoio à segurança de estudantes,
+professores, técnicos administrativos e visitantes nos campi da Universidade
+Federal da Paraíba (UFPB).
+
+Propriedade Intelectual e Autoria:
+© 2026 Priscilla S Cahino. Todos os direitos reservados.
+
+Objetivo do Projeto:
+Utilizar tecnologia móvel e geolocalização como ferramenta de prevenção e resposta
+rápida a situações de risco no ambiente universitário, permitindo acionamento de
+botão SOS, geofencing no campus, rastreamento de última localização conhecida em
+casos de perda de sinal e painel operacional de monitoramento em tempo real para
+a equipe de vigilância universitária.
+
+Nota Legal:
+Protótipo conceitual e acadêmico para fins de demonstração e pesquisa. Os dados,
+simulações e alertas apresentados neste protótipo não possuem vínculo direto ou
+acionamento imediato com as forças policiais externas sem prévia integração.
+================================================================================
