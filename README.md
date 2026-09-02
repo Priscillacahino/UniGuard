@@ -1,4 +1,4 @@
-## 🛡️ Guardião UFPB
+## 🛡️ UniGuard
 
 https://uniguardvercelapp.vercel.app/
 
@@ -54,7 +54,7 @@ O **Guardião UFPB** opera por meio de um ciclo integrado de proteção comunit�
 
 
 > [!CAUTION]
-> **Aviso Importante:** Atualmente, o Guardião UFPB é um protótipo conceitual. Os dados e localizações apresentados são simulados e não representam um sistema oficial da UFPB.
+> **Aviso Importante:** Atualmente, o UniGuard é um protótipo conceitual. Os dados e localizações apresentados são simulados e não representam um sistema oficial da UFPB.
 
 
 
