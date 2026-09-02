@@ -1,6 +1,18 @@
 import React, { useState } from 'react';
-import { EmergencyAlert } from '../types';
-import { Clock, Search, Calendar, MapPin, CheckCircle2, User, Phone, Shield, FileText, ArrowUpDown, Filter, Download } from 'lucide-react';
+import { EmergencyAlert, EmergencyPhotoSnapshot, UfpbCampusId } from '../types';
+import { UFPB_CAMPI } from '../data/ufpbData';
+import { getCampusById } from '../utils/geo';
+import { PhotoEvidenceModal } from './PhotoEvidenceModal';
+import {
+  Clock,
+  Search,
+  MapPin,
+  Camera,
+  Download,
+  Building2,
+  Eye,
+  X,
+} from 'lucide-react';
 
 interface AlertHistoryModalProps {
   isOpen: boolean;
@@ -18,6 +30,15 @@ export const AlertHistoryModal: React.FC<AlertHistoryModalProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('todas');
   const [statusFilter, setStatusFilter] = useState('todos');
+  const [campusFilter, setCampusFilter] = useState<'todas' | UfpbCampusId>('todas');
+
+  // Modal de Foto Ampliada
+  const [photoToView, setPhotoToView] = useState<{
+    photo: EmergencyPhotoSnapshot;
+    victimName: string;
+    protocol: string;
+    location: string;
+  } | null>(null);
 
   if (!isOpen) return null;
 
@@ -30,26 +51,29 @@ export const AlertHistoryModal: React.FC<AlertHistoryModalProps> = ({
       (alert.customNote && alert.customNote.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesCategory = categoryFilter === 'todas' || alert.category === categoryFilter;
+    
     const matchesStatus =
       statusFilter === 'todos' ||
       (statusFilter === 'resolvidos' && (alert.status === 'resolvido' || alert.status === 'cancelado_usuario')) ||
+      (statusFilter === 'com_foto' && !!alert.photoSnapshot) ||
       (statusFilter === 'ativos' && alert.status !== 'resolvido' && alert.status !== 'cancelado_usuario');
 
-    return matchesSearch && matchesCategory && matchesStatus;
+    const matchesCampus = campusFilter === 'todas' || (alert.campusId || 'campus_1_joao_pessoa') === campusFilter;
+
+    return matchesSearch && matchesCategory && matchesStatus && matchesCampus;
   });
 
   // Estatísticas do Histórico
-  const total = alerts.length;
-  const resolvedCount = alerts.filter((a) => a.status === 'resolvido' || a.status === 'cancelado_usuario').length;
-  const safeZoneCount = alerts.filter((a) => a.isInSafeZone).length;
+  const totalWithPhoto = alerts.filter((a) => !!a.photoSnapshot).length;
 
-  // Exportar relatório em CSV (Simulado)
+  // Exportar relatório em CSV com suporte a Campus e Foto
   const handleExportCsv = () => {
-    const headers = 'Protocolo,Nome,Matrícula,Categoria,Data,Hora,Localização,Latitude,Longitude,Status,Zona Segura\n';
+    const headers = 'Protocolo,Campus,Nome,Matrícula,Categoria,Data,Hora,Localização,Latitude,Longitude,Status,Zona Segura,Foto Registrada\n';
     const rows = filteredAlerts
       .map((a) => {
         const d = new Date(a.createdAt);
-        return `"${a.protocolNumber}","${a.userProfile.name}","${a.userProfile.documentNumber}","${a.category}","${d.toLocaleDateString('pt-BR')}","${d.toLocaleTimeString('pt-BR')}","${a.locationName.replace(/"/g, '""')}","${a.location.lat}","${a.location.lng}","${a.status}","${a.isInSafeZone ? 'Sim' : 'Não'}"`;
+        const campus = getCampusById(a.campusId);
+        return `"${a.protocolNumber}","${campus.shortName}","${a.userProfile.name}","${a.userProfile.documentNumber}","${a.category}","${d.toLocaleDateString('pt-BR')}","${d.toLocaleTimeString('pt-BR')}","${a.locationName.replace(/"/g, '""')}","${a.location.lat}","${a.location.lng}","${a.status}","${a.isInSafeZone ? 'Sim' : 'Não'}","${a.photoSnapshot ? 'Sim' : 'Não'}"`;
       })
       .join('\n');
 
@@ -57,20 +81,20 @@ export const AlertHistoryModal: React.FC<AlertHistoryModalProps> = ({
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `relatorio_alertas_guardiao_ufpb_${Date.now()}.csv`);
+    link.setAttribute('download', `auditoria_guardiao_ufpb_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div 
         id="modal-alert-history"
-        className="relative w-full max-w-4xl max-h-[90vh] flex flex-col bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden text-slate-800"
+        className="relative w-full max-w-5xl max-h-[90vh] flex flex-col bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden text-slate-800"
       >
         {/* Cabeçalho */}
-        <div className="p-5 border-b border-slate-100 flex items-start justify-between bg-slate-50/50">
+        <div className="p-4 sm:p-5 border-b border-slate-100 flex items-start justify-between bg-slate-50/50">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#003d71] flex items-center justify-center font-bold">
               <Clock className="w-5 h-5" />
@@ -83,7 +107,7 @@ export const AlertHistoryModal: React.FC<AlertHistoryModalProps> = ({
                 <h2 className="text-base font-extrabold text-slate-900">Histórico de Acionamentos SOS</h2>
               </div>
               <p className="text-xs text-slate-500 font-medium mt-0.5">
-                Registro completo de ocorrências para análise de tempos de resposta e padrões de risco no campus.
+                Registro de ocorrências em todos os campi com fotos e telemetria de localização.
               </p>
             </div>
           </div>
@@ -92,7 +116,7 @@ export const AlertHistoryModal: React.FC<AlertHistoryModalProps> = ({
             <button
               onClick={handleExportCsv}
               className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
-              title="Baixar planilha CSV para análise estatística"
+              title="Baixar planilha CSV com dados auditáveis"
             >
               <Download className="w-3.5 h-3.5 text-[#003d71]" />
               <span>Exportar CSV</span>
@@ -100,94 +124,129 @@ export const AlertHistoryModal: React.FC<AlertHistoryModalProps> = ({
 
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-all cursor-pointer"
+              className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-700 transition-all cursor-pointer"
             >
-              ✕
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Resumo Rápido */}
-        <div className="grid grid-cols-3 gap-3 p-4 bg-slate-50 border-b border-slate-100 text-xs">
-          <div className="p-2.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between">
-            <span className="text-slate-500 font-medium">Total de Acionamentos:</span>
-            <span className="font-extrabold text-slate-900 text-sm">{total}</span>
-          </div>
-          <div className="p-2.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between">
-            <span className="text-slate-500 font-medium">Ocorrências Resolvidas:</span>
-            <span className="font-extrabold text-emerald-700 text-sm">{resolvedCount}</span>
-          </div>
-          <div className="p-2.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between">
-            <span className="text-slate-500 font-medium">Em Zonas de Segurança:</span>
-            <span className="font-extrabold text-blue-700 text-sm">{safeZoneCount}</span>
-          </div>
-        </div>
-
-        {/* Barra de Filtros */}
-        <div className="p-4 border-b border-slate-100 flex flex-wrap gap-2.5 items-center justify-between bg-white text-xs">
-          <div className="relative flex-1 min-w-[220px]">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+        {/* Filtros e Busca */}
+        <div className="p-4 border-b border-slate-100 bg-slate-50/30 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar por protocolo, usuário, local..."
-              className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:outline-none focus:border-[#003d71]"
+              placeholder="Buscar por protocolo, nome da vítima, matrícula ou local..."
+              className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-xs focus:outline-none focus:border-[#003d71]"
             />
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Filtro por Campus */}
+          <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-slate-200">
+            <Building2 className="w-3.5 h-3.5 text-[#003d71]" />
             <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:outline-none focus:border-[#003d71] cursor-pointer font-medium"
+              value={campusFilter}
+              onChange={(e) => setCampusFilter(e.target.value as any)}
+              className="bg-transparent text-xs font-bold text-slate-700 focus:outline-none cursor-pointer"
             >
-              <option value="todos">Status: Todos</option>
-              <option value="ativos">Status: Em Aberto</option>
-              <option value="resolvidos">Status: Resolvidos</option>
-            </select>
-
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:outline-none focus:border-[#003d71] cursor-pointer font-medium"
-            >
-              <option value="todas">Categorias: Todas</option>
-              <option value="urgencia_geral">Urgência Geral</option>
-              <option value="violencia_ameaca">Violência ou Ameaça</option>
-              <option value="perseguicao_suspeito">Perseguição / Suspeito</option>
-              <option value="saude_desmaio">Saúde ou Desmaio</option>
-              <option value="area_escura_risco">Área Escura / Risco</option>
+              <option value="todas">Todos os Campi</option>
+              {UFPB_CAMPI.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.shortName}
+                </option>
+              ))}
             </select>
           </div>
+
+          {/* Filtro por Status */}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer"
+          >
+            <option value="todos">Todos os Status</option>
+            <option value="ativos">Em Atendimento</option>
+            <option value="com_foto">Com Foto Anexada ({totalWithPhoto})</option>
+            <option value="resolvidos">Concluídos</option>
+          </select>
+
+          {/* Filtro por Categoria */}
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer"
+          >
+            <option value="todas">Todas as Categorias</option>
+            <option value="urgencia_geral">Urgência Geral</option>
+            <option value="violencia_ameaca">Violência / Ameaça</option>
+            <option value="perseguicao_suspeito">Perseguição / Suspeito</option>
+            <option value="saude_desmaio">Saúde / Desmaio</option>
+            <option value="area_escura_risco">Área Escura / Risco</option>
+          </select>
         </div>
 
-        {/* Tabela de Alertas */}
+        {/* Tabela / Lista de Alertas */}
         <div className="flex-1 overflow-y-auto p-4">
           {filteredAlerts.length === 0 ? (
             <div className="p-8 text-center text-slate-400 text-xs">
               Nenhum registro de alerta encontrado com os filtros aplicados.
             </div>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {filteredAlerts.map((alert) => {
                 const createdAtDate = new Date(alert.createdAt);
                 const isSignalLost = alert.signalLost;
+                const campus = getCampusById(alert.campusId);
 
                 return (
                   <div
                     key={alert.id}
-                    className="p-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow-xs transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                    className="p-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs"
                   >
+                    {/* Miniatura da foto se houver */}
+                    {alert.photoSnapshot && (
+                      <div
+                        onClick={() =>
+                          setPhotoToView({
+                            photo: alert.photoSnapshot!,
+                            victimName: alert.userProfile.name,
+                            protocol: alert.protocolNumber,
+                            location: alert.locationName,
+                          })
+                        }
+                        className="relative w-20 h-20 rounded-lg overflow-hidden bg-black border border-slate-300 shrink-0 cursor-pointer group shadow-xs"
+                        title="Clique para ampliar a foto do momento do SOS"
+                      >
+                        <img
+                          src={alert.photoSnapshot.dataUrl}
+                          alt="Foto SOS"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          referrerPolicy="no-referrer"
+                        />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Eye className="w-4 h-4 text-white" />
+                        </div>
+                        <span className="absolute bottom-0 inset-x-0 bg-black/70 text-[9px] text-white text-center font-mono py-0.5">
+                          📸 Foto
+                        </span>
+                      </div>
+                    )}
+
                     <div className="space-y-1 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-extrabold text-slate-900 font-mono">
                           {alert.protocolNumber}
                         </span>
+                        <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-blue-50 text-[#003d71] border border-blue-100">
+                          {campus.shortName}
+                        </span>
                         <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
                           {alert.userProfile.role}
                         </span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-[#003d71]">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
                           {alert.category.replace('_', ' ').toUpperCase()}
                         </span>
                         {alert.isInSafeZone && (
@@ -222,15 +281,9 @@ export const AlertHistoryModal: React.FC<AlertHistoryModalProps> = ({
                           "{alert.customNote}"
                         </div>
                       )}
-
-                      {alert.smsNotificationsSent && alert.smsNotificationsSent.length > 0 && (
-                        <div className="text-[10px] text-emerald-700 font-medium">
-                          ✓ {alert.smsNotificationsSent.length} SMS de emergência disparados para contatos cadastrados
-                        </div>
-                      )}
                     </div>
 
-                    <div className="flex flex-col sm:items-end justify-between shrink-0 gap-2 border-t sm:border-t-0 pt-2 sm:pt-0">
+                    <div className="flex flex-col md:items-end justify-between shrink-0 gap-2 border-t md:border-t-0 pt-2 md:pt-0">
                       <div className="text-right">
                         <div className="text-[11px] font-mono text-slate-500">
                           {createdAtDate.toLocaleDateString('pt-BR')} • {createdAtDate.toLocaleTimeString('pt-BR')}
@@ -248,17 +301,36 @@ export const AlertHistoryModal: React.FC<AlertHistoryModalProps> = ({
                         </span>
                       </div>
 
-                      {onSelectAlertToInspect && (
-                        <button
-                          onClick={() => {
-                            onSelectAlertToInspect(alert);
-                            onClose();
-                          }}
-                          className="px-3 py-1.5 rounded-lg bg-[#003d71] hover:bg-[#002b50] text-white text-[11px] font-bold transition-all cursor-pointer shadow-xs"
-                        >
-                          Ver no Mapa & Rota
-                        </button>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {alert.photoSnapshot && (
+                          <button
+                            onClick={() =>
+                              setPhotoToView({
+                                photo: alert.photoSnapshot!,
+                                victimName: alert.userProfile.name,
+                                protocol: alert.protocolNumber,
+                                location: alert.locationName,
+                              })
+                            }
+                            className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                          >
+                            <Camera className="w-3 h-3 text-[#003d71]" />
+                            <span>Ver Foto</span>
+                          </button>
+                        )}
+
+                        {onSelectAlertToInspect && (
+                          <button
+                            onClick={() => {
+                              onSelectAlertToInspect(alert);
+                              onClose();
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-[#003d71] hover:bg-[#002b50] text-white text-[11px] font-bold transition-all cursor-pointer shadow-xs"
+                          >
+                            Ver no Mapa
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
@@ -270,7 +342,7 @@ export const AlertHistoryModal: React.FC<AlertHistoryModalProps> = ({
         {/* Rodapé */}
         <div className="p-4 border-t border-slate-100 flex items-center justify-between text-xs bg-slate-50">
           <span className="text-slate-500 font-medium">
-            Mostrando {filteredAlerts.length} de {alerts.length} registros no banco de dados.
+            Mostrando {filteredAlerts.length} de {alerts.length} registros no histórico.
           </span>
           <button
             onClick={onClose}
@@ -280,6 +352,18 @@ export const AlertHistoryModal: React.FC<AlertHistoryModalProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Modal de Exibição da Foto */}
+      {photoToView && (
+        <PhotoEvidenceModal
+          isOpen={true}
+          onClose={() => setPhotoToView(null)}
+          photoSnapshot={photoToView.photo}
+          victimName={photoToView.victimName}
+          protocolNumber={photoToView.protocol}
+          locationName={photoToView.location}
+        />
+      )}
     </div>
   );
 };

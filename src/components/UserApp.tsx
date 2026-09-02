@@ -9,12 +9,17 @@ import {
   LocationTrackingConfig,
   EmergencyContact,
   SmsNotification,
+  UfpbCampusId,
+  EmergencyPhotoSnapshot,
 } from '../types';
-import { CAMPUS_LOCATIONS, CAMPUS_SAFE_ZONES, EMERGENCY_PHONES, DEFAULT_TRACKING_CONFIG } from '../data/ufpbData';
-import { findNearestCampusLocation, formatDistance, generateProtocolNumber, checkPointInSafeZone } from '../utils/geo';
-import { SoundEffects } from '../utils/audio';
+import { CAMPUS_LOCATIONS, CAMPUS_SAFE_ZONES, EMERGENCY_PHONES, DEFAULT_TRACKING_CONFIG, UFPB_CAMPI } from '../data/ufpbData';
+import { findNearestCampusLocation, formatDistance, generateProtocolNumber, checkPointInSafeZone, getCampusById } from '../utils/geo';
+import { SoundEffects } from '../utils/sound';
+import { captureEmergencyPhoto, generateEmergencyEvidenceCanvas } from '../utils/camera';
 import { CampusMap } from './CampusMap';
 import { EmergencyContactsModal } from './EmergencyContactsModal';
+import { CampusSelector } from './CampusSelector';
+import { PhotoEvidenceModal } from './PhotoEvidenceModal';
 import {
   AlertTriangle,
   MapPin,
@@ -36,6 +41,11 @@ import {
   MessageSquare,
   Route,
   Lock,
+  Camera,
+  RotateCw,
+  Eye,
+  Shield,
+  Building2,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -60,6 +70,8 @@ interface UserAppProps {
   trackingConfig?: LocationTrackingConfig;
   setTrackingConfig?: React.Dispatch<React.SetStateAction<LocationTrackingConfig>>;
   safeZones?: SafeZone[];
+  selectedCampusId?: UfpbCampusId;
+  onSelectCampus?: (campusId: UfpbCampusId) => void;
 }
 
 const CATEGORIES: { id: EmergencyCategory; label: string; icon: string; desc: string }[] = [
@@ -93,21 +105,34 @@ export const UserApp: React.FC<UserAppProps> = ({
   trackingConfig = DEFAULT_TRACKING_CONFIG,
   setTrackingConfig = () => {},
   safeZones = CAMPUS_SAFE_ZONES,
+  selectedCampusId = 'campus_1_joao_pessoa',
+  onSelectCampus = () => {},
 }: UserAppProps) => {
   const [selectedCategory, setSelectedCategory] = useState<EmergencyCategory>('urgencia_geral');
   const [customNote, setCustomNote] = useState('');
   const [showNoteInput, setShowNoteInput] = useState(false);
   const [batteryLevel, setBatteryLevel] = useState<number>(85);
   
+  // Câmera & Evidência de Foto
+  const [cameraFacing, setCameraFacing] = useState<'user' | 'environment'>('user');
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [flashActive, setFlashActive] = useState(false);
+  const [inspectedPhoto, setInspectedPhoto] = useState<EmergencyPhotoSnapshot | null>(null);
+  const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
+
   // Modais e Configurações
   const [isContactsModalOpen, setIsContactsModalOpen] = useState(false);
   const [showTrackingConfigBox, setShowTrackingConfigBox] = useState(false);
   const [smsFeedbackList, setSmsFeedbackList] = useState<SmsNotification[]>([]);
 
+  // Campus Atual
+  const currentCampus = getCampusById(selectedCampusId);
+
   // Lógica de Zona Segura (Safe Zone)
   const currentSafeZoneCheck = checkPointInSafeZone(
     userSignalLost && lastKnownCoordinate ? lastKnownCoordinate : userCoordinate,
-    safeZones
+    safeZones,
+    selectedCampusId
   );
   const isInSafeZone = currentSafeZoneCheck.inZone;
   const currentSafeZone = currentSafeZoneCheck.zone;
@@ -115,70 +140,36 @@ export const UserApp: React.FC<UserAppProps> = ({
   // Lógica de Pressionar e Segurar (Long Press) para Zonas Seguras
   const [longPressProgress, setLongPressProgress] = useState(0);
   const [isPressing, setIsPressing] = useState(false);
-  const longPressTimerRef = useRef<number | null>(null);
   const longPressIntervalRef = useRef<number | null>(null);
 
-  // Contagem regressiva do SOS normal
+  // Contagem regressiva normal do SOS
   const [isCountingDown, setIsCountingDown] = useState(false);
   const [countdown, setCountdown] = useState(3);
   const countdownTimerRef = useRef<number | null>(null);
 
-  // Informação do local mais próximo
-  const nearestInfo = findNearestCampusLocation(userCoordinate);
+  // Ponto de referência mais próximo
+  const nearestInfo = findNearestCampusLocation(
+    userSignalLost && lastKnownCoordinate ? lastKnownCoordinate : userCoordinate,
+    selectedCampusId
+  );
 
-  // Monitorar nível real de bateria se suportado pela API do navegador
+  // Simulação de Nível de Bateria Real
   useEffect(() => {
     if (typeof navigator !== 'undefined' && 'getBattery' in navigator) {
-      // @ts-expect-error - navigator.getBattery experimental
-      navigator.getBattery?.().then((battery: { level: number; addEventListener: (event: string, fn: () => void) => void }) => {
+      // @ts-expect-error - navigator.getBattery experimental API
+      navigator.getBattery?.().then((battery: { level: number }) => {
         setBatteryLevel(Math.round(battery.level * 100));
-        battery.addEventListener('levelchange', () => {
-          setBatteryLevel(Math.round(battery.level * 100));
-        });
       }).catch(() => {
-        // Fallback standard value
+        setBatteryLevel(85);
       });
     }
   }, []);
 
-  // Gravação Periódica do Histórico de Localização (Breadcrumbs / Intervalo Configurável)
-  useEffect(() => {
-    const isEnabled = trackingConfig?.isEnabled ?? true;
-    const intervalMinutes = trackingConfig?.intervalMinutes ?? 2;
-    if (!isEnabled) return;
-
-    const intervalMs = Math.max(intervalMinutes, 0.5) * 60 * 1000;
-    const trackingTimer = window.setInterval(() => {
-      const activePos = userSignalLost && lastKnownCoordinate ? lastKnownCoordinate : userCoordinate;
-      const zoneCheck = checkPointInSafeZone(activePos, safeZones);
-      const nearest = findNearestCampusLocation(activePos);
-
-      const newPoint: BreadcrumbPoint = {
-        coordinate: { ...activePos },
-        timestamp: new Date().toISOString(),
-        locationName: nearest.distance < 80 ? nearest.location.name : `${nearest.location.name} (${formatDistance(nearest.distance)})`,
-        batteryLevel: batteryLevel,
-        isInSafeZone: zoneCheck.inZone,
-        safeZoneName: zoneCheck.zone ? zoneCheck.zone.name : undefined,
-      };
-
-      setBreadcrumbs((prev) => [...prev.slice(-30), newPoint]);
-      setTrackingConfig?.((prev) => ({ ...prev, lastRecordedAt: new Date().toISOString() }));
-    }, intervalMs);
-
-    return () => clearInterval(trackingTimer);
-  }, [trackingConfig?.isEnabled, trackingConfig?.intervalMinutes, userCoordinate, userSignalLost, lastKnownCoordinate, batteryLevel, safeZones, setBreadcrumbs, setTrackingConfig]);
-
-  // Iniciar SOS Normal
+  // Iniciar SOS com contagem de 3 segundos
   const handleStartSos = () => {
-    if (isInSafeZone) {
-      // Em Zona Segura, o usuário precisa segurar o botão por 2.5 segundos
-      return;
-    }
     SoundEffects.playClick();
     setIsCountingDown(true);
     setCountdown(3);
-    SoundEffects.playCountdown();
 
     countdownTimerRef.current = window.setInterval(() => {
       setCountdown((prev) => {
@@ -194,6 +185,7 @@ export const UserApp: React.FC<UserAppProps> = ({
     }, 1000);
   };
 
+  // Cancelar Contagem Regressiva
   const handleCancelCountdown = () => {
     if (countdownTimerRef.current) {
       clearInterval(countdownTimerRef.current);
@@ -204,7 +196,7 @@ export const UserApp: React.FC<UserAppProps> = ({
     SoundEffects.playClick();
   };
 
-  // Manipulação de Pressionar e Segurar (Long Press) para Zonas Seguras
+  // Long Press para Zonas Seguras
   const startLongPress = () => {
     if (!isInSafeZone) return;
     setIsPressing(true);
@@ -212,7 +204,7 @@ export const UserApp: React.FC<UserAppProps> = ({
     SoundEffects.playClick();
 
     const startTime = Date.now();
-    const duration = 2200; // 2.2 segundos de pressão contínua necessária
+    const duration = 2000;
 
     longPressIntervalRef.current = window.setInterval(() => {
       const elapsed = Date.now() - startTime;
@@ -238,11 +230,15 @@ export const UserApp: React.FC<UserAppProps> = ({
     setLongPressProgress(0);
   };
 
-  // Disparo efetivo do Alerta SOS
-  const triggerActualAlert = () => {
+  // Disparo efetivo do Alerta SOS com captura de foto
+  const triggerActualAlert = async () => {
     SoundEffects.playSosTriggered();
-    
-    // Efeito visual de confirmação
+    setIsCapturing(true);
+
+    // Efeito visual de Flash
+    setFlashActive(true);
+    setTimeout(() => setFlashActive(false), 300);
+
     try {
       confetti({
         particleCount: 50,
@@ -255,8 +251,30 @@ export const UserApp: React.FC<UserAppProps> = ({
     }
 
     const currentPos = userSignalLost && lastKnownCoordinate ? lastKnownCoordinate : userCoordinate;
-    const locInfo = findNearestCampusLocation(currentPos);
-    const safeCheck = checkPointInSafeZone(currentPos, safeZones);
+    const locInfo = findNearestCampusLocation(currentPos, selectedCampusId);
+    const safeCheck = checkPointInSafeZone(currentPos, safeZones, selectedCampusId);
+    const protocol = generateProtocolNumber();
+
+    // Capturar foto autorizada pelo celular no acionamento do botão
+    let photoSnapshot: EmergencyPhotoSnapshot;
+    try {
+      photoSnapshot = await captureEmergencyPhoto({
+        coordinate: currentPos,
+        protocolNumber: protocol,
+        facingMode: cameraFacing,
+        userName: userProfile.name,
+        campusName: currentCampus.shortName,
+      });
+    } catch {
+      photoSnapshot = generateEmergencyEvidenceCanvas({
+        coordinate: currentPos,
+        protocolNumber: protocol,
+        userName: userProfile.name,
+        campusName: currentCampus.shortName,
+      });
+    }
+
+    setIsCapturing(false);
 
     // Gerar notificações SMS aos contatos cadastrados
     const smsNotifications: SmsNotification[] = [];
@@ -268,7 +286,7 @@ export const UserApp: React.FC<UserAppProps> = ({
           id: `sms_${Date.now()}_${contact.id}`,
           contactName: contact.name,
           contactPhone: contact.phone,
-          message: `GUARDIÃO UFPB: Alerta SOS acionado por ${userProfile.name} em ${locInfo.location.name} (Lat: ${currentPos.lat.toFixed(5)}, Lng: ${currentPos.lng.toFixed(5)}). Central de Segurança UFPB já acionada.`,
+          message: `GUARDIÃO UFPB: Alerta SOS acionado por ${userProfile.name} em ${locInfo.location.name} (${currentCampus.shortName}). Foto instantânea e coordenadas enviadas à Segurança Universitária.`,
           sentAt: new Date().toISOString(),
           status: 'entregue',
         });
@@ -278,7 +296,9 @@ export const UserApp: React.FC<UserAppProps> = ({
 
     const newAlert: EmergencyAlert = {
       id: `alert_${Date.now()}`,
-      protocolNumber: generateProtocolNumber(),
+      protocolNumber: protocol,
+      campusId: selectedCampusId,
+      campusName: currentCampus.name,
       userId: userProfile.id,
       userProfile: userProfile,
       category: selectedCategory,
@@ -295,11 +315,13 @@ export const UserApp: React.FC<UserAppProps> = ({
       lastSignalTimestamp: lastSignalTimestamp || new Date().toISOString(),
       batteryLevel: batteryLevel,
       userRouteHistory: [...breadcrumbs],
+      photoSnapshot: photoSnapshot,
       smsNotificationsSent: smsNotifications,
       securityNotes: [
+        `[${new Date().toLocaleTimeString('pt-BR')}] Chamado SOS emitido no ${currentCampus.shortName}. Imagem instantânea transmitida para a equipe de segurança.`,
         safeCheck.inZone
-          ? `Alerta acionado dentro de Zona Segura (${safeCheck.zone?.name}). Vigilância local alertada.`
-          : 'Alerta emitido pelo aplicativo móvel. Aguardando triagem da Central UFPB.',
+          ? `Alerta dentro de Zona Segura (${safeCheck.zone?.name}). Posto local alertado.`
+          : 'Alerta emitido pelo discente. Central em prontidão.',
       ],
     };
 
@@ -310,49 +332,55 @@ export const UserApp: React.FC<UserAppProps> = ({
   const handleToggleSignalLoss = () => {
     SoundEffects.playClick();
     if (!userSignalLost) {
-      // Verificar se está em zona segura com supressão automática
-      if (isInSafeZone && currentSafeZone?.suppressAutoSignalLossAlert) {
-        // Sinal perdido dentro de zona segura
-      }
       setUserSignalLost(true);
       setLastKnownCoordinate({ ...userCoordinate });
       setLastSignalTimestamp(new Date().toISOString());
     } else {
-      // Sinal restabelecido
       setUserSignalLost(false);
       setLastSignalTimestamp(new Date().toISOString());
     }
+  };
+
+  // Mudar de Campus
+  const handleSelectCampus = (newCampusId: UfpbCampusId) => {
+    SoundEffects.playClick();
+    onSelectCampus(newCampusId);
   };
 
   // Mover usuário para um local específico do campus (Simulação)
   const handleTeleport = (locId: string) => {
     SoundEffects.playClick();
     const loc = CAMPUS_LOCATIONS.find((l) => l.id === locId);
-    if (loc) {
-      const newCoord = { ...loc.coordinate, accuracy: 5 };
-      setUserCoordinate(newCoord);
-      if (!userSignalLost) {
-        setLastKnownCoordinate(newCoord);
-        setLastSignalTimestamp(new Date().toISOString());
-      }
-      const zoneCheck = checkPointInSafeZone(newCoord, safeZones);
-      setBreadcrumbs((prev) => [
-        ...prev.slice(-25),
-        {
-          coordinate: newCoord,
-          timestamp: new Date().toISOString(),
-          locationName: loc.name,
-          isInSafeZone: zoneCheck.inZone,
-          safeZoneName: zoneCheck.zone ? zoneCheck.zone.name : undefined,
-        },
-      ]);
+    if (!loc) return;
+
+    setUserCoordinate({ ...loc.coordinate, accuracy: 5 });
+    if (!userSignalLost) {
+      setLastKnownCoordinate({ ...loc.coordinate, accuracy: 5 });
+      setLastSignalTimestamp(new Date().toISOString());
     }
+
+    const zoneCheck = checkPointInSafeZone(loc.coordinate, safeZones, selectedCampusId);
+
+    setBreadcrumbs((prev) => [
+      ...prev.slice(-25),
+      {
+        coordinate: loc.coordinate,
+        timestamp: new Date().toISOString(),
+        locationName: loc.name,
+        isInSafeZone: zoneCheck.inZone,
+        safeZoneName: zoneCheck.zone ? zoneCheck.zone.name : undefined,
+      },
+    ]);
   };
 
   // Mover para fora do campus
   const handleMoveOutside = () => {
     SoundEffects.playClick();
-    const outsideCoord = { lat: -7.1550, lng: -34.8350, accuracy: 12 };
+    const outsideCoord = {
+      lat: currentCampus.center.lat + 0.025,
+      lng: currentCampus.center.lng + 0.025,
+      accuracy: 15,
+    };
     setUserCoordinate(outsideCoord);
     if (!userSignalLost) {
       setLastKnownCoordinate(outsideCoord);
@@ -360,7 +388,7 @@ export const UserApp: React.FC<UserAppProps> = ({
     }
     setBreadcrumbs((prev) => [
       ...prev.slice(-25),
-      { coordinate: outsideCoord, timestamp: new Date().toISOString(), locationName: 'Fora do Campus UFPB', isInSafeZone: false },
+      { coordinate: outsideCoord, timestamp: new Date().toISOString(), locationName: `Fora do ${currentCampus.shortName}`, isInSafeZone: false },
     ]);
   };
 
@@ -380,7 +408,7 @@ export const UserApp: React.FC<UserAppProps> = ({
             setLastKnownCoordinate(realCoord);
             setLastSignalTimestamp(new Date().toISOString());
           }
-          const zoneCheck = checkPointInSafeZone(realCoord, safeZones);
+          const zoneCheck = checkPointInSafeZone(realCoord, safeZones, selectedCampusId);
           setBreadcrumbs((prev) => [
             ...prev.slice(-25),
             {
@@ -393,7 +421,7 @@ export const UserApp: React.FC<UserAppProps> = ({
           ]);
         },
         (err) => {
-          alert(`Não foi possível obter GPS real: ${err.message}. Mantendo localização simulada no Campus I.`);
+          alert(`Não foi possível obter GPS real: ${err.message}. Mantendo localização simulada no ${currentCampus.shortName}.`);
         },
         { enableHighAccuracy: true, timeout: 10000 }
       );
@@ -410,10 +438,30 @@ export const UserApp: React.FC<UserAppProps> = ({
     }));
   };
 
+  // Alternar Câmera Frontal / Traseira
+  const toggleCameraFacing = () => {
+    SoundEffects.playClick();
+    setCameraFacing((prev) => (prev === 'user' ? 'environment' : 'user'));
+  };
+
+  // Locais filtrados do campus atual para o simulador
+  const campusLocations = CAMPUS_LOCATIONS.filter((l) => !l.campusId || l.campusId === selectedCampusId);
+
   return (
-    <div className="space-y-5 pb-8 max-w-4xl mx-auto text-slate-800">
+    <div className="space-y-5 pb-8 max-w-4xl mx-auto text-slate-800 relative">
       
-      {/* 1. Card de Identificação e Vínculo Institucional */}
+      {/* Flash de Câmera na Tela ao Acionar SOS */}
+      {flashActive && (
+        <div className="fixed inset-0 z-50 bg-white pointer-events-none animate-out fade-out duration-300" />
+      )}
+
+      {/* 1. SELEÇÃO DE CAMPUS DA UFPB (EXPANDINDO O CAMPO DE ATUAÇÃO ALÉM DO CASTELO BRANCO) */}
+      <CampusSelector
+        selectedCampusId={selectedCampusId}
+        onSelectCampus={handleSelectCampus}
+      />
+
+      {/* 2. Card de Identificação e Vínculo Institucional */}
       <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           
@@ -465,7 +513,7 @@ export const UserApp: React.FC<UserAppProps> = ({
         </div>
       </div>
 
-      {/* 2. Barra de Status de Geolocalização, Zonas de Segurança e Conectividade */}
+      {/* 3. Barra de Status de Geolocalização, Zonas de Segurança e Conectividade */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         
         {/* Status de Cobertura / Geofence ou Zona Segura */}
@@ -486,10 +534,10 @@ export const UserApp: React.FC<UserAppProps> = ({
             </div>
             <div className="text-xs">
               <div className="font-extrabold text-slate-800">
-                {isInSafeZone ? 'Zona de Segurança' : isInsideCampus ? 'Dentro da UFPB' : 'Fora do Campus'}
+                {isInSafeZone ? 'Zona de Segurança' : isInsideCampus ? currentCampus.shortName : 'Fora do Campus'}
               </div>
               <div className="text-[11px] text-slate-600 font-medium truncate max-w-[150px]">
-                {isInSafeZone ? currentSafeZone?.name : isInsideCampus ? 'Campus I UFPB' : 'Área externa à UFPB'}
+                {isInSafeZone ? currentSafeZone?.name : isInsideCampus ? currentCampus.city : 'Área externa à UFPB'}
               </div>
             </div>
           </div>
@@ -553,7 +601,7 @@ export const UserApp: React.FC<UserAppProps> = ({
 
       </div>
 
-      {/* BANNER INFORMATIVO SE ESTIVER DENTRO DE UMA ZONA DE SEGURANÇA */}
+      {/* BANNER SE ESTIVER DENTRO DE UMA ZONA DE SEGURANÇA */}
       {isInSafeZone && (
         <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in">
           <div className="flex items-start gap-3">
@@ -571,14 +619,14 @@ export const UserApp: React.FC<UserAppProps> = ({
               </div>
               <h4 className="font-extrabold text-sm text-slate-900">{currentSafeZone?.name}</h4>
               <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
-                {currentSafeZone?.description} <strong>({currentSafeZone?.activeGuardsCount} vigilantes ativos)</strong>. Para evitar falsos disparos, o acionamento de SOS nesta zona requer <strong>pressão contínua de 2 segundos</strong>.
+                {currentSafeZone?.description} <strong>({currentSafeZone?.activeGuardsCount} vigilantes ativos)</strong>. O acionamento nesta zona requer <strong>pressão contínua de 2 segundos</strong>.
               </p>
             </div>
           </div>
         </div>
       )}
 
-      {/* 3. ALERTA DE PERDA DE SINAL / ÚLTIMA LOCALIZAÇÃO CONHECIDA */}
+      {/* ALERTA DE PERDA DE SINAL / ÚLTIMA LOCALIZAÇÃO CONHECIDA */}
       {userSignalLost && (
         <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-start gap-3">
@@ -589,16 +637,11 @@ export const UserApp: React.FC<UserAppProps> = ({
               <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                 Acesso à Localização Interrompido
                 <span className="text-[10px] bg-amber-200/70 text-amber-900 px-2 py-0.5 rounded-md font-mono font-bold">
-                  SISTEMA DE SEGURANÇA ATIVO
+                  ÚLTIMO LOCAL FIXADO
                 </span>
               </h4>
               <p className="text-xs text-amber-800/90 mt-1">
-                O sinal de GPS foi interrompido. O sistema registrou automaticamente sua <strong>Última Localização Conhecida</strong> ({lastKnownCoordinate?.lat.toFixed(5)}, {lastKnownCoordinate?.lng.toFixed(5)}) em <strong>{new Date(lastSignalTimestamp).toLocaleTimeString('pt-BR')}</strong> como referência imediata de busca para a equipe de vigilância.
-                {isInSafeZone && (
-                  <span className="block mt-1 font-semibold text-emerald-800">
-                    🛡️ Observação: Você estava na Zona Segura ({currentSafeZone?.name}).
-                  </span>
-                )}
+                O sinal de GPS foi interrompido. O sistema registrou automaticamente sua <strong>Última Localização Conhecida</strong> ({lastKnownCoordinate?.lat.toFixed(5)}, {lastKnownCoordinate?.lng.toFixed(5)}) em <strong>{new Date(lastSignalTimestamp).toLocaleTimeString('pt-BR')}</strong> junto ao {currentCampus.shortName} como referência imediata de resgate.
               </p>
             </div>
           </div>
@@ -637,7 +680,7 @@ export const UserApp: React.FC<UserAppProps> = ({
 
       {/* 4. CARD DE ALERTA ATIVO (CASO O USUÁRIO TENHA DISPARADO SOS) */}
       {userActiveAlert && (
-        <div className="p-5 sm:p-6 rounded-2xl bg-white border-2 border-red-500 text-slate-800 shadow-xl animate-in fade-in">
+        <div className="p-5 sm:p-6 rounded-2xl bg-white border-2 border-red-500 text-slate-800 shadow-xl animate-in fade-in space-y-4">
           
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-red-100 pb-4">
             <div className="flex items-center gap-3">
@@ -646,8 +689,10 @@ export const UserApp: React.FC<UserAppProps> = ({
                 <span className="relative inline-flex rounded-full h-4 w-4 bg-red-600"></span>
               </span>
               <div>
-                <span className="text-xs uppercase font-bold tracking-wider text-red-600">
-                  Chamado de Emergência Ativo
+                <span className="text-xs uppercase font-bold tracking-wider text-red-600 flex items-center gap-1.5">
+                  <span>Chamado de Emergência Ativo</span>
+                  <span className="text-slate-400">•</span>
+                  <span>{userActiveAlert.campusName || currentCampus.shortName}</span>
                 </span>
                 <h3 className="text-lg sm:text-xl font-extrabold text-slate-900">
                   Protocolo: {userActiveAlert.protocolNumber}
@@ -665,8 +710,57 @@ export const UserApp: React.FC<UserAppProps> = ({
             </div>
           </div>
 
+          {/* EVIDÊNCIA FOTOGRÁFICA ENVIADA COM O SOS */}
+          {userActiveAlert.photoSnapshot && (
+            <div className="p-4 rounded-xl bg-slate-900 text-white border border-slate-800 shadow-inner flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div 
+                  onClick={() => {
+                    setInspectedPhoto(userActiveAlert.photoSnapshot || null);
+                    setIsPhotoModalOpen(true);
+                  }}
+                  className="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-700 bg-black shrink-0 cursor-pointer group shadow"
+                >
+                  <img
+                    src={userActiveAlert.photoSnapshot.dataUrl}
+                    alt="Foto momento do SOS"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Eye className="w-5 h-5 text-white" />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-1.5 text-xs text-red-400 font-bold">
+                    <Camera className="w-3.5 h-3.5" />
+                    <span>FOTO ENVIADA À EQUIPE DE SEGURANÇA</span>
+                  </div>
+                  <h4 className="text-sm font-bold text-white mt-0.5">
+                    Imagem registrada no momento do acionamento
+                  </h4>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    A Central de Segurança já recebeu esta imagem juntamente com o seu último local conhecido para despacho tático.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  setInspectedPhoto(userActiveAlert.photoSnapshot || null);
+                  setIsPhotoModalOpen(true);
+                }}
+                className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors"
+              >
+                <Eye className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Ampliar Imagem</span>
+              </button>
+            </div>
+          )}
+
           {/* Linha do Tempo do Atendimento */}
-          <div className="py-4 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center text-xs">
+          <div className="py-2 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center text-xs">
             <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
               <div className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Emissão</div>
               <div className="font-bold text-slate-800 mt-0.5">
@@ -693,21 +787,14 @@ export const UserApp: React.FC<UserAppProps> = ({
             </div>
           </div>
 
-          {userActiveAlert.isInSafeZone && (
-            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 font-semibold mb-3 flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-emerald-700" />
-              <span>Ocorrência em Zona Segura ({userActiveAlert.safeZoneName || 'Campus'}). Prioridade de vigilância local.</span>
-            </div>
-          )}
-
           {userActiveAlert.customNote && (
-            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 italic mb-4">
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 italic">
               "Observação enviada: {userActiveAlert.customNote}"
             </div>
           )}
 
           {userActiveAlert.securityNotes && userActiveAlert.securityNotes.length > 0 && (
-            <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-900 mb-4 space-y-1">
+            <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-900 space-y-1">
               <div className="font-bold text-red-700 flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5" /> Mensagem da Vigilância:
               </div>
@@ -720,7 +807,7 @@ export const UserApp: React.FC<UserAppProps> = ({
           {/* Botão Cancelar / Estou Seguro */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
             <p className="text-[11px] text-slate-500">
-              Mantenha a calma. A equipe de segurança da UFPB está acompanhando suas coordenadas em tempo real.
+              A equipe de segurança da UFPB está com suas coordenadas e foto em mãos.
             </p>
             <button
               onClick={() => {
@@ -737,29 +824,54 @@ export const UserApp: React.FC<UserAppProps> = ({
         </div>
       )}
 
-      {/* 5. ÁREA PRINCIPAL: BOTÃO SOS DE EMERGÊNCIA - SLEEK INTERFACE */}
+      {/* 5. ÁREA PRINCIPAL: BOTÃO SOS DE EMERGÊNCIA */}
       {!userActiveAlert && (
         <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 text-center shadow-sm relative overflow-hidden">
           
-          {/* Subtle Radar Background Overlay */}
           <div className="absolute inset-0 bg-[#f8fafc]" style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '24px 24px', opacity: 0.6 }} />
 
           {/* Título & Instrução */}
-          <div className="relative z-10 max-w-md mx-auto mb-6">
+          <div className="relative z-10 max-w-md mx-auto mb-4">
             <h3 className="text-xl sm:text-2xl font-extrabold text-slate-800 tracking-tight">
               Botão de Emergência SOS
             </h3>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
               {isInSafeZone
-                ? `Você está em ${currentSafeZone?.name}. Segure o botão pressionado para confirmar o envio.`
-                : 'Toque no botão abaixo para transmitir sua localização em tempo real à equipe de segurança da UFPB.'}
+                ? `Você está em ${currentSafeZone?.name} (${currentCampus.shortName}). Segure o botão para confirmar o envio.`
+                : `Acione o botão para transmitir imediatamente sua foto e localização ao vivo para a equipe de segurança do ${currentCampus.shortName}.`}
             </p>
+          </div>
+
+          {/* INDICADOR DE AUTORIZAÇÃO DA CÂMERA */}
+          <div className="relative z-10 max-w-md mx-auto mb-5 p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs text-slate-700">
+            <div className="flex items-center gap-2 text-left">
+              <div className="w-7 h-7 rounded-lg bg-blue-100 text-[#003d71] flex items-center justify-center shrink-0">
+                <Camera className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="font-bold block text-slate-800">
+                  Foto Autorizada com SOS
+                </span>
+                <span className="text-[10px] text-slate-500 block">
+                  Captura instantânea via câmera {cameraFacing === 'user' ? 'Frontal' : 'Traseira'}
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={toggleCameraFacing}
+              className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-[#003d71] text-[11px] font-semibold flex items-center gap-1 shadow-xs cursor-pointer transition-colors"
+              title="Alternar entre câmera frontal e traseira"
+            >
+              <RotateCw className="w-3 h-3 text-[#003d71]" />
+              <span>{cameraFacing === 'user' ? 'Frontal' : 'Traseira'}</span>
+            </button>
           </div>
 
           {/* Seletor de Categoria do Incidente */}
           <div className="relative z-10 max-w-xl mx-auto mb-6">
             <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-              Tipo de Ocorrência (Opcional)
+              Tipo de Ocorrência
             </label>
             <div className="flex flex-wrap items-center justify-center gap-2">
               {CATEGORIES.map((cat) => {
@@ -789,7 +901,7 @@ export const UserApp: React.FC<UserAppProps> = ({
           <div className="relative z-10 flex flex-col items-center justify-center my-6">
             
             {isInSafeZone ? (
-              /* MODO ZONA SEGURA: PRESSÃO CONTÍNUA EXIGIDA (LONG PRESS) */
+              /* MODO ZONA SEGURA */
               <div className="flex flex-col items-center gap-3">
                 <button
                   id="btn-sos-safezone"
@@ -804,11 +916,8 @@ export const UserApp: React.FC<UserAppProps> = ({
                       : 'bg-[#003d71] border-blue-200 hover:bg-[#002b50] shadow-blue-900/30'
                   }`}
                 >
-                  {/* Barra de progresso circular simulada */}
                   {isPressing && (
-                    <div
-                      className="absolute inset-0 rounded-full border-4 border-amber-300 pointer-events-none animate-ping opacity-50"
-                    />
+                    <div className="absolute inset-0 rounded-full border-4 border-amber-300 pointer-events-none animate-ping opacity-50" />
                   )}
 
                   <div className="relative z-10 flex flex-col items-center justify-center text-white">
@@ -822,7 +931,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                   </div>
 
                   <div className="absolute bottom-3 text-[9px] text-amber-200 font-medium">
-                    Zona Segura Delimitada
+                    📸 Foto + Localização
                   </div>
                 </button>
 
@@ -836,14 +945,14 @@ export const UserApp: React.FC<UserAppProps> = ({
                 )}
               </div>
             ) : isCountingDown ? (
-              /* Modo Contagem Regressiva de Segurança */
+              /* Modo Contagem Regressiva */
               <div className="flex flex-col items-center gap-4 animate-in zoom-in-95 duration-150">
                 <div className="relative flex items-center justify-center w-48 h-48 sm:w-56 sm:h-56 rounded-full bg-red-600 border-4 border-amber-300 shadow-2xl shadow-red-500/50 animate-pulse">
                   <span className="text-6xl sm:text-7xl font-black text-white tracking-tighter">
                     {countdown}
                   </span>
                   <div className="absolute -bottom-3 bg-amber-400 text-slate-950 text-[10px] font-black uppercase px-3.5 py-1 rounded-full shadow">
-                    Enviando Alerta...
+                    📸 Capturando Foto & Local...
                   </div>
                 </div>
 
@@ -852,7 +961,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                     onClick={handleCancelCountdown}
                     className="px-6 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 text-xs font-bold transition-all shadow-sm cursor-pointer"
                   >
-                    Cancelar Envio
+                    Cancelar
                   </button>
                   <button
                     onClick={() => {
@@ -862,18 +971,18 @@ export const UserApp: React.FC<UserAppProps> = ({
                     }}
                     className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
                   >
-                    Enviar Imediatamente
+                    Disparar Agora
                   </button>
                 </div>
               </div>
             ) : (
-              /* Botão SOS Normal - Sleek Interface Style */
+              /* Botão SOS Normal */
               <button
                 id="btn-sos-trigger"
                 onClick={handleStartSos}
+                disabled={isCapturing}
                 className="group relative flex flex-col items-center justify-center w-48 h-48 sm:w-56 sm:h-56 rounded-full bg-red-600 hover:bg-red-700 border-4 border-red-300/40 shadow-2xl shadow-red-500/40 hover:shadow-red-600/50 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
               >
-                {/* Efeito Radar Pulso */}
                 <div className="absolute inset-0 rounded-full bg-red-500/20 animate-ping pointer-events-none" />
 
                 <div className="relative z-10 flex flex-col items-center justify-center text-white">
@@ -885,9 +994,9 @@ export const UserApp: React.FC<UserAppProps> = ({
                   </span>
                 </div>
 
-                {/* Sub-rótulo flutuante */}
-                <div className="absolute bottom-3 text-[9px] text-red-200 font-medium tracking-tight">
-                  Toque para enviar
+                <div className="absolute bottom-3 text-[9px] text-red-200 font-medium tracking-tight flex items-center gap-1">
+                  <Camera className="w-3 h-3" />
+                  <span>Foto + Localização</span>
                 </div>
               </button>
             )}
@@ -912,7 +1021,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                   type="text"
                   value={customNote}
                   onChange={(e) => setCustomNote(e.target.value)}
-                  placeholder="Ex: Estou no Bloco C do CCHLA, próximo à lanchonete"
+                  placeholder="Ex: Estou no bloco central, próximo à lanchonete"
                   className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-800 text-xs focus:outline-none focus:border-[#003d71]"
                 />
               </div>
@@ -922,16 +1031,16 @@ export const UserApp: React.FC<UserAppProps> = ({
         </div>
       )}
 
-      {/* 6. MAPA DO CAMPUS INTERATIVO COM ROTA, ZONAS SEGURAS E RASTREAMENTO */}
+      {/* 6. MAPA DO CAMPUS INTERATIVO */}
       <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
           <div>
             <h4 className="font-bold text-slate-800 flex items-center gap-2">
               <Navigation className="w-4 h-4 text-[#003d71]" />
-              Mapa do Campus I da UFPB
+              Mapa de Monitoramento • {currentCampus.name}
             </h4>
             <span className="text-slate-500 text-[11px] font-medium">
-              Geolocalização, Zonas de Segurança Delimitadas e Rastro Histórico
+              Geolocalização tática, Zonas Seguras e rastro de deslocamento
             </span>
           </div>
 
@@ -946,7 +1055,7 @@ export const UserApp: React.FC<UserAppProps> = ({
           </div>
         </div>
 
-        {/* Painel expansível de configuração do histórico de localização */}
+        {/* Painel expansível de configuração */}
         {showTrackingConfigBox && (
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-3 animate-in fade-in">
             <div className="flex items-center justify-between font-bold text-slate-800">
@@ -1015,15 +1124,16 @@ export const UserApp: React.FC<UserAppProps> = ({
           showBreadcrumbs={true}
           heightClass="h-[380px]"
           isInsideCampus={isInsideCampus}
+          selectedCampusId={selectedCampusId}
         />
       </div>
 
-      {/* 7. SIMULADOR DE DESLOCAMENTO NO CAMPUS (Para testes no protótipo) */}
+      {/* 7. SIMULADOR DE DESLOCAMENTO NO CAMPUS ATUAL (Protótipo) */}
       <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm text-xs space-y-3">
         <div className="flex items-center justify-between">
           <span className="font-bold text-slate-700 flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            Simulador de Deslocamento e Zonas Seguras (Protótipo):
+            Simulador de Posição no {currentCampus.shortName}:
           </span>
           <button
             onClick={handleUseRealGps}
@@ -1034,53 +1144,76 @@ export const UserApp: React.FC<UserAppProps> = ({
         </div>
 
         <div className="flex flex-wrap gap-1.5">
-          {CAMPUS_LOCATIONS.filter((l) => l.category !== 'seguranca').slice(0, 7).map((loc) => (
+          {campusLocations.map((loc) => (
             <button
               key={loc.id}
               onClick={() => handleTeleport(loc.id)}
               className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-[11px] font-medium transition-colors cursor-pointer"
             >
-              📍 Ir para {loc.code}
+              📍 {loc.code}
             </button>
           ))}
-          {safeZones.map((sz) => (
-            <button
-              key={sz.id}
-              onClick={() => {
-                SoundEffects.playClick();
-                setUserCoordinate({ ...sz.center, accuracy: 4 });
-                if (!userSignalLost) {
-                  setLastKnownCoordinate({ ...sz.center, accuracy: 4 });
-                  setLastSignalTimestamp(new Date().toISOString());
-                }
-                setBreadcrumbs((prev) => [
-                  ...prev.slice(-25),
-                  { coordinate: sz.center, timestamp: new Date().toISOString(), locationName: sz.name, isInSafeZone: true, safeZoneName: sz.name },
-                ]);
-              }}
-              className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 text-[11px] font-bold transition-colors cursor-pointer flex items-center gap-1"
-            >
-              <span>{sz.icon}</span>
-              <span>Testar {sz.code}</span>
-            </button>
-          ))}
+
+          {safeZones
+            .filter((sz) => !sz.campusId || sz.campusId === selectedCampusId)
+            .map((sz) => (
+              <button
+                key={sz.id}
+                onClick={() => {
+                  SoundEffects.playClick();
+                  setUserCoordinate({ ...sz.center, accuracy: 4 });
+                  if (!userSignalLost) {
+                    setLastKnownCoordinate({ ...sz.center, accuracy: 4 });
+                    setLastSignalTimestamp(new Date().toISOString());
+                  }
+                  setBreadcrumbs((prev) => [
+                    ...prev.slice(-25),
+                    { coordinate: sz.center, timestamp: new Date().toISOString(), locationName: sz.name, isInSafeZone: true, safeZoneName: sz.name },
+                  ]);
+                }}
+                className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 text-[11px] font-bold transition-colors cursor-pointer flex items-center gap-1"
+              >
+                <span>{sz.icon}</span>
+                <span>Testar {sz.code}</span>
+              </button>
+            ))}
+
           <button
             onClick={handleMoveOutside}
             className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-[11px] font-semibold transition-colors cursor-pointer"
           >
-            🚫 Sair do Campus
+            🚫 Fora do Campus
           </button>
         </div>
       </div>
 
-      {/* 8. CONTATOS DE EMERGÊNCIA UNIVERSITÁRIA */}
+      {/* 8. CONTATOS DE EMERGÊNCIA UNIVERSITÁRIA DO CAMPUS ATUAL */}
       <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm text-xs">
-        <h4 className="font-bold text-slate-800 mb-3 flex items-center gap-2">
-          <PhoneCall className="w-4 h-4 text-red-600" />
-          Telefones Úteis de Emergência
-        </h4>
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="font-bold text-slate-800 flex items-center gap-2">
+            <PhoneCall className="w-4 h-4 text-red-600" />
+            Telefones de Emergência • {currentCampus.name}
+          </h4>
+          <span className="text-[11px] text-slate-500 font-mono">
+            Rádio Vigilância: {currentCampus.emergencyRadioChannel}
+          </span>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+          {/* Posto do Campus Atual */}
+          <a
+            href={`tel:${currentCampus.securityPostPhone.replace(/\D/g, '')}`}
+            className="p-3.5 rounded-xl bg-blue-50/70 border border-blue-200 hover:border-[#003d71] flex items-center justify-between gap-2 text-slate-800 transition-all shadow-xs"
+          >
+            <div>
+              <div className="font-extrabold text-[#003d71] text-xs">Guarita Central ({currentCampus.shortName})</div>
+              <div className="text-[11px] text-slate-600 font-medium">Posto de Segurança Local</div>
+            </div>
+            <span className="font-mono font-extrabold text-[#003d71] text-xs shrink-0">
+              {currentCampus.securityPostPhone}
+            </span>
+          </a>
+
           {EMERGENCY_PHONES.map((phone, idx) => (
             <a
               key={idx}
@@ -1110,7 +1243,7 @@ export const UserApp: React.FC<UserAppProps> = ({
             id: `sms_test_${Date.now()}`,
             contactName: c.name,
             contactPhone: c.phone,
-            message: `[TESTE] GUARDIÃO UFPB: Simulação de alerta SOS para ${c.name}. Usuário: ${userProfile.name}. Local: ${nearestInfo.location.name}.`,
+            message: `[TESTE] GUARDIÃO UFPB: Simulação de alerta SOS para ${c.name}. Usuário: ${userProfile.name}. Campus: ${currentCampus.shortName}. Local: ${nearestInfo.location.name}.`,
             sentAt: new Date().toISOString(),
             status: 'entregue',
           };
@@ -1118,7 +1251,21 @@ export const UserApp: React.FC<UserAppProps> = ({
         }}
       />
 
+      {/* Modal de Exibição da Foto de Evidência */}
+      {inspectedPhoto && (
+        <PhotoEvidenceModal
+          isOpen={isPhotoModalOpen}
+          onClose={() => {
+            setIsPhotoModalOpen(false);
+            setInspectedPhoto(null);
+          }}
+          photoSnapshot={inspectedPhoto}
+          victimName={userActiveAlert?.userProfile.name || userProfile.name}
+          protocolNumber={userActiveAlert?.protocolNumber}
+          locationName={userActiveAlert?.locationName}
+        />
+      )}
+
     </div>
   );
 };
-

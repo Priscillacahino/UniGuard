@@ -13,6 +13,8 @@ import {
   AlertStatus,
   BreadcrumbPoint,
   LocationTrackingConfig,
+  UfpbCampusId,
+  EmergencyPhotoSnapshot,
 } from './types';
 import {
   DEFAULT_USER_PROFILE,
@@ -20,15 +22,16 @@ import {
   INITIAL_ALERTS,
   INITIAL_SECURITY_UNITS,
   UFPB_CAMPUS_CENTER,
-  CAMPUS_LOCATIONS,
+  UFPB_CAMPI,
 } from './data/ufpbData';
-import { isPointInsideCampus } from './utils/geo';
-import { SoundEffects } from './utils/audio';
+import { isPointInsideCampus, getCampusById } from './utils/geo';
+import { SoundEffects } from './utils/sound';
 
 import { UserApp } from './components/UserApp';
 import { SecurityDashboard } from './components/SecurityDashboard';
 import { IdentityModal } from './components/IdentityModal';
 import { AboutModal } from './components/AboutModal';
+import { FlowchartModal } from './components/FlowchartModal';
 import { Footer } from './components/Footer';
 
 import {
@@ -36,11 +39,8 @@ import {
   Smartphone,
   Radio,
   Info,
-  UserCheck,
-  AlertOctagon,
-  Sparkles,
-  MapPin,
-  WifiOff,
+  GitMerge,
+  Building2,
 } from 'lucide-react';
 
 export default function App() {
@@ -52,23 +52,36 @@ export default function App() {
 
   const [isIdentityModalOpen, setIsIdentityModalOpen] = useState(false);
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
+  const [isFlowchartModalOpen, setIsFlowchartModalOpen] = useState(false);
   const [isFirstTimeOnboarding, setIsFirstTimeOnboarding] = useState(false);
 
   // 2. Modo da Interface (App do Usuário vs Painel da Segurança)
   const [activeTab, setActiveTab] = useState<'user' | 'security'>('user');
 
-  // 3. Estado de Geolocalização e Conexão
-  const [userCoordinate, setUserCoordinate] = useState<GeoCoordinate>({
-    lat: -7.1448, // Inicialmente no CT da UFPB
-    lng: -34.8486,
-    accuracy: 5,
+  // 3. Campus Ativo (Selecionável pelo usuário entre os 5 Campi da UFPB)
+  const [selectedCampusId, setSelectedCampusId] = useState<UfpbCampusId>(() => {
+    const saved = localStorage.getItem('guardiao_ufpb_campus');
+    return (saved as UfpbCampusId) || 'campus_1_joao_pessoa';
+  });
+
+  const activeCampus = getCampusById(selectedCampusId);
+
+  // 4. Estado de Geolocalização e Conexão
+  const [userCoordinate, setUserCoordinate] = useState<GeoCoordinate>(() => {
+    return {
+      lat: activeCampus.center.lat,
+      lng: activeCampus.center.lng,
+      accuracy: 5,
+    };
   });
 
   const [userSignalLost, setUserSignalLost] = useState<boolean>(false);
-  const [lastKnownCoordinate, setLastKnownCoordinate] = useState<GeoCoordinate | null>({
-    lat: -7.1448,
-    lng: -34.8486,
-    accuracy: 5,
+  const [lastKnownCoordinate, setLastKnownCoordinate] = useState<GeoCoordinate | null>(() => {
+    return {
+      lat: activeCampus.center.lat,
+      lng: activeCampus.center.lng,
+      accuracy: 5,
+    };
   });
   const [lastSignalTimestamp, setLastSignalTimestamp] = useState<string>(new Date().toISOString());
 
@@ -90,7 +103,7 @@ export default function App() {
     },
   ]);
 
-  // 4. Alertas e Unidades de Segurança
+  // 5. Alertas e Unidades de Segurança
   const [alerts, setAlerts] = useState<EmergencyAlert[]>(() => {
     const saved = localStorage.getItem('guardiao_ufpb_alerts');
     return saved ? JSON.parse(saved) : INITIAL_ALERTS;
@@ -98,7 +111,7 @@ export default function App() {
 
   const [securityUnits, setSecurityUnits] = useState<SecurityPatrolUnit[]>(INITIAL_SECURITY_UNITS);
 
-  // 5. Configuração de Rastreamento de Localização
+  // 6. Configuração de Rastreamento de Localização
   const [trackingConfig, setTrackingConfig] = useState<LocationTrackingConfig>(() => {
     const saved = localStorage.getItem('guardiao_ufpb_tracking');
     return saved ? JSON.parse(saved) : DEFAULT_TRACKING_CONFIG;
@@ -117,9 +130,41 @@ export default function App() {
     localStorage.setItem('guardiao_ufpb_tracking', JSON.stringify(trackingConfig));
   }, [trackingConfig]);
 
-  // Verificar se o usuário está dentro dos limites do Campus I da UFPB
+  useEffect(() => {
+    localStorage.setItem('guardiao_ufpb_campus', selectedCampusId);
+  }, [selectedCampusId]);
+
+  // Alterar campus ativo e reposicionar telemetria
+  const handleSelectCampus = (newCampusId: UfpbCampusId) => {
+    setSelectedCampusId(newCampusId);
+    const newCampus = getCampusById(newCampusId);
+
+    // Mover a coordenada do usuário para o centro do novo campus
+    const newCoord = {
+      lat: newCampus.center.lat,
+      lng: newCampus.center.lng,
+      accuracy: 5,
+    };
+    setUserCoordinate(newCoord);
+    if (!userSignalLost) {
+      setLastKnownCoordinate(newCoord);
+      setLastSignalTimestamp(new Date().toISOString());
+    }
+
+    setBreadcrumbs([
+      {
+        coordinate: newCoord,
+        timestamp: new Date().toISOString(),
+        locationName: `Área Central - ${newCampus.shortName}`,
+        isInSafeZone: true,
+        safeZoneName: 'Entrada / Guarita Principal',
+      },
+    ]);
+  };
+
+  // Verificar se o usuário está dentro dos limites do campus selecionado
   const currentPos = userSignalLost && lastKnownCoordinate ? lastKnownCoordinate : userCoordinate;
-  const isInsideCampus = isPointInsideCampus(currentPos);
+  const isInsideCampus = isPointInsideCampus(currentPos, selectedCampusId);
 
   // Alerta ativo emitido pelo próprio usuário atual
   const userActiveAlert = alerts.find(
@@ -141,21 +186,20 @@ export default function App() {
             lng: pos.coords.longitude,
             accuracy: pos.coords.accuracy,
           };
-          // Se estiver muito longe de JP (ex: fora da Paraíba), mantemos no campus para simulação do protótipo
-          const distToUfpb = Math.abs(coord.lat - UFPB_CAMPUS_CENTER.lat);
-          if (distToUfpb < 0.2) {
+          const distToCampus = Math.abs(coord.lat - activeCampus.center.lat);
+          if (distToCampus < 0.2) {
             setUserCoordinate(coord);
             setLastKnownCoordinate(coord);
           }
         },
         () => {
-          // Permissão negada ou erro, mantém no CT
+          // Permissão negada ou erro, mantém no centro do campus
         }
       );
     }
   };
 
-  // Handler para Envio de Alerta SOS pelo Usuário
+  // Handler para Envio de Alerta SOS pelo Usuário (já com foto capturada)
   const handleSendAlert = (newAlert: EmergencyAlert) => {
     setAlerts((prev) => [newAlert, ...prev]);
   };
@@ -206,11 +250,16 @@ export default function App() {
     category: EmergencyAlert['category'],
     locationName: string,
     coord: GeoCoordinate,
-    signalLost: boolean
+    signalLost: boolean,
+    campusId: UfpbCampusId = selectedCampusId,
+    photoSnapshot?: EmergencyPhotoSnapshot
   ) => {
+    const campus = getCampusById(campusId);
     const simAlert: EmergencyAlert = {
       id: `alert_sim_${Date.now()}`,
       protocolNumber: `SOS-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+      campusId: campusId,
+      campusName: campus.name,
       userId: `user_sim_${Date.now()}`,
       userProfile: {
         id: `user_sim_${Date.now()}`,
@@ -222,7 +271,7 @@ export default function App() {
         emergencyContactName: 'Familiar Responsável',
         emergencyContactPhone: '(83) 98888-0000',
         emergencyContactRelation: 'Família',
-        department: 'Centro Acadêmico UFPB',
+        department: campus.shortName,
         registeredAt: new Date().toISOString(),
       },
       category: category,
@@ -235,10 +284,11 @@ export default function App() {
       signalLost: signalLost,
       lastSignalTimestamp: signalLost ? new Date(Date.now() - 1000 * 60 * 3).toISOString() : new Date().toISOString(),
       batteryLevel: signalLost ? 18 : 80,
+      photoSnapshot: photoSnapshot,
       securityNotes: [
         signalLost
           ? 'ATENÇÃO: Sinal de GPS interrompido subitamente. Última coordenada fixada.'
-          : 'Chamado de teste emitido para simulação operacional.',
+          : `Chamado simulado no ${campus.shortName} com evidência visual gerada.`,
       ],
     };
 
@@ -248,9 +298,9 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col bg-[#f1f5f9] text-slate-900 font-sans selection:bg-[#003d71] selection:text-white">
       
-      {/* 1. BARRA SUPERIOR DE NAVEGAÇÃO & CONTROLE - SLEEK INTERFACE */}
+      {/* 1. BARRA SUPERIOR DE NAVEGAÇÃO & CONTROLE */}
       <header className="sticky top-0 z-40 w-full bg-white/95 border-b border-slate-200/90 backdrop-blur-md shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3">
           
           {/* Logo & Título */}
           <div className="flex items-center gap-3">
@@ -262,12 +312,12 @@ export default function App() {
                 <span className="font-extrabold text-base sm:text-lg text-slate-800 tracking-tight">
                   Guardião <span className="text-[#003d71]">UFPB</span>
                 </span>
-                <span className="hidden sm:inline text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-[#003d71] border border-blue-100 uppercase tracking-wide">
-                  Campus I
+                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-[#003d71] border border-blue-100 uppercase tracking-wide">
+                  {activeCampus.shortName}
                 </span>
               </div>
               <p className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold hidden sm:block">
-                Central de Monitoramento & Geolocalização
+                Segurança, Foto no SOS & Rastreamento Multi-Campi
               </p>
             </div>
           </div>
@@ -310,12 +360,20 @@ export default function App() {
             </button>
           </div>
 
-          {/* Botões Auxiliares e Status */}
-          <div className="flex items-center gap-2.5">
-            <div className="hidden lg:flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
-              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-              <span className="text-xs font-semibold text-emerald-700">Sistemas Operacionais</span>
-            </div>
+          {/* Botões Auxiliares: Fluxograma e Sobre */}
+          <div className="flex items-center gap-2">
+            {/* Botão Fluxograma solicitado pelo usuário */}
+            <button
+              onClick={() => {
+                SoundEffects.playClick();
+                setIsFlowchartModalOpen(true);
+              }}
+              title="Ver Fluxograma Completo do Projeto"
+              className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#003d71] border border-blue-200 text-xs transition-colors flex items-center gap-1.5 cursor-pointer font-bold shadow-xs"
+            >
+              <GitMerge className="w-4 h-4" />
+              <span className="hidden md:inline">Fluxograma</span>
+            </button>
 
             <button
               onClick={() => {
@@ -356,6 +414,8 @@ export default function App() {
             setBreadcrumbs={setBreadcrumbs}
             trackingConfig={trackingConfig}
             setTrackingConfig={setTrackingConfig}
+            selectedCampusId={selectedCampusId}
+            onSelectCampus={handleSelectCampus}
           />
         ) : (
           <SecurityDashboard
@@ -367,6 +427,8 @@ export default function App() {
             userSignalLost={userSignalLost}
             lastKnownCoordinate={lastKnownCoordinate}
             breadcrumbs={breadcrumbs}
+            selectedCampusId={selectedCampusId}
+            onSelectCampus={handleSelectCampus}
           />
         )}
       </main>
@@ -382,6 +444,11 @@ export default function App() {
       <AboutModal
         isOpen={isAboutModalOpen}
         onClose={() => setIsAboutModalOpen(false)}
+      />
+
+      <FlowchartModal
+        isOpen={isFlowchartModalOpen}
+        onClose={() => setIsFlowchartModalOpen(false)}
       />
 
       {/* 4. RODAPÉ COM DIREITOS AUTORAIS E AVISO DISCRETO */}

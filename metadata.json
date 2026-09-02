@@ -1,6 +1,6 @@
 {
   "name": "Guardião UFPB",
   "description": "Sistema de segurança e geolocalização para estudantes e servidores da Universidade Federal da Paraíba com botão SOS, monitoramento de sinal e painel para equipe de segurança.",
-  "requestFramePermissions": ["geolocation"],
+  "requestFramePermissions": ["geolocation", "camera"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

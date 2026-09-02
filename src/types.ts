@@ -1,5 +1,37 @@
 export type UserRole = 'estudante' | 'docente' | 'tecnico' | 'terceirizado' | 'visitante';
 
+export type UfpbCampusId = 
+  | 'campus_1_joao_pessoa'
+  | 'campus_2_areia'
+  | 'campus_3_bananeiras'
+  | 'campus_4_litoral_norte'
+  | 'campus_5_mangabeira';
+
+export interface UfpbCampusInfo {
+  id: UfpbCampusId;
+  name: string;
+  shortName: string;
+  code: string;
+  city: string;
+  center: GeoCoordinate;
+  bounds?: [number, number][];
+  radiusMeters: number;
+  zoom: number;
+  description: string;
+  securityPostPhone: string;
+  emergencyRadioChannel: string;
+}
+
+export interface EmergencyPhotoSnapshot {
+  dataUrl: string; // Base64 data URL da foto capturada
+  capturedAt: string;
+  source: 'camera_frontal' | 'camera_traseira' | 'camera_automatica' | 'simulacao_evidencia';
+  deviceInfo?: string;
+  latitude?: number;
+  longitude?: number;
+  protocolNumber?: string;
+}
+
 export interface EmergencyContact {
   id: string;
   name: string;
@@ -23,6 +55,7 @@ export interface UserProfile {
   medicalNotes?: string;
   registeredAt: string;
   avatarSeed?: string;
+  preferredCampusId?: UfpbCampusId;
 }
 
 export interface GeoCoordinate {
@@ -36,6 +69,7 @@ export interface GeoCoordinate {
 
 export interface CampusLocation {
   id: string;
+  campusId?: UfpbCampusId;
   name: string;
   code: string;
   category: 'academico' | 'administrativo' | 'seguranca' | 'servico' | 'saude';
@@ -46,6 +80,7 @@ export interface CampusLocation {
 
 export interface SafeZone {
   id: string;
+  campusId?: UfpbCampusId;
   name: string;
   code: string;
   description: string;
@@ -96,6 +131,10 @@ export interface EmergencyAlert {
   createdAt: string;
   updatedAt: string;
   
+  // Identificação do Campus
+  campusId?: UfpbCampusId;
+  campusName?: string;
+
   // Localização e Rastreamento
   location: GeoCoordinate;
   locationName: string;
@@ -109,6 +148,9 @@ export interface EmergencyAlert {
   // Rota Histórica registrada no momento do acionamento
   userRouteHistory?: BreadcrumbPoint[];
   
+  // Evidência Fotográfica do momento do acionamento
+  photoSnapshot?: EmergencyPhotoSnapshot;
+
   // Notificações SMS aos contatos
   smsNotificationsSent?: SmsNotification[];
   
@@ -122,6 +164,7 @@ export interface EmergencyAlert {
 
 export interface SecurityPatrolUnit {
   id: string;
+  campusId?: UfpbCampusId;
   name: string;
   code: string;
   type: 'viatura' | 'motopatrulha' | 'ronda_a_pe' | 'posto_fixo';

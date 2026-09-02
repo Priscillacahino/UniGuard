@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
-import { CAMPUS_LOCATIONS, CAMPUS_SAFE_ZONES, UFPB_CAMPUS_BOUNDS, UFPB_CAMPUS_CENTER } from '../data/ufpbData';
-import { BreadcrumbPoint, EmergencyAlert, GeoCoordinate, SecurityPatrolUnit, SafeZone } from '../types';
+import { CAMPUS_LOCATIONS, CAMPUS_SAFE_ZONES, UFPB_CAMPI } from '../data/ufpbData';
+import { BreadcrumbPoint, EmergencyAlert, GeoCoordinate, SecurityPatrolUnit, SafeZone, UfpbCampusId } from '../types';
+import { getCampusById } from '../utils/geo';
 
 interface CampusMapProps {
   userCoordinate: GeoCoordinate;
@@ -17,6 +18,7 @@ interface CampusMapProps {
   safeZones?: SafeZone[];
   showSafeZones?: boolean;
   showBreadcrumbs?: boolean;
+  selectedCampusId?: UfpbCampusId;
 }
 
 export const CampusMap: React.FC<CampusMapProps> = ({
@@ -33,20 +35,24 @@ export const CampusMap: React.FC<CampusMapProps> = ({
   safeZones = CAMPUS_SAFE_ZONES,
   showSafeZones = true,
   showBreadcrumbs = true,
+  selectedCampusId = 'campus_1_joao_pessoa',
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const boundsLayerRef = useRef<L.LayerGroup | null>(null);
 
-  // Inicializar o mapa do Leaflet
+  const currentCampus = getCampusById(selectedCampusId);
+
+  // 1. Inicializar o mapa do Leaflet
   useEffect(() => {
     if (!mapContainerRef.current) return;
     if (mapInstanceRef.current) return;
 
     const map = L.map(mapContainerRef.current, {
-      center: [UFPB_CAMPUS_CENTER.lat, UFPB_CAMPUS_CENTER.lng],
-      zoom: 16,
-      minZoom: 14,
+      center: [currentCampus.center.lat, currentCampus.center.lng],
+      zoom: currentCampus.zoom || 16,
+      minZoom: 13,
       maxZoom: 19,
       zoomControl: false,
     });
@@ -61,23 +67,12 @@ export const CampusMap: React.FC<CampusMapProps> = ({
       maxZoom: 19,
     }).addTo(map);
 
-    // Polígono de Limites do Campus I da UFPB
-    const campusPolygon = L.polygon(UFPB_CAMPUS_BOUNDS, {
-      color: '#10b981',
-      weight: 2,
-      fillColor: '#10b981',
-      fillOpacity: 0.06,
-      dashArray: '5, 8',
-    }).addTo(map);
-
-    campusPolygon.bindTooltip('Campus I - UFPB (João Pessoa)', {
-      permanent: false,
-      direction: 'center',
-      className: 'bg-slate-900 text-emerald-400 font-bold px-2 py-1 rounded border border-emerald-500/40 text-xs shadow-lg',
-    });
+    const boundsLayer = L.layerGroup().addTo(map);
+    boundsLayerRef.current = boundsLayer;
 
     const markersLayer = L.layerGroup().addTo(map);
     markersLayerRef.current = markersLayer;
+
     mapInstanceRef.current = map;
 
     return () => {
@@ -86,7 +81,48 @@ export const CampusMap: React.FC<CampusMapProps> = ({
     };
   }, []);
 
-  // Atualizar marcadores, rotas e alertas
+  // 2. Mudar foco do mapa suavemente quando o campus selecionado mudar
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const boundsGroup = boundsLayerRef.current;
+    if (!map || !boundsGroup) return;
+
+    boundsGroup.clearLayers();
+
+    // Redesenhar polígono ou círculo de limites do campus
+    if (currentCampus.bounds && currentCampus.bounds.length >= 3) {
+      const campusPolygon = L.polygon(currentCampus.bounds, {
+        color: '#10b981',
+        weight: 2,
+        fillColor: '#10b981',
+        fillOpacity: 0.07,
+        dashArray: '5, 8',
+      }).addTo(boundsGroup);
+
+      campusPolygon.bindTooltip(`${currentCampus.name}`, {
+        permanent: false,
+        direction: 'center',
+        className: 'bg-slate-900 text-emerald-300 font-bold px-2 py-1 rounded border border-emerald-500/40 text-xs shadow-lg',
+      });
+    } else {
+      // Círculo perimetral se não houver bounds específicos
+      L.circle([currentCampus.center.lat, currentCampus.center.lng], {
+        radius: currentCampus.radiusMeters,
+        color: '#10b981',
+        weight: 1.5,
+        fillColor: '#10b981',
+        fillOpacity: 0.05,
+        dashArray: '4, 6',
+      }).addTo(boundsGroup);
+    }
+
+    // Centrar no campus
+    map.flyTo([currentCampus.center.lat, currentCampus.center.lng], currentCampus.zoom || 16, {
+      duration: 1.2,
+    });
+  }, [selectedCampusId]);
+
+  // 3. Atualizar marcadores, rotas, alertas e viaturas
   useEffect(() => {
     const map = mapInstanceRef.current;
     const layer = markersLayerRef.current;
@@ -94,13 +130,16 @@ export const CampusMap: React.FC<CampusMapProps> = ({
 
     layer.clearLayers();
 
-    // 1. Adicionar Zonas de Segurança (Safe Zones)
-    if (showSafeZones && safeZones) {
-      safeZones.forEach((sz) => {
-        // Círculo de cobertura da Zona Segura
+    // 1. Zonas de Segurança do Campus Selecionado
+    const campusZones = safeZones.filter(
+      (sz) => !sz.campusId || sz.campusId === selectedCampusId
+    );
+
+    if (showSafeZones && campusZones) {
+      campusZones.forEach((sz) => {
         const zoneCircle = L.circle([sz.center.lat, sz.center.lng], {
           radius: sz.radiusMeters,
-          color: '#059669', // Emerald 600
+          color: '#059669',
           fillColor: '#10b981',
           fillOpacity: 0.14,
           weight: 1.5,
@@ -138,9 +177,6 @@ export const CampusMap: React.FC<CampusMapProps> = ({
             <div class="mt-2 text-[10px] text-slate-700">
               <span class="font-bold text-slate-900">Vigilantes Ativos:</span> ${sz.activeGuardsCount} guardas
             </div>
-            <div class="mt-1 flex flex-wrap gap-1">
-              ${sz.securityFeatures.map(f => `<span class="bg-slate-100 text-slate-700 text-[9px] px-1 py-0.5 rounded">${f}</span>`).join('')}
-            </div>
           </div>
         `);
 
@@ -149,8 +185,12 @@ export const CampusMap: React.FC<CampusMapProps> = ({
       });
     }
 
-    // 2. Adicionar Pontos de Referência da UFPB
-    CAMPUS_LOCATIONS.forEach((loc) => {
+    // 2. Pontos de Referência filtrados pelo campus
+    const campusLocations = CAMPUS_LOCATIONS.filter(
+      (loc) => !loc.campusId || loc.campusId === selectedCampusId
+    );
+
+    campusLocations.forEach((loc) => {
       let iconColor = '#3b82f6';
       let iconBg = '#1e293b';
       let tag = '🏛️';
@@ -191,7 +231,7 @@ export const CampusMap: React.FC<CampusMapProps> = ({
       layer.addLayer(poiMarker);
     });
 
-    // 3. Traçar Linha de Rastro/Breadcrumb (Histórico de deslocamento) com marcadores de pontos
+    // 3. Breadcrumbs do usuário
     if (showBreadcrumbs && breadcrumbs.length > 1) {
       const lineCoords: [number, number][] = breadcrumbs.map((b) => [b.coordinate.lat, b.coordinate.lng]);
       const breadcrumbPolyline = L.polyline(lineCoords, {
@@ -202,9 +242,8 @@ export const CampusMap: React.FC<CampusMapProps> = ({
       });
       layer.addLayer(breadcrumbPolyline);
 
-      // Adicionar pequenos pontos nos breadcrumbs intermediários
       breadcrumbs.forEach((pt, idx) => {
-        if (idx === breadcrumbs.length - 1) return; // Posição atual tratada separadamente
+        if (idx === breadcrumbs.length - 1) return;
         const isPointInSafe = pt.isInSafeZone;
         const ptIcon = L.divIcon({
           className: 'custom-breadcrumb-dot',
@@ -224,7 +263,7 @@ export const CampusMap: React.FC<CampusMapProps> = ({
       });
     }
 
-    // 4. Marcador da Posição do Usuário
+    // 4. Marcador do Usuário
     const userPos = userSignalLost && lastKnownCoordinate ? lastKnownCoordinate : userCoordinate;
     const isInside = isInsideCampus;
 
@@ -240,7 +279,7 @@ export const CampusMap: React.FC<CampusMapProps> = ({
                 <span style="font-size: 14px;">⚠️</span>
               </div>
               <div class="absolute -bottom-6 bg-slate-950/90 text-amber-300 font-bold text-[9px] px-1.5 py-0.5 rounded border border-amber-500/40 shadow whitespace-nowrap">
-                Última Localização Conhecida
+                Última Localização
               </div>
             `
               : `
@@ -248,8 +287,8 @@ export const CampusMap: React.FC<CampusMapProps> = ({
               <div class="w-7 h-7 rounded-full ${isInside ? 'bg-blue-600 border-2 border-blue-200' : 'bg-rose-600 border-2 border-rose-200'} text-white flex items-center justify-center text-xs shadow-xl shadow-blue-950/60 font-bold">
                 📍
               </div>
-              <div class="absolute -bottom-6 bg-slate-950/90 ${isInside ? 'text-blue-300 border-blue-500/40' : 'text-rose-300 border-rose-500/40'} font-bold text-[9px] px-1.5 py-0.5 rounded border shadow whitespace-nowrap">
-                Você
+              <div class="absolute -bottom-5 bg-slate-900 text-white font-bold text-[9px] px-1.5 py-0.5 rounded border border-slate-700 shadow whitespace-nowrap">
+                Você Está Aqui
               </div>
             `
           }
@@ -262,60 +301,41 @@ export const CampusMap: React.FC<CampusMapProps> = ({
     const userMarker = L.marker([userPos.lat, userPos.lng], { icon: userIcon, zIndexOffset: 1000 });
     userMarker.bindPopup(`
       <div class="text-xs p-1 text-slate-900 font-sans">
-        <div class="font-bold text-slate-900 flex items-center gap-1">
-          ${userSignalLost ? '⚠️ Última Localização Conhecida' : '📍 Sua Localização Atual'}
+        <div class="font-extrabold ${userSignalLost ? 'text-amber-800' : 'text-blue-800'}">
+          ${userSignalLost ? '⚠️ SINAL INTERROMPIDO' : '📍 Minha Localização Atual'}
         </div>
-        <div class="text-[11px] text-slate-600 mt-1">
+        <div class="text-[11px] text-slate-600 mt-1 font-mono">
           Lat: ${userPos.lat.toFixed(5)}, Lng: ${userPos.lng.toFixed(5)}
         </div>
-        <div class="text-[10px] ${userSignalLost ? 'text-amber-700' : isInside ? 'text-emerald-700' : 'text-rose-700'} font-semibold mt-1">
-          ${userSignalLost ? 'Sinal Interrompido - Ponto de Referência' : isInside ? 'Dentro do Campus UFPB' : 'Fora dos limites da UFPB'}
+        <div class="text-[10px] ${isInside ? 'text-emerald-700' : 'text-rose-700'} font-bold mt-1">
+          ${isInside ? '✓ Dentro do Perímetro do Campus' : '⚠️ Fora dos limites da UFPB'}
         </div>
       </div>
     `);
     layer.addLayer(userMarker);
 
-    // Círculo de precisão para a última localização
-    if (userPos.accuracy) {
-      const accuracyCircle = L.circle([userPos.lat, userPos.lng], {
-        radius: Math.max(userPos.accuracy, 15),
-        color: userSignalLost ? '#f59e0b' : '#3b82f6',
-        fillColor: userSignalLost ? '#f59e0b' : '#3b82f6',
-        fillOpacity: 0.12,
-        weight: 1,
-      });
-      layer.addLayer(accuracyCircle);
-    }
-
-    // 5. Marcadores de Alertas Ativos (SOS)
+    // 5. Marcadores de Alertas Ativos
     activeAlerts.forEach((alert) => {
       const isSelected = selectedAlertId === alert.id;
-      const isSignalLost = alert.signalLost;
-
-      let badgeBg = '#dc2626'; // Vermelho SOS
-      let badgeLabel = 'SOS ATIVO';
-
-      if (alert.status === 'em_deslocamento') {
-        badgeBg = '#ea580c'; // Laranja
-        badgeLabel = 'EM ATENDIMENTO';
-      } else if (alert.status === 'no_local') {
-        badgeBg = '#0284c7'; // Azul
-        badgeLabel = 'VIATURA NO LOCAL';
-      } else if (alert.status === 'resolvido') {
-        badgeBg = '#16a34a'; // Verde
-        badgeLabel = 'RESOLVIDO';
-      }
+      const isPending = alert.status === 'pendente';
+      const hasPhoto = !!alert.photoSnapshot;
 
       const alertIcon = L.divIcon({
         className: 'custom-sos-marker',
         html: `
-          <div class="relative flex items-center justify-center w-12 h-12 -ml-6 -mt-6 cursor-pointer">
-            <div class="absolute w-12 h-12 rounded-full" style="background-color: ${badgeBg}; opacity: 0.35; animation: ping 1.2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
-            <div class="w-9 h-9 rounded-full flex items-center justify-center text-white shadow-2xl border-2 ${isSelected ? 'border-yellow-300 scale-125' : 'border-white'}" style="background-color: ${badgeBg};">
-              <span class="text-xs font-black">SOS</span>
+          <div class="relative flex items-center justify-center w-12 h-12 -ml-6 -mt-6 cursor-pointer group">
+            <div class="absolute w-12 h-12 rounded-full ${isPending ? 'bg-red-500/40 animate-ping' : 'bg-amber-500/30'}"></div>
+            <div class="w-9 h-9 rounded-full ${
+              isSelected
+                ? 'bg-red-700 ring-4 ring-red-300 shadow-2xl scale-110'
+                : isPending
+                ? 'bg-red-600 border-2 border-white shadow-xl'
+                : 'bg-amber-600 border-2 border-white shadow-xl'
+            } text-white flex items-center justify-center text-sm font-black transition-transform">
+              ${hasPhoto ? '📸' : '🚨'}
             </div>
-            <div class="absolute -bottom-6 text-[9px] font-bold px-1.5 py-0.5 rounded shadow whitespace-nowrap text-white" style="background-color: ${badgeBg};">
-              ${isSignalLost ? '⚡ ÚLTIMO PONTO' : badgeLabel}
+            <div class="absolute -top-4 bg-red-950 text-red-200 font-bold text-[8px] px-1.5 py-0.5 rounded shadow whitespace-nowrap border border-red-500/50">
+              ${alert.protocolNumber} ${hasPhoto ? '• FOTO' : ''}
             </div>
           </div>
         `,
@@ -323,145 +343,89 @@ export const CampusMap: React.FC<CampusMapProps> = ({
         iconAnchor: [24, 24],
       });
 
-      const alertMarker = L.marker([alert.location.lat, alert.location.lng], {
-        icon: alertIcon,
-        zIndexOffset: 2000,
-      });
-
+      const alertMarker = L.marker([alert.location.lat, alert.location.lng], { icon: alertIcon, zIndexOffset: 900 });
       alertMarker.on('click', () => {
         if (onSelectAlert) onSelectAlert(alert);
       });
 
-      alertMarker.bindPopup(`
-        <div class="text-xs p-1 text-slate-900 font-sans min-w-[180px]">
-          <div class="font-bold text-red-600 flex items-center justify-between">
-            <span>🚨 ${alert.protocolNumber}</span>
-            <span class="text-[9px] bg-slate-100 text-slate-700 px-1 py-0.5 rounded">${alert.userProfile.role.toUpperCase()}</span>
-          </div>
-          <div class="font-semibold text-slate-900 mt-1">${alert.userProfile.name}</div>
-          <div class="text-[11px] text-slate-600">${alert.locationName}</div>
-          ${alert.isInSafeZone ? `<div class="text-[10px] text-emerald-800 bg-emerald-50 px-1 py-0.5 rounded font-semibold mt-1">🛡️ Dentro de Zona Segura</div>` : ''}
-          ${alert.customNote ? `<div class="text-[11px] bg-red-50 text-red-900 p-1 rounded mt-1 border border-red-200 italic">"${alert.customNote}"</div>` : ''}
-          ${isSignalLost ? `<div class="text-[10px] text-amber-700 font-bold mt-1 bg-amber-50 p-1 rounded border border-amber-200">⚠️ Sinal Perdido - Última posição conhecida</div>` : ''}
-        </div>
-      `);
-
       layer.addLayer(alertMarker);
     });
 
-    // 6. Marcadores de Unidades de Segurança / Rondas
-    securityUnits.forEach((unit) => {
-      let iconSymbol = '🚔';
-      if (unit.type === 'motopatrulha') iconSymbol = '🏍️';
-      if (unit.type === 'posto_fixo') iconSymbol = '🏢';
-      if (unit.type === 'ronda_a_pe') iconSymbol = '👮';
+    // 6. Marcadores das Viaturas & Rondas de Segurança do Campus
+    const campusUnits = securityUnits.filter(
+      (u) => !u.campusId || u.campusId === selectedCampusId
+    );
 
+    campusUnits.forEach((unit) => {
+      const isAvailable = unit.status === 'disponivel';
       const unitIcon = L.divIcon({
         className: 'custom-patrol-marker',
         html: `
-          <div class="relative flex items-center justify-center w-8 h-8 -ml-4 -mt-4 cursor-pointer">
-            <div class="w-7 h-7 rounded-lg bg-emerald-950 border border-emerald-400 text-white flex items-center justify-center text-xs shadow-lg">
-              ${iconSymbol}
+          <div class="relative flex items-center justify-center w-9 h-9 -ml-4.5 -mt-4.5 cursor-pointer">
+            <div class="w-7 h-7 rounded-xl ${
+              isAvailable ? 'bg-[#003d71] border-2 border-blue-200' : 'bg-amber-600 border-2 border-amber-200'
+            } text-white flex items-center justify-center text-xs shadow-lg shadow-blue-950/40">
+              ${unit.type === 'viatura' ? '🚔' : unit.type === 'motopatrulha' ? '🏍️' : '👮'}
             </div>
-            <div class="absolute -bottom-5 bg-emerald-900 text-emerald-200 font-semibold text-[8px] px-1 py-0.2 rounded whitespace-nowrap border border-emerald-500/30">
+            <div class="absolute -bottom-4 bg-slate-900 text-blue-200 font-bold text-[8px] px-1 py-0.2 rounded border border-blue-400/40 whitespace-nowrap">
               ${unit.code}
             </div>
           </div>
         `,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
       });
 
-      const unitMarker = L.marker([unit.coordinate.lat, unit.coordinate.lng], {
-        icon: unitIcon,
-        zIndexOffset: 500,
-      });
-
+      const unitMarker = L.marker([unit.coordinate.lat, unit.coordinate.lng], { icon: unitIcon, zIndexOffset: 800 });
       unitMarker.bindPopup(`
         <div class="text-xs p-1 text-slate-900 font-sans">
-          <div class="font-bold text-emerald-800 flex items-center gap-1">${unit.name} (${unit.code})</div>
-          <div class="text-[11px] text-slate-600 mt-0.5">Setor: ${unit.sector}</div>
-          <div class="text-[11px] text-slate-700 font-medium">Equipe: ${unit.officers.join(', ')}</div>
-          <div class="text-[10px] text-slate-500 mt-1">Rádio: ${unit.contactRadio}</div>
+          <div class="font-bold text-[#003d71]">${unit.name} (${unit.code})</div>
+          <div class="text-[10px] font-semibold text-slate-500">${unit.sector}</div>
+          <div class="text-[10px] mt-1 text-slate-700">Rádio: ${unit.contactRadio}</div>
+          <div class="text-[9px] mt-1 px-1.5 py-0.5 rounded font-bold ${
+            isAvailable ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+          }">
+            ${isAvailable ? 'Disponível para Chamado' : 'Em Atendimento'}
+          </div>
         </div>
       `);
-
       layer.addLayer(unitMarker);
     });
+  }, [
+    userCoordinate,
+    userSignalLost,
+    lastKnownCoordinate,
+    activeAlerts,
+    securityUnits,
+    selectedAlertId,
+    breadcrumbs,
+    safeZones,
+    showSafeZones,
+    showBreadcrumbs,
+    isInsideCampus,
+    selectedCampusId,
+  ]);
 
-    // Se houver um alerta selecionado, centrar nele suavemente
-    if (selectedAlertId) {
-      const selAlert = activeAlerts.find((a) => a.id === selectedAlertId);
-      if (selAlert) {
-        map.panTo([selAlert.location.lat, selAlert.location.lng], { animate: true, duration: 0.8 });
-      }
+  // Se um alerta for selecionado, centralizar nele com zoom suave
+  useEffect(() => {
+    if (!selectedAlertId) return;
+    const alert = activeAlerts.find((a) => a.id === selectedAlertId);
+    if (alert && mapInstanceRef.current) {
+      mapInstanceRef.current.flyTo([alert.location.lat, alert.location.lng], 17, {
+        duration: 1.0,
+      });
     }
-  }, [userCoordinate, userSignalLost, lastKnownCoordinate, activeAlerts, securityUnits, selectedAlertId, breadcrumbs, isInsideCampus, safeZones, showSafeZones, showBreadcrumbs]);
-
-  // Função para recentralizar o mapa
-  const handleRecenter = (target: 'user' | 'campus') => {
-    const map = mapInstanceRef.current;
-    if (!map) return;
-    if (target === 'user') {
-      const pos = userSignalLost && lastKnownCoordinate ? lastKnownCoordinate : userCoordinate;
-      map.flyTo([pos.lat, pos.lng], 17, { duration: 1 });
-    } else {
-      map.flyTo([UFPB_CAMPUS_CENTER.lat, UFPB_CAMPUS_CENTER.lng], 16, { duration: 1 });
-    }
-  };
+  }, [selectedAlertId, activeAlerts]);
 
   return (
-    <div className="relative w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-100">
-      {/* Contêiner Leaflet */}
-      <div ref={mapContainerRef} className={`w-full ${heightClass} z-10`} />
-
-      {/* Barra de Controles Rápidos no Mapa */}
-      <div className="absolute top-3 left-3 z-20 flex flex-wrap gap-2">
-        <button
-          onClick={() => handleRecenter('user')}
-          className="px-3 py-1.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200 text-slate-800 text-xs font-bold shadow-xs backdrop-blur-sm flex items-center gap-1.5 transition-all cursor-pointer"
-        >
-          <span>📍</span>
-          <span>Centrar em Mim</span>
-        </button>
-
-        <button
-          onClick={() => handleRecenter('campus')}
-          className="px-3 py-1.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200 text-slate-800 text-xs font-bold shadow-xs backdrop-blur-sm flex items-center gap-1.5 transition-all cursor-pointer"
-        >
-          <span>🏛️</span>
-          <span>Campus I UFPB</span>
-        </button>
-      </div>
-
-      {/* Legenda Informativa Flutuante */}
-      <div className="absolute bottom-2 left-2 z-20 hidden sm:flex items-center gap-3 px-3.5 py-1.5 rounded-xl bg-white/95 border border-slate-200 text-[11px] text-slate-700 backdrop-blur-md shadow-xs font-medium">
-        <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
-          <span>Limite UFPB</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block border border-emerald-300"></span>
-          <span>Zona Segura</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#003d71] inline-block"></span>
-          <span>Você / Rastro</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-red-600 inline-block animate-pulse"></span>
-          <span>SOS Ativo</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
-          <span>Último Sinal</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-700 inline-block"></span>
-          <span>Ronda UFPB</span>
-        </div>
+    <div className={`relative w-full ${heightClass} rounded-2xl overflow-hidden border border-slate-200 shadow-sm z-0`}>
+      <div ref={mapContainerRef} className="w-full h-full" />
+      
+      {/* Indicador de Campus Atual sobre o Mapa */}
+      <div className="absolute top-3 left-3 z-[400] bg-white/95 backdrop-blur-sm border border-slate-200 rounded-xl px-2.5 py-1 text-[11px] font-bold text-slate-800 shadow-sm flex items-center gap-1.5 pointer-events-none">
+        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+        <span>{currentCampus.shortName}</span>
       </div>
     </div>
   );
 };
-

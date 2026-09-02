@@ -1,5 +1,5 @@
-import { CAMPUS_LOCATIONS, CAMPUS_SAFE_ZONES, UFPB_CAMPUS_BOUNDS } from '../data/ufpbData';
-import { CampusLocation, GeoCoordinate, SafeZone } from '../types';
+import { CAMPUS_LOCATIONS, CAMPUS_SAFE_ZONES, UFPB_CAMPI } from '../data/ufpbData';
+import { CampusLocation, GeoCoordinate, SafeZone, UfpbCampusId, UfpbCampusInfo } from '../types';
 
 /**
  * Calcula a distância em metros entre duas coordenadas geográficas (Fórmula de Haversine)
@@ -20,10 +20,27 @@ export function calculateDistance(coord1: GeoCoordinate, coord2: GeoCoordinate):
 }
 
 /**
+ * Retorna os dados do campus pelo ID ou o Campus I como padrão
+ */
+export function getCampusById(campusId?: string | UfpbCampusId): UfpbCampusInfo {
+  if (!campusId) return UFPB_CAMPI[0];
+  const found = UFPB_CAMPI.find((c) => c.id === campusId);
+  return found || UFPB_CAMPI[0];
+}
+
+/**
  * Verifica se um ponto geográfico está dentro de alguma Zona de Segurança do Campus
  */
-export function checkPointInSafeZone(point: GeoCoordinate, safeZones: SafeZone[] = CAMPUS_SAFE_ZONES): { inZone: boolean; zone: SafeZone | null; distanceToCenter: number } {
-  for (const zone of safeZones) {
+export function checkPointInSafeZone(
+  point: GeoCoordinate,
+  safeZones: SafeZone[] = CAMPUS_SAFE_ZONES,
+  campusId?: UfpbCampusId
+): { inZone: boolean; zone: SafeZone | null; distanceToCenter: number } {
+  const filteredZones = campusId
+    ? safeZones.filter((z) => !z.campusId || z.campusId === campusId)
+    : safeZones;
+
+  for (const zone of filteredZones) {
     const dist = calculateDistance(point, zone.center);
     if (dist <= zone.radiusMeters) {
       return { inZone: true, zone, distanceToCenter: dist };
@@ -33,9 +50,34 @@ export function checkPointInSafeZone(point: GeoCoordinate, safeZones: SafeZone[]
 }
 
 /**
- * Verifica se um ponto geográfico está dentro do polígono de limites do Campus I da UFPB (Ray-Casting Algorithm)
+ * Verifica se um ponto geográfico está dentro do polígono de limites do Campus (Ray-Casting Algorithm)
+ * ou dentro do raio de tolerância do centro do campus.
  */
-export function isPointInsideCampus(point: GeoCoordinate, polygon: [number, number][] = UFPB_CAMPUS_BOUNDS): boolean {
+export function isPointInsideCampus(
+  point: GeoCoordinate,
+  campusOrBounds?: [number, number][] | UfpbCampusId
+): boolean {
+  let polygon: [number, number][] | undefined;
+  let campusInfo: UfpbCampusInfo | undefined;
+
+  if (typeof campusOrBounds === 'string') {
+    campusInfo = getCampusById(campusOrBounds);
+    polygon = campusInfo.bounds;
+  } else if (Array.isArray(campusOrBounds)) {
+    polygon = campusOrBounds;
+  } else {
+    campusInfo = UFPB_CAMPI[0];
+    polygon = campusInfo.bounds;
+  }
+
+  if (!polygon || polygon.length < 3) {
+    if (campusInfo) {
+      const dist = calculateDistance(point, campusInfo.center);
+      return dist <= campusInfo.radiusMeters;
+    }
+    return true;
+  }
+
   let inside = false;
   const x = point.lat;
   const y = point.lng;
@@ -50,17 +92,33 @@ export function isPointInsideCampus(point: GeoCoordinate, polygon: [number, numb
     if (intersect) inside = !inside;
   }
 
+  // Se o ponto estiver bem próximo do centro mesmo no limiar do polígono
+  if (!inside && campusInfo) {
+    const dist = calculateDistance(point, campusInfo.center);
+    if (dist <= campusInfo.radiusMeters * 0.85) {
+      return true;
+    }
+  }
+
   return inside;
 }
 
 /**
- * Encontra a localidade ou centro acadêmico mais próximo dentro da UFPB
+ * Encontra a localidade ou centro acadêmico mais próximo dentro da UFPB (opcionalmente filtrado por campus)
  */
-export function findNearestCampusLocation(point: GeoCoordinate): { location: CampusLocation; distance: number } {
-  let nearest = CAMPUS_LOCATIONS[0];
+export function findNearestCampusLocation(
+  point: GeoCoordinate,
+  campusId?: UfpbCampusId
+): { location: CampusLocation; distance: number } {
+  const pool = campusId
+    ? CAMPUS_LOCATIONS.filter((l) => !l.campusId || l.campusId === campusId)
+    : CAMPUS_LOCATIONS;
+
+  const validPool = pool.length > 0 ? pool : CAMPUS_LOCATIONS;
+  let nearest = validPool[0];
   let minDistance = calculateDistance(point, nearest.coordinate);
 
-  for (const loc of CAMPUS_LOCATIONS) {
+  for (const loc of validPool) {
     const d = calculateDistance(point, loc.coordinate);
     if (d < minDistance) {
       minDistance = d;
@@ -89,4 +147,3 @@ export function generateProtocolNumber(): string {
   const randomNum = Math.floor(1000 + Math.random() * 9000);
   return `SOS-${year}-${randomNum}`;
 }
-
