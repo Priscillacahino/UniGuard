@@ -38,6 +38,47 @@ Registro de histórico completo para medição do Tempo Médio de Resposta (TMR)
 
 ### 🔀 Fluxograma 
 
+```mermaid
+graph TD
+    %% Subgráfico da Infraestrutura de Deploy do App
+    subgraph Infraestrutura e Deploy do WebApp
+        A[✨ Google AI Studio] -->|Sincronizar Codigo| B(💻 GitHub: Guardi-o-UFPB)
+        B -->|Deploy Continuo| C[▲ Servidor Vercel]
+        Env[🔑 Variaveis de Ambiente] -->|Oculta Credencial| Key(🔒 GEMINI_API_KEY)
+        Key -->|Injeta no Servidor| C
+        C -->|Gera Link de Teste| WebApp[🔗 guardi-o-ufpb.vercel.app]
+    end
 
+    %% Integração da Aplicação com a Lógica de Segurança
+    WebApp -->|Executa no Navegador| Tracking
+
+    %% Subgráfico do Motor de Rastreamento (Logica Interna)
+    subgraph Motor de Seguranca do Guardiao
+        Tracking[Rastreamento Periodico de Rota] --> SignalLoss{Perda de Sinal GPS / Rede?}
+        
+        %% Fluxo de Sucesso (Sinal OK)
+        SignalLoss -- Nao --> RecordPoint[Grava Ponto no Historico de Deslocamento]
+        RecordPoint --> Tracking
+
+        %% Fluxo de Falha (Sem Sinal)
+        SignalLoss -- Sim --> CheckSafeZone{Esta em Zona Segura com Supressao?}
+        
+        %% Validações de Zona Segura
+        CheckSafeZone -- Sim --> SafeSuppression[Registra Status Silencioso em Area Protegida]
+        SafeSuppression --> EndSafe[Encerrar Ocorrencia]
+        
+        CheckSafeZone -- Nao --> FixCoordinate[Congela Ultima Localizacao Conhecida]
+        
+        %% Ações de Alerta e Central
+        FixCoordinate --> UserNotice[Exibe Banner Amarelo de Alerta ao Usuario]
+        FixCoordinate --> CentralFlag[Marca Alerta na Central: Sinal Perdido - Direcionar Busca]
+        
+        CentralFlag --> CentralResolve{Busca Concluida?}
+        CentralResolve -- Sim --> EndSafe
+        
+        %% Fim do Ciclo
+        EndSafe --> Fim([Fim do Ciclo de Rota])
+    end
+```
 
 
