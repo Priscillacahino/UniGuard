@@ -20,7 +20,7 @@ Utilizar tecnologia e geolocalização como apoio à segurança no ambiente univ
 
 ### 📝 Resumo das Etapas Chave do Sistema
 
-O **Guardião UFPB** opera por meio de um ciclo integrado de proteção comunitária, resposta tática rápida e preservação probatória, estruturado em **7 fases principais**:
+O **UniGuard** opera por meio de um ciclo integrado de proteção comunitária, resposta tática rápida e preservação probatória, estruturado em **7 fases principais**:
 
 1. **Acesso, Identificação e Autorizações**
    - **Ator:** Discente, Docente ou Servidor Técnico-Administrativo.
