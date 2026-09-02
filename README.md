@@ -32,7 +32,12 @@ A central recebe o alerta de forma instantânea com som de sirene, localização
 **Ciclo de Resolução e Auditoria:**
 Registro de histórico completo para medição do Tempo Médio de Resposta (TMR) e emissão de relatórios operacionais para a gestão de segurança da universidade.
 
-**Atualmente, o Guardião UFPB é um protótipo conceitual. Os dados e localizações apresentados são simulados e não representam um sistema oficial da UFPB.**
+
+> [!CAUTION]
+> **Aviso Importante:** Atualmente, o Guardião UFPB é um protótipo conceitual. Os dados e localizações apresentados são simulados e não representam um sistema oficial da UFPB.
+
+
+
 
 
 
