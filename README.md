@@ -3,7 +3,7 @@
 https://uniguardvercelapp.vercel.app/
 
 
-O **Guardião UFPB** é um projeto em desenvolvimento com o objetivo de contribuir para a segurança de estudantes e servidores dentro do campus da Universidade Federal da Paraíba.
+O **UniGuard** é um projeto em desenvolvimento com o objetivo de contribuir para a segurança de estudantes e servidores dentro do campus da Universidade Federal da Paraíba.
 
 Na primeira utilização, o usuário realiza sua identificação e autoriza o acesso à localização do dispositivo. A partir dessa autorização, o sistema pode utilizar a geolocalização para identificar a presença do usuário dentro da área do campus.
 
