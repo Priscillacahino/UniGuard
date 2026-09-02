@@ -20,17 +20,37 @@ Utilizar tecnologia e geolocalização como apoio à segurança no ambiente univ
 
 ### 📝 Resumo das Etapas Chave do Sistema
 
-**Camada de Identificação & Contatos:**
-O usuário registra seu perfil institucional (Aluno, Professor ou Técnico) e seus contatos de confiança para SMS automático.
+O **Guardião UFPB** opera por meio de um ciclo integrado de proteção comunitária, resposta tática rápida e preservação probatória, estruturado em **7 fases principais**:
 
-**Detecção Geográfica Inteligente (Geofencing & Zonas Seguras):**
-O sistema identifica se a posição está no Campus I e se encontra-se dentro de pontos críticos ou Zonas Seguras (como Biblioteca Central e Reitoria), adaptando a sensibilidade do botão de pânico para evitar disparos falsos.
+1. **Acesso, Identificação e Autorizações**
+   - **Ator:** Discente, Docente ou Servidor Técnico-Administrativo.
+   - **Operação:** Autenticação via credenciais institucionais SIGAA/UFPB (`@academicos.ufpb.br` ou `@ufpb.br`), cadastro de contatos de confiança para notificação de emergência e concessão das permissões de geolocalização e câmera. Suporte a fluxo de redefinição de senha e seleção do campus de atuação (João Pessoa, Areia, Bananeiras, Litoral Norte ou Mangabeira).
 
-**Mecanismo de Despacho & Rastreamento:**
-A central recebe o alerta de forma instantânea com som de sirene, localização georreferenciada e o rastro de deslocamento recente do usuário.
+2. **Monitoramento Georreferenciado Preventivo & Zonas Seguras**
+   - **Ator:** Módulo de Telemetria GPS & Algoritmo de Geofencing.
+   - **Operação:** Rastreamento do rastro de deslocamento (*breadcrumbs*) e identificação contínua de proximidade com **Zonas Seguras** (guaritas, postos da segurança universitária, bibliotecas centrais e prédios administrativos iluminados). Fixação automática da *Última Localização Conhecida* em caso de queda de sinal ou bateria fraca.
 
-**Ciclo de Resolução e Auditoria:**
-Registro de histórico completo para medição do Tempo Médio de Resposta (TMR) e emissão de relatórios operacionais para a gestão de segurança da universidade.
+3. **Gatilho de Emergência (Botão de Pânico SOS Inteligente)**
+   - **Ator:** Vítima ou Usuário em Situação de Risco.
+   - **Operação:** Disparo imediato com toque único ou trava de segurança de 2 segundos quando em Zonas Seguras (evitando falsos acionamentos em áreas de grande fluxo). Opção de categorização rápida do incidente (ameaça física, perseguição, emergência médica, assédio ou iluminação deficiente).
+
+4. **Captura Fotográfica Autorizada & Carimbo Forense**
+   - **Ator:** Câmera do Dispositivo & Sensores Locais.
+   - **Operação:** No instante do acionamento, a câmera do aparelho captura uma foto instantânea do entorno/ocorrência. A imagem recebe um selo digital inviolável com: número de protocolo único, coordenadas geográficas (latitude/longitude), data/hora sincronizada e nível de bateria do dispositivo. Em paralelo, é disparado SMS automático aos contatos de emergência cadastrados.
+
+5. **Transmissão Tática & Alerta Prioritário na Central**
+   - **Ator:** Rede de Comunicação & Central de Segurança UFPB.
+   - **Operação:** O chamado é transmitido com prioridade máxima para a tela de comando dos operadores de segurança do campus correspondente, acionando alarme sonoro, mapa tático em tempo real, visualização da foto e telemetria da vítima.
+
+6. **Despacho Operacional & Resgate no Local**
+   - **Ator:** Viaturas, Motopatrulhas e Vigilantes Patrimoniais.
+   - **Operação:** A viatura ou patrulha mais próxima é despachada com a melhor rota viária até as coordenadas do chamado. O operador e os agentes em campo monitoram o status do atendimento (*Despachado* ➔ *A Caminho* ➔ *No Local* ➔ *Atendido*), com linha direta de contato com a vítima e com órgãos externos (Polícia Militar 190 e SAMU 192, se necessário).
+
+7. **Auditoria Forense & Inteligência Preventiva**
+   - **Ator:** Comissão de Segurança Universitária e Gestão de Campi.
+   - **Operação:** Arquivamento do histórico do chamado com protocolo e logs inalteráveis, viabilizando a exportação de relatórios para inquéritos e a geração de mapas de calor para subsidiar reforços na iluminação pública e na ronda preventiva dos campi.
+
+
 
 
 > [!CAUTION]
@@ -41,49 +61,64 @@ Registro de histórico completo para medição do Tempo Médio de Resposta (TMR)
 
 
 
-### 🔀 Fluxograma 
+
+
+
+
+## 🔀 Fluxograma Operacional
 
 ```mermaid
-graph TD
-    %% Subgráfico da Infraestrutura de Deploy do App
-    subgraph Infraestrutura e Deploy do WebApp
-        A[✨ Google AI Studio] -->|Sincronizar Codigo| B(💻 GitHub: Guardi-o-UFPB)
-        B -->|Deploy Continuo| C[▲ Servidor Vercel]
-        Env[🔑 Variaveis de Ambiente] -->|Oculta Credencial| Key(🔒 GEMINI_API_KEY)
-        Key -->|Injeta no Servidor| C
-        C -->|Gera Link de Teste| WebApp[🔗 guardi-o-ufpb.vercel.app]
-    end
+flowchart TD
+    %% Nós de Início e Autenticação
+    Start([Discente / Usuário no Campus]) --> Auth[1. Login Institucional SIGAA / UFPB]
+    Auth --> Perms[Autoriza Localização GPS & Câmera]
+    Perms --> CampusSelect[Seleciona Campus: JP, Areia, Bananeiras, LN, Mangabeira]
 
-    %% Integração da Aplicação com a Lógica de Segurança
-    WebApp -->|Executa no Navegador| Tracking
+    %% Monitoramento Preventivo
+    CampusSelect --> Monitor[2. Telemetria GPS em Segundo Plano]
+    Monitor --> SafeCheck{Está em Zona Segura?}
+    SafeCheck -- Sim --> SafeMode[Modo Preventivo: Trava de 2s contra falsos alertas]
+    SafeCheck -- Não --> NormalMode[Modo Risco Elevado: Disparo Imediato]
 
-    %% Subgráfico do Motor de Rastreamento (Logica Interna)
-    subgraph Motor de Seguranca do Guardiao
-        Tracking[Rastreamento Periodico de Rota] --> SignalLoss{Perda de Sinal GPS / Rede?}
-        
-        %% Fluxo de Sucesso (Sinal OK)
-        SignalLoss -- Nao --> RecordPoint[Grava Ponto no Historico de Deslocamento]
-        RecordPoint --> Tracking
+    %% Rotas Preventivas
+    NormalMode -.-> SafeRoute[Opção: Traçar Rota Iluminada até Guarita mais Próxima]
 
-        %% Fluxo de Falha (Sem Sinal)
-        SignalLoss -- Sim --> CheckSafeZone{Esta em Zona Segura com Supressao?}
-        
-        %% Validações de Zona Segura
-        CheckSafeZone -- Sim --> SafeSuppression[Registra Status Silencioso em Area Protegida]
-        SafeSuppression --> EndSafe[Encerrar Ocorrencia]
-        
-        CheckSafeZone -- Nao --> FixCoordinate[Congela Ultima Localizacao Conhecida]
-        
-        %% Ações de Alerta e Central
-        FixCoordinate --> UserNotice[Exibe Banner Amarelo de Alerta ao Usuario]
-        FixCoordinate --> CentralFlag[Marca Alerta na Central: Sinal Perdido - Direcionar Busca]
-        
-        CentralFlag --> CentralResolve{Busca Concluida?}
-        CentralResolve -- Sim --> EndSafe
-        
-        %% Fim do Ciclo
-        EndSafe --> Fim([Fim do Ciclo de Rota])
-    end
-```
+    %% Acionamento do SOS
+    SafeMode --> Trigger[3. Acionamento do Botão de Pânico SOS]
+    NormalMode --> Trigger
 
+    %% Captura e Evidência
+    Trigger --> Capture[4. Captura Instantânea da Foto da Câmera]
+    Capture --> Stamp[Carimbo Forense: Protocolo, Lat/Lng, Data/Hora e Bateria]
+    Stamp --> SMS[Envio de SMS com Link de Localização aos Contatos]
+
+    %% Transmissão e Central
+    Stamp --> Transmit[5. Transmissão Prioritária para a Central UFPB]
+    Transmit --> SoundAlert[Sirene Sonora & Notificação no Painel de Segurança]
+    Transmit --> MapPlot[Plotagem no Mapa Tático com Rastro GPS]
+
+    %% Despacho e Resgate
+    MapPlot --> Dispatch[6. Despacho da Viatura / Ronda Mais Próxima]
+    Dispatch --> StatusUpdate{Status do Resgate}
+    StatusUpdate -->|A Caminho| EnRoute[Equipe em Deslocamento com Rota Otimizada]
+    EnRoute -->|No Local| OnScene[Abordagem, Apoio à Vítima e Neutralização do Risco]
+    OnScene --> Resolved[Resgate Concluído / Vítima em Segurança]
+
+    %% Auditoria e Relatório
+    Resolved --> Audit[7. Arquivamento Seguro & Relatório de Ocorrência]
+    Audit --> Heatmap[Alimentação de Dados para Reforço de Iluminação e Ronda]
+    Heatmap --> End([Ocorrência Finalizada])
+
+    %% Estilos Visuais
+    classDef primary fill:#003d71,stroke:#002444,stroke-width:2px,color:#fff;
+    classDef emergency fill:#dc2626,stroke:#991b1b,stroke-width:2px,color:#fff;
+    classDef safe fill:#059669,stroke:#047857,stroke-width:2px,color:#fff;
+    classDef info fill:#2563eb,stroke:#1d4ed8,stroke-width:2px,color:#fff;
+    classDef dark fill:#334155,stroke:#1e293b,stroke-width:2px,color:#fff;
+
+    class Auth,Perms,CampusSelect primary;
+    class Trigger,Capture,Stamp,Transmit,SoundAlert emergency;
+    class SafeCheck,SafeMode,SafeRoute,Resolved safe;
+    class Dispatch,EnRoute,OnScene info;
+    class Audit,Heatmap dark;
 
