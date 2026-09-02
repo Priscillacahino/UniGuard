@@ -32,6 +32,7 @@ import { SecurityDashboard } from './components/SecurityDashboard';
 import { IdentityModal } from './components/IdentityModal';
 import { AboutModal } from './components/AboutModal';
 import { FlowchartModal } from './components/FlowchartModal';
+import { AuthModal } from './components/AuthModal';
 import { Footer } from './components/Footer';
 
 import {
@@ -41,10 +42,20 @@ import {
   Info,
   GitMerge,
   Building2,
+  LogOut,
+  Wifi,
+  WifiOff,
+  User,
+  LogIn,
 } from 'lucide-react';
 
 export default function App() {
-  // 1. Estados Globais do Usuário
+  // 1. Estados Globais do Usuário e Autenticação
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    return localStorage.getItem('guardiao_ufpb_logged_in') !== 'false';
+  });
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
     const saved = localStorage.getItem('guardiao_ufpb_user');
     return saved ? JSON.parse(saved) : DEFAULT_USER_PROFILE;
@@ -54,6 +65,48 @@ export default function App() {
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   const [isFlowchartModalOpen, setIsFlowchartModalOpen] = useState(false);
   const [isFirstTimeOnboarding, setIsFirstTimeOnboarding] = useState(false);
+
+  // Detector de Conexão Online/Offline usando a API nativa do navegador
+  const [isOnline, setIsOnline] = useState<boolean>(() => {
+    return typeof navigator !== 'undefined' ? navigator.onLine : true;
+  });
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      SoundEffects.playSuccess();
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      SoundEffects.playAlertSound();
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  // Handler de Logout do Usuário
+  const handleLogout = () => {
+    SoundEffects.playClick();
+    setIsLoggedIn(false);
+    localStorage.setItem('guardiao_ufpb_logged_in', 'false');
+    setIsAuthModalOpen(true);
+  };
+
+  // Handler de Sucesso de Login
+  const handleLoginSuccess = (profile: UserProfile) => {
+    SoundEffects.playSuccess();
+    setUserProfile(profile);
+    localStorage.setItem('guardiao_ufpb_user', JSON.stringify(profile));
+    localStorage.setItem('guardiao_ufpb_logged_in', 'true');
+    setIsLoggedIn(true);
+    setIsAuthModalOpen(false);
+  };
 
   // 2. Modo da Interface (App do Usuário vs Painel da Segurança)
   const [activeTab, setActiveTab] = useState<'user' | 'security'>('user');
@@ -360,8 +413,40 @@ export default function App() {
             </button>
           </div>
 
-          {/* Botões Auxiliares: Fluxograma e Sobre */}
+          {/* Indicador Visual do Status GPS / Rede (Bolinha Verde / Amarela / Vermelha no topo) */}
           <div className="flex items-center gap-2">
+            {!isOnline ? (
+              <div
+                title="Modo Offline: Sem conexão à internet. Dados retidos no aparelho."
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 border border-red-200 text-red-700 text-xs font-bold animate-pulse"
+              >
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                </span>
+                <span className="hidden sm:inline">Offline</span>
+              </div>
+            ) : userSignalLost ? (
+              <div
+                title="GPS Instável: Última coordenada fixada até retomada do sinal de satélite."
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold"
+              >
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+                </span>
+                <span className="hidden sm:inline">GPS Instável</span>
+              </div>
+            ) : (
+              <div
+                title="GPS & Conexão de Rede operando normalmente em tempo real."
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold"
+              >
+                <span className="inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                <span className="hidden sm:inline">Sinal OK</span>
+              </div>
+            )}
+
             {/* Botão Fluxograma solicitado pelo usuário */}
             <button
               onClick={() => {
@@ -386,10 +471,40 @@ export default function App() {
               <Info className="w-4 h-4 text-[#003d71]" />
               <span className="hidden md:inline">Sobre</span>
             </button>
+
+            {/* Botão de Login / Deslogar no Header */}
+            {isLoggedIn ? (
+              <div className="flex items-center gap-1.5 pl-1.5 border-l border-slate-200">
+                <button
+                  onClick={handleLogout}
+                  title="Encerrar sessão no Guardião UFPB"
+                  className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 border border-slate-200 hover:border-rose-200 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5 text-rose-600" />
+                  <span className="hidden md:inline">Deslogar</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsAuthModalOpen(true)}
+                className="px-3 py-1.5 rounded-xl bg-[#003d71] text-white text-xs font-bold flex items-center gap-1.5 shadow-sm hover:bg-[#002d54] cursor-pointer"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>Entrar</span>
+              </button>
+            )}
           </div>
 
         </div>
       </header>
+
+      {/* Faixa Superior de Aviso se estiver Offline */}
+      {!isOnline && (
+        <div className="bg-amber-600 text-white text-xs px-4 py-2 text-center font-bold flex items-center justify-center gap-2 shadow-xs">
+          <WifiOff className="w-4 h-4 animate-pulse" />
+          <span>Atenção: Modo Offline ativado. Sem conexão com a internet. O histórico e fotos de emergência serão retidos localmente.</span>
+        </div>
+      )}
 
       {/* 2. CONTEÚDO PRINCIPAL (CONDICIONAL POR ABA) */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
@@ -416,6 +531,8 @@ export default function App() {
             setTrackingConfig={setTrackingConfig}
             selectedCampusId={selectedCampusId}
             onSelectCampus={handleSelectCampus}
+            onLogout={handleLogout}
+            isOffline={!isOnline}
           />
         ) : (
           <SecurityDashboard
@@ -434,6 +551,13 @@ export default function App() {
       </main>
 
       {/* 3. MODAIS */}
+      <AuthModal
+        isOpen={!isLoggedIn || isAuthModalOpen}
+        onClose={isLoggedIn ? () => setIsAuthModalOpen(false) : undefined}
+        onLoginSuccess={handleLoginSuccess}
+        currentProfile={userProfile}
+      />
+
       <IdentityModal
         isOpen={isIdentityModalOpen}
         onSave={handleSaveProfile}

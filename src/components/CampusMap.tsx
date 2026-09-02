@@ -19,6 +19,8 @@ interface CampusMapProps {
   showSafeZones?: boolean;
   showBreadcrumbs?: boolean;
   selectedCampusId?: UfpbCampusId;
+  safeRoutePolyline?: GeoCoordinate[] | null;
+  safeRouteDestinationName?: string;
 }
 
 export const CampusMap: React.FC<CampusMapProps> = ({
@@ -36,6 +38,8 @@ export const CampusMap: React.FC<CampusMapProps> = ({
   showSafeZones = true,
   showBreadcrumbs = true,
   selectedCampusId = 'campus_1_joao_pessoa',
+  safeRoutePolyline = null,
+  safeRouteDestinationName = '',
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -391,6 +395,51 @@ export const CampusMap: React.FC<CampusMapProps> = ({
       `);
       layer.addLayer(unitMarker);
     });
+
+    // 7. Rota Segura Gerada (Iluminada e Monitorada por Câmeras/Vigilância)
+    if (safeRoutePolyline && safeRoutePolyline.length >= 2) {
+      const latLngs: [number, number][] = safeRoutePolyline.map((c) => [c.lat, c.lng]);
+
+      // Linha de fundo / brilho (Halo)
+      const glowPolyline = L.polyline(latLngs, {
+        color: '#10b981',
+        weight: 8,
+        opacity: 0.35,
+        lineCap: 'round',
+        lineJoin: 'round',
+      });
+      layer.addLayer(glowPolyline);
+
+      // Linha principal da rota
+      const routePolyline = L.polyline(latLngs, {
+        color: '#047857',
+        weight: 4,
+        opacity: 0.95,
+        dashArray: '8, 8',
+      });
+      layer.addLayer(routePolyline);
+
+      // Destino da Rota
+      const destCoord = safeRoutePolyline[safeRoutePolyline.length - 1];
+      const destIcon = L.divIcon({
+        className: 'custom-safe-route-dest',
+        html: `
+          <div class="relative flex items-center justify-center w-8 h-8 -ml-4 -mt-4">
+            <div class="absolute inset-0 rounded-full bg-emerald-500/40 animate-ping"></div>
+            <div class="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-black shadow-lg border-2 border-white">
+              🏁
+            </div>
+            <div class="absolute -bottom-5 bg-emerald-900 text-white text-[9px] font-black px-2 py-0.5 rounded shadow whitespace-nowrap">
+              Destino Seguro: ${safeRouteDestinationName || 'Posto'}
+            </div>
+          </div>
+        `,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+      });
+      const destMarker = L.marker([destCoord.lat, destCoord.lng], { icon: destIcon, zIndexOffset: 950 });
+      layer.addLayer(destMarker);
+    }
   }, [
     userCoordinate,
     userSignalLost,
@@ -404,6 +453,8 @@ export const CampusMap: React.FC<CampusMapProps> = ({
     showBreadcrumbs,
     isInsideCampus,
     selectedCampusId,
+    safeRoutePolyline,
+    safeRouteDestinationName,
   ]);
 
   // Se um alerta for selecionado, centralizar nele com zoom suave
