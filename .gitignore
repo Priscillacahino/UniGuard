@@ -6,3 +6,11 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Android Studio
+.gradle/
+local.properties
+.idea/
+*.iml
+.externalNativeBuild/
+.cxx/

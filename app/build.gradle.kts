@@ -26,17 +26,17 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    // 📍 ADICIONE ESTE BLOCO LOGO ABAIXO DO COMPILEOPTIONS:
     kotlinOptions {
         jvmTarget = "11"
     }
-
 }
+
 dependencies {
     // Componentes core estáveis do Android
     implementation("androidx.core:core-ktx:1.12.0")
@@ -50,12 +50,15 @@ dependencies {
     // Módulo oficial de GPS para o botão SOS do UniGuard
     implementation("com.google.android.gms:play-services-location:21.0.1")
 
+    // 🗺️ Biblioteca Oficial do Google Maps para carregar os mapas na tela
+    implementation("com.google.android.gms:play-services-maps:19.0.0")
+
     // Testes unitários básicos
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    // 🌐 BIBLIOTECAS DO KTOR CLIENT PARA REQUISIÇÕES HTTP HTTP
+
+    // Provedores do Ktor Client para requisições HTTP
     implementation("io.ktor:ktor-client-android:2.3.11")
     implementation("io.ktor:ktor-client-core:2.3.11")
-
 }

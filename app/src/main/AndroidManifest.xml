@@ -2,13 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- 📍 PERMISSÕES DE GEOLOCALIZAÇÃO E INTERNET (OBRIGATÓRIO PARA O UNIGUARD) -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- 📸 PERMISSÃO DE HARDWARE PARA A CAPTURA FORENSE (FASE 4) -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:allowBackup="true"
@@ -19,13 +21,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.UniGuard">
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="SUA_CHAVE_DO_GOOGLE_MAPS_AQUI" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

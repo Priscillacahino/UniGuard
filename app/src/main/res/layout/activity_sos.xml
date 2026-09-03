@@ -4,34 +4,91 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="24dp">
 
-    <Button
-        android:id="@+id/btnSOS"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:text="SOS"
-        android:textColor="#FFFFFF"
-        android:textSize="20sp"
+    <!-- Título -->
+    <TextView
+        android:id="@+id/txtTitulo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:text="UniGuard"
+        android:textColor="#212121"
+        android:textSize="30sp"
         android:textStyle="bold"
-        android:backgroundTint="#D32F2F"
-        app:cornerRadius="60dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Descrição -->
+    <TextView
+        android:id="@+id/txtDescricao"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:text="Cadastre um número para contato em caso de emergência."
+        android:textColor="#424242"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/txtTitulo" />
+
+    <!-- Campo para número de emergência -->
+    <EditText
+        android:id="@+id/edtNumeroEmergencia"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:hint="Número de emergência"
+        android:inputType="phone"
+        android:maxLines="1"
+        android:minHeight="48dp"
+        android:padding="12dp"
+        android:textColor="#212121"
+        android:textColorHint="#616161"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/txtDescricao" />
+
+    <!-- Botão para salvar o número -->
+    <Button
+        android:id="@+id/btnSalvarNumero"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:minHeight="48dp"
+        android:text="Salvar número"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/edtNumeroEmergencia" />
+
+    <!-- Botão SOS -->
+    <Button
+        android:id="@+id/btnSOS"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:layout_marginTop="36dp"
+        android:text="SOS"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnSalvarNumero" />
+
+    <!-- Aviso -->
     <TextView
         android:id="@+id/txtAviso"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Segure por 2 segundos para disparar"
-        android:textColor="#555555"
-        android:textSize="16sp"
+        android:layout_marginTop="16dp"
         android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@+id/btnSOS"
+        android:text="Mantenha pressionado por 2 segundos"
+        android:textColor="#616161"
+        android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnSOS" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
