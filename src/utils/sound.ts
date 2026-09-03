@@ -1,0 +1,1 @@
+export { SoundEffects } from './audio';
