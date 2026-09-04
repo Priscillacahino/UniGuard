@@ -6,6 +6,8 @@ coverage/
 *.log
 .env*
 !.env.example
+app/google-services.json
+.npm-cache/
 
 # Android Studio
 .gradle/
