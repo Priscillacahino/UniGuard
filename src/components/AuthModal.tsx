@@ -26,6 +26,7 @@ interface AuthModalProps {
   onClose?: () => void;
   onLoginSuccess: (profile: UserProfile) => void;
   currentProfile: UserProfile;
+  authenticate?: (email: string, password: string) => Promise<void>;
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
@@ -33,6 +34,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onClose,
   onLoginSuccess,
   currentProfile,
+  authenticate,
 }) => {
   const [mode, setMode] = useState<AuthMode>('login');
   
@@ -121,7 +123,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   // ==========================================
   // HANDLERS
   // ==========================================
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isLoginFormValid) return;
 
@@ -129,8 +131,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setIsLoading(true);
     setStatusMessage(null);
 
-    // Simula validação com delay realista
-    setTimeout(() => {
+    try {
+      if (authenticate) await authenticate(loginEmail, loginPassword);
       setIsLoading(false);
       SoundEffects.playSuccess();
       const updatedProfile: UserProfile = {
@@ -138,7 +140,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         email: loginEmail,
       };
       onLoginSuccess(updatedProfile);
-    }, 700);
+    } catch {
+      setIsLoading(false);
+      setStatusMessage({ type: 'error', text: 'Credenciais inválidas ou usuário sem acesso à central.' });
+    }
   };
 
   const handleForgotSubmit = (e: React.FormEvent) => {

@@ -26,6 +26,13 @@ import {
 } from './data/ufpbData';
 import { isPointInsideCampus, getCampusById } from './utils/geo';
 import { SoundEffects } from './utils/sound';
+import {
+  changeAlertStatus,
+  firebaseEnabled,
+  publishAlert,
+  subscribeToAlerts,
+} from './services/alertRepository';
+import { authenticateOperator, signOutFirebase } from './services/firebase';
 
 import { UserApp } from './components/UserApp';
 import { SecurityDashboard } from './components/SecurityDashboard';
@@ -52,7 +59,7 @@ import {
 export default function App() {
   // 1. Estados Globais do Usuário e Autenticação
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
-    return localStorage.getItem('guardiao_ufpb_logged_in') !== 'false';
+    return firebaseEnabled ? false : localStorage.getItem('guardiao_ufpb_logged_in') !== 'false';
   });
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
@@ -96,6 +103,7 @@ export default function App() {
     setIsLoggedIn(false);
     localStorage.setItem('guardiao_ufpb_logged_in', 'false');
     setIsAuthModalOpen(true);
+    void signOutFirebase();
   };
 
   // Handler de Sucesso de Login
@@ -161,6 +169,19 @@ export default function App() {
     const saved = localStorage.getItem('guardiao_ufpb_alerts');
     return saved ? JSON.parse(saved) : INITIAL_ALERTS;
   });
+
+  // Quando o Firebase estiver configurado, esta coleção passa a ser a fonte
+  // compartilhada entre o Android e o painel. Sem configuração, o modo demo
+  // local permanece disponível para apresentações seguras.
+  useEffect(() => {
+    if (!firebaseEnabled || !isLoggedIn) return;
+    let unsubscribe = () => undefined;
+    void subscribeToAlerts(
+      setAlerts,
+      (error) => console.error('Falha ao acompanhar alertas em tempo real', error),
+    ).then((stop) => { unsubscribe = stop; });
+    return () => unsubscribe();
+  }, [isLoggedIn]);
 
   const [securityUnits, setSecurityUnits] = useState<SecurityPatrolUnit[]>(INITIAL_SECURITY_UNITS);
 
@@ -255,6 +276,9 @@ export default function App() {
   // Handler para Envio de Alerta SOS pelo Usuário (já com foto capturada)
   const handleSendAlert = (newAlert: EmergencyAlert) => {
     setAlerts((prev) => [newAlert, ...prev]);
+    void publishAlert(newAlert).catch((error) => {
+      console.error('O alerta ficou somente neste dispositivo', error);
+    });
   };
 
   // Handler para Cancelamento de Alerta pelo Usuário
@@ -262,6 +286,7 @@ export default function App() {
     setAlerts((prev) =>
       prev.map((a) => (a.id === alertId ? { ...a, status: 'cancelado_usuario', updatedAt: new Date().toISOString() } : a))
     );
+    void changeAlertStatus(alertId, 'cancelado_usuario').catch(console.error);
   };
 
   // Handler para a Central de Segurança Atualizar Status / Despachar
@@ -296,6 +321,15 @@ export default function App() {
         prev.map((u) => (u.id === unitId ? { ...u, status: 'em_ocorrencia', currentAlertId: alertId } : u))
       );
     }
+
+    const selectedUnit = unitId ? securityUnits.find((unit) => unit.id === unitId) : undefined;
+    void changeAlertStatus(
+      alertId,
+      status,
+      unitId,
+      selectedUnit ? `${selectedUnit.name} (${selectedUnit.code})` : undefined,
+      note,
+    ).catch(console.error);
   };
 
   // Handler para Inserir Alerta Simulado via Central
@@ -346,6 +380,7 @@ export default function App() {
     };
 
     setAlerts((prev) => [simAlert, ...prev]);
+    void publishAlert(simAlert).catch(console.error);
   };
 
   return (
@@ -556,6 +591,7 @@ export default function App() {
         onClose={isLoggedIn ? () => setIsAuthModalOpen(false) : undefined}
         onLoginSuccess={handleLoginSuccess}
         currentProfile={userProfile}
+        authenticate={firebaseEnabled ? authenticateOperator : undefined}
       />
 
       <IdentityModal

@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOperator() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/operators/$(request.auth.uid));
+    }
+    match /emergencyAlerts/{alertId} {
+      allow create: if request.auth != null
+        && request.resource.data.id == alertId
+        && request.resource.data.authUid == request.auth.uid
+        && request.resource.data.status == 'pendente';
+      allow read: if request.auth != null
+        && (resource.data.authUid == request.auth.uid || isOperator());
+      allow update: if request.auth != null && isOperator();
+      allow delete: if false;
+    }
+    match /operators/{operatorId} {
+      allow read: if request.auth != null && request.auth.uid == operatorId;
+      allow write: if false;
+    }
+  }
+}

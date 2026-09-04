@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Base.Theme.UniGuard" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">#0D284B</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="android:windowBackground">#121212</item>
+        <item name="colorSurface">#1E1E1E</item>
+        <item name="colorOnSurface">#FFFFFF</item>
+    </style>
+
+    <style name="Theme.UniGuard" parent="Base.Theme.UniGuard" />
+</resources>
