@@ -39,7 +39,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [mode, setMode] = useState<AuthMode>('login');
   
   // Campos de Login
-  const [loginEmail, setLoginEmail] = useState(currentProfile.email || 'mariana.albuquerque@academico.ufpb.br');
+  const [loginEmail, setLoginEmail] = useState(currentProfile.email || 'usuario@exemplo.com');
   const [loginPassword, setLoginPassword] = useState('ufpb2026');
   const [showPassword, setShowPassword] = useState(false);
   
@@ -81,24 +81,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   // ==========================================
   // VALIDAÇÕES EM TEMPO REAL (INLINE VALIDATION)
   // ==========================================
-  const isValidUfpbEmail = (email: string) => {
+  const isValidEmail = (email: string) => {
     const trimmed = email.trim().toLowerCase();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return (
-      emailRegex.test(trimmed) &&
-      (trimmed.endsWith('@academicos.ufpb.br') || trimmed.endsWith('@academico.ufpb.br') || trimmed.endsWith('@ufpb.br'))
-    );
+    return emailRegex.test(trimmed);
   };
 
   const isPasswordStrongEnough = (pass: string) => pass.length >= 6;
 
   // Validação Login
-  const isLoginEmailValid = isValidUfpbEmail(loginEmail);
+  const isLoginEmailValid = isValidEmail(loginEmail);
   const isLoginPassValid = isPasswordStrongEnough(loginPassword);
   const isLoginFormValid = isLoginEmailValid && isLoginPassValid;
 
   // Validação Esqueci Senha
-  const isForgotEmailValid = isValidUfpbEmail(forgotEmail);
+  const isForgotEmailValid = isValidEmail(forgotEmail);
 
   // Validação Redefinir Senha
   const isNewPassValid = isPasswordStrongEnough(newPassword);
@@ -108,7 +105,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   // Validação Cadastro
   const isRegNameValid = registerName.trim().length >= 3;
   const isRegDocValid = registerDoc.trim().length >= 4;
-  const isRegEmailValid = isValidUfpbEmail(registerEmail);
+  const isRegEmailValid = isValidEmail(registerEmail);
   const isRegPhoneValid = registerPhone.replace(/\D/g, '').length >= 10;
   const isRegPassValid = isPasswordStrongEnough(registerPass);
   const isRegConfirmPassMatch = registerPass.length > 0 && registerPass === registerConfirmPass;
@@ -293,14 +290,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   Autenticação Universitária
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  Utilize seu e-mail institucional (@academicos.ufpb.br ou @ufpb.br) para acessar.
+                  Utilize um endereço de e-mail válido para acessar.
                 </p>
               </div>
 
-              {/* Campo E-mail Institucional */}
+              {/* Campo de e-mail */}
               <div className="space-y-1">
                 <label className="block text-xs font-bold text-slate-700">
-                  E-mail Institucional UFPB *
+                  E-mail *
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -311,7 +308,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     required
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
-                    placeholder="seu.nome@academicos.ufpb.br"
+                    placeholder="seu.nome@exemplo.com"
                     className={`w-full pl-10 pr-10 py-2.5 rounded-xl text-xs font-medium border transition-all ${
                       loginEmail.length > 0 && !isLoginEmailValid
                         ? 'border-rose-300 bg-rose-50/50 text-rose-900 focus:border-rose-500'
@@ -335,7 +332,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 {loginEmail.length > 0 && !isLoginEmailValid && (
                   <p className="text-[11px] text-rose-600 flex items-center gap-1 font-medium mt-1">
                     <AlertCircle className="w-3 h-3 shrink-0" />
-                    O e-mail deve pertencer ao domínio @academicos.ufpb.br ou @ufpb.br
+                    Informe um endereço de e-mail válido.
                   </p>
                 )}
               </div>
@@ -389,7 +386,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     type="button"
                     onClick={() => {
                       SoundEffects.playClick();
-                      setForgotEmail(loginEmail && isValidUfpbEmail(loginEmail) ? loginEmail : '');
+                      setForgotEmail(loginEmail && isValidEmail(loginEmail) ? loginEmail : '');
                       setResetSentSuccess(false);
                       setMode('forgot_password');
                     }}
@@ -469,12 +466,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               {!resetSentSuccess ? (
                 <form onSubmit={handleForgotSubmit} className="space-y-4">
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    Informe seu <strong>E-mail Institucional</strong> cadastrado. Enviaremos um link seguro para a redefinição da sua senha.
+                    Informe seu <strong>e-mail cadastrado</strong>. Enviaremos um link seguro para a redefinição da sua senha.
                   </p>
 
                   <div className="space-y-1">
                     <label className="block text-xs font-bold text-slate-700">
-                      E-mail Institucional (@academicos.ufpb.br ou @ufpb.br) *
+                      E-mail cadastrado *
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -485,7 +482,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         required
                         value={forgotEmail}
                         onChange={(e) => setForgotEmail(e.target.value)}
-                        placeholder="seu.nome@academicos.ufpb.br"
+                        placeholder="seu.nome@exemplo.com"
                         className={`w-full pl-10 pr-10 py-2.5 rounded-xl text-xs font-medium border transition-all ${
                           forgotEmail.length > 0 && !isForgotEmailValid
                             ? 'border-rose-300 bg-rose-50/50 text-rose-900 focus:border-rose-500'
@@ -852,20 +849,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   )}
                 </div>
 
-                {/* E-mail Institucional */}
+                {/* E-mail */}
                 <div className="sm:col-span-2 space-y-1">
-                  <label className="block font-bold text-slate-700">E-mail Institucional *</label>
+                  <label className="block font-bold text-slate-700">E-mail *</label>
                   <input
                     type="email"
                     required
                     value={registerEmail}
                     onChange={(e) => setRegisterEmail(e.target.value)}
-                    placeholder="usuario@academicos.ufpb.br"
+                    placeholder="usuario@exemplo.com"
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#003d71]"
                   />
                   {registerEmail.length > 0 && !isRegEmailValid && (
                     <p className="text-[10px] text-rose-600 font-medium">
-                      Obrigatório sufixo @academicos.ufpb.br ou @ufpb.br
+                      Informe um endereço de e-mail válido.
                     </p>
                   )}
                 </div>

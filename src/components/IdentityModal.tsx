@@ -43,17 +43,12 @@ export const IdentityModal: React.FC<IdentityModalProps> = ({
   const rawPhone = formData.phone.replace(/\D/g, '');
   const isPhoneValid = rawPhone.length >= 10;
   
-  const isValidUfpbEmail = (email: string) => {
+  const isValidEmail = (email: string) => {
     const trimmed = email.trim().toLowerCase();
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return (
-      regex.test(trimmed) &&
-      (trimmed.endsWith('@academicos.ufpb.br') ||
-        trimmed.endsWith('@academico.ufpb.br') ||
-        trimmed.endsWith('@ufpb.br'))
-    );
+    return regex.test(trimmed);
   };
-  const isEmailValid = isValidUfpbEmail(formData.email || '');
+  const isEmailValid = isValidEmail(formData.email || '');
 
   // Formulário válido somente se todos os campos obrigatórios atenderem aos critérios
   const isFormValid = isNameValid && isDocValid && isPhoneValid && isEmailValid;
@@ -204,16 +199,16 @@ export const IdentityModal: React.FC<IdentityModalProps> = ({
                 )}
               </div>
 
-              {/* E-mail Institucional */}
+              {/* E-mail */}
               <div className="sm:col-span-2 space-y-1">
-                <label className="block text-slate-600 font-semibold">E-mail Institucional (@academicos.ufpb.br ou @ufpb.br) *</label>
+                <label className="block text-slate-600 font-semibold">E-mail *</label>
                 <div className="relative">
                   <input
                     type="email"
                     required
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="usuario@academicos.ufpb.br"
+                    placeholder="usuario@exemplo.com"
                     className={`w-full px-3.5 py-2.5 rounded-xl border transition-all text-xs font-medium focus:outline-none ${
                       formData.email.length > 0 && !isEmailValid
                         ? 'border-rose-300 bg-rose-50/40 text-rose-900 focus:border-rose-500'
@@ -234,7 +229,7 @@ export const IdentityModal: React.FC<IdentityModalProps> = ({
                 </div>
                 {formData.email.length > 0 && !isEmailValid && (
                   <p className="text-[11px] text-rose-600 flex items-center gap-1 font-medium">
-                    <AlertCircle className="w-3 h-3" /> O e-mail deve pertencer ao domínio @academicos.ufpb.br ou @ufpb.br
+                    <AlertCircle className="w-3 h-3" /> Informe um endereço de e-mail válido.
                   </p>
                 )}
               </div>
