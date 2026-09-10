@@ -1,144 +1,253 @@
-# 🛡️ UniGuard — Gestão de Segurança Universitária Georreferenciada
+# 🛡️ UniGuard — Segurança Universitária Georreferenciada
 
-> ⚠️ **Aviso Importante:** O UniGuard é um **protótipo conceitual acadêmico**. Todos os dados, mapas e localizações apresentados são simulados e a plataforma **não** possui integração oficial com o sistema corporativo ou com a Superintendência de Segurança da UFPB.
-> 
+> **Protótipo acadêmico em desenvolvimento.** O UniGuard não possui integração oficial com a Universidade Federal da Paraíba (UFPB), seus sistemas institucionais, a Superintendência de Segurança, o SAMU ou a Polícia Militar. Os dados, usuários, mapas, alertas e indicadores apresentados são fictícios e utilizados exclusivamente para demonstração.
 
-O **UniGuard** é uma plataforma de segurança preventiva projetada para apoiar discentes, docentes e servidores técnicos-administrativos dentro dos campi da **Universidade Federal da Paraíba (UFPB)**. O sistema utiliza geolocalização e automação digital para otimizar o tempo de resposta das equipes de vigilância patrimonial em situações de vulnerabilidade ou risco eminente.
+O **UniGuard** é uma proposta de solução digital voltada ao apoio da segurança de estudantes, docentes e servidores em ambientes universitários. O projeto combina um aplicativo Android para acionamento de emergência, um protótipo web com visão do usuário e painel de segurança, geolocalização, registro de ocorrências e estruturas demonstrativas de dados.
 
+🔗 **Protótipo web:** [Acessar o UniGuard](https://uniguardvercelapp.vercel.app/)
 
-🔗 **Acesse o Protótipo:** [uniguardvercelapp.vercel.app](https://uniguardvercelapp.vercel.app/)
-
----
-
-## 🎯 Objetivo Estratégico
-Empregar tecnologia de geofencing e telemetria móvel para criar um canal ágil de comunicação entre a comunidade acadêmica e a central de operações, acelerando o despacho de patrulhas e mitigando incidentes nos turnos de maior criticidade.
+📄 **Apresentação profissional:** [Visualizar o PDF](UniGuard_Apresentacao_Profissional.pdf)
 
 ---
 
-## ⚙️ Arquitetura Funcional (Ciclo em 7 Etapas)
+## 📱 Tela do protótipo
 
-O ecossistema opera através de um fluxo cíclico integrado que conecta a ponta (usuário) à base operacional (central de monitoramento):
+![Visão geral das telas do protótipo UniGuard](UniGuard_Telas_Prototipo.png)
 
-### 1. Autenticação e Seleção de Contexto
-* **Identificação Institucional:** Fluxo projetado para integração com credenciais `@academicos.ufpb.br` ou `@ufpb.br`.
-* **Configuração de Escopo:** O usuário seleciona seu campus base:
-  * 📍 Campus I (João Pessoa)
-  * 📍 Campus II (Areia)
-  * 📍 Campus III (Bananeiras)
-  * 📍 Campus IV (Litoral Norte)
-  * 📍 Unidade Mangabeira
-
-### 2. Telemetria e Monitoramento de Proximidade (*Geofencing*)
-* **Rastro de Deslocamento:** Registro contínuo de coordenadas (*breadcrumbs*) em segundo plano.
-* **Mapeamento de Áreas Seguras:** Algoritmo calcula a distância do usuário em relação a pontos estratégicos (guaritas, blocos iluminados e secretarias).
-* **Salvaguarda Faltosa:** Fixação automática da *Última Localização Conhecida (Last Known Location)* caso ocorra perda súbita de rede ou desligamento por bateria fraca.
-
-### 3. Acionamento de Vetor de Pânico (Botão SOS)
-* **Gatilho Inteligente:** Disparo simplificado por toque único ou trava de segurança antierro de 2 segundos.
-* **Categorização Dinâmica de Incidentes:**
-  * 🚨 Ameaça Física / Perseguição
-  * 🩺 Emergência Médica
-  * 👤 Assédio / Importunação
-  * 💡 Alerta de Infraestrutura (Área sem iluminação)
-
-### 4. Carimbo Forense e Comunicação de Emergência
-* **Captura de Mídia Ambental:** Acionamento automático da câmera para registro fotográfico do entorno.
-* **Metadados Invioláveis:** Aplicação de marca d'água digital com ID do protocolo, latitude/longitude exatas, carimbo de data/hora (timestamp) e status de energia.
-* **Notificação Externa:** Envio imediato de alertas via SMS para a lista de contatos de confiança previamente cadastrados.
-
-### 5. Centralização Tática e Triagem de Alarmes
-* **Painel da Central de Segurança:** Telas operacionais recebem os chamados em regime de prioridade absoluta.
-* **Disparo Sonoro:** Alarmes visuais e auditivos piscam no painel do operador exibindo o mapa tático integrado, a telemetria atual da vítima e a foto capturada.
-
-### 6. Logística de Despacho e Resgate de Campo
-* **Roteamento de Viaturas:** Cálculo do trajeto viário mais rápido para motocicletas e viaturas da guarda até o ponto do chamado.
-* **Ciclo de Vida do Atendimento:**
-
-
-* **Pontes Externas:** Linha direta para acionamento automatizado do SAMU (192) ou Polícia Militar (190).
-
-### 7. Auditoria e Inteligência de Segurança Pública
-* **Registros de Log Históricos:** Banco de dados imutável para posterior exportação de relatórios que podem apoiar inquéritos oficiais.
-* **Mapas de Calor (Heatmaps):** Agrupamento estatístico de ocorrências para subsidiar decisões de engenharia urbana no campus (ex: reforço de iluminação e mudança nas rotas de rondas a pé).
+> A imagem acima reúne a jornada proposta para o aplicativo móvel, outras funcionalidades planejadas, a central de segurança web e o design system do projeto. As telas representam a visão de produto e podem conter recursos que ainda estão em desenvolvimento.
 
 ---
 
-## 🛠️ Stack Tecnológica
+## 🎯 Objetivo
 
-O projeto foi inicializado utilizando uma arquitetura moderna focada em performance de execução e tipagem estática:
-
-*   **Linguagem Core:** [TypeScript](https://typescriptlang.org) (Garantia de segurança em tempo de compilação)
-*   **Ambiente de Construção:** [Vite](https://vitejs.dev) & [Bun](https://bun.sh) (Gerenciamento ultra-rápido de pacotes)
-*   **Hospedagem & CI/CD:** [Vercel](https://vercel.com)
+Explorar como recursos de tecnologia, geolocalização e comunicação digital podem contribuir para o registro e o acompanhamento de situações de risco dentro de campi universitários, reduzindo etapas entre o pedido de ajuda e a visualização da ocorrência por uma equipe responsável.
 
 ---
 
-## 👥 Autoria e Desenvolvimento
+## 💡 Como a solução foi pensada
 
-O desenvolvimento deste ecossistema conceitual foi planejado e executado por:
-
-*   **Priscilla Cahino** — *Concepção, Arquitetura e Desenvolvimento*
+1. O usuário realiza sua identificação e escolhe o campus.
+2. O dispositivo solicita autorização para utilizar localização e câmera.
+3. Em uma situação de emergência, o usuário aciona o botão SOS.
+4. O alerta reúne categoria, data, hora e localização disponível.
+5. Quando autorizada, uma imagem pode ser associada ao registro da ocorrência.
+6. O painel de segurança recebe ou simula o chamado para acompanhamento.
+7. A equipe atualiza o status até a finalização do atendimento.
+8. Os registros podem apoiar análises demonstrativas sobre ocorrências e pontos de atenção.
 
 ---
-Desenvolvido com fins estritamente acadêmicos para a comunidade da **Universidade Federal da Paraíba**. 🛡️
 
+## ✅ O que já está presente no repositório
 
+### Protótipo web
 
+- Interface responsiva desenvolvida com React e TypeScript.
+- Alternância entre **App do Usuário** e **Painel de Segurança**.
+- Seleção demonstrativa dos campi da UFPB.
+- Cadastro e identificação do usuário.
+- Botão SOS e categorização de ocorrências.
+- Uso da geolocalização disponibilizada pelo navegador.
+- Registro da última localização disponível.
+- Captura de imagem mediante permissão do usuário.
+- Histórico e acompanhamento do status dos alertas.
+- Mapa interativo e representação de pontos seguros.
+- Inclusão de alertas simulados para demonstração do painel.
+- Funcionamento local demonstrativo quando o Firebase não está configurado.
 
-## 🔀 Fluxograma Operacional
+### Aplicativo Android
+
+- Projeto Android nativo em Kotlin.
+- Tela integrada de SOS.
+- Permissões para localização, câmera, internet, SMS e vibração.
+- Uso do Google Play Services Location e Google Maps.
+- Estrutura preparada para Firebase Authentication, Firestore e Storage.
+- Execução em modo demonstrativo sem o arquivo de configuração do Firebase.
+
+### Dados e documentação
+
+- Regras demonstrativas do Firestore e Firebase Storage.
+- Orientações para configurar a comunicação entre Android e painel web.
+- Modelo relacional MySQL 8+ com tabelas, relacionamentos, índices, views, trigger e dados fictícios.
+- Base em Excel e arquivo CSV com dados simulados para análises.
+- Apresentação profissional do conceito em PDF.
+
+---
+
+## 🚧 Funcionalidades planejadas
+
+As funcionalidades abaixo representam possibilidades de evolução e não devem ser interpretadas como integrações operacionais disponíveis atualmente:
+
+- autenticação com credenciais institucionais;
+- comunicação oficial com a central de segurança da universidade;
+- acompanhamento contínuo de localização em segundo plano;
+- envio real de mensagens aos contatos de confiança;
+- roteamento e despacho de equipes de segurança;
+- integração com serviços públicos de emergência;
+- implantação de uma API segura entre o aplicativo e um banco relacional;
+- relatórios institucionais, mapas de calor e indicadores com dados reais autorizados;
+- testes de segurança, privacidade, acessibilidade e desempenho em ambiente piloto.
+
+---
+
+## 🔀 Fluxograma conceitual
+
+O fluxo abaixo representa a visão planejada para uma versão ampliada do UniGuard. Algumas etapas ainda dependem de integrações, autorizações institucionais e desenvolvimento adicional.
 
 ```mermaid
 flowchart TD
-    %% Nós de Início e Autenticação
-    Start([Discente / Usuário no Campus]) --> Auth[1. Login Institucional SIGAA / UFPB]
-    Auth --> Perms[Autoriza Localização GPS & Câmera]
-    Perms --> CampusSelect[Seleciona Campus: JP, Areia, Bananeiras, LN, Mangabeira]
+    A([Usuário no campus]) --> B[Identificação e seleção do campus]
+    B --> C[Autorização de localização e câmera]
+    C --> D[Monitoramento e última localização disponível]
+    D --> E{Situação de emergência?}
+    E -- Não --> D
+    E -- Sim --> F[Acionamento do SOS]
+    F --> G[Categoria, localização, horário e evidência autorizada]
+    G --> H[Painel da equipe de segurança]
+    H --> I[Triagem e atualização do atendimento]
+    I --> J{Ocorrência resolvida?}
+    J -- Não --> I
+    J -- Sim --> K[Encerramento e registro]
+    K --> L[Indicadores e análise preventiva]
 
-    %% Monitoramento Preventivo
-    CampusSelect --> Monitor[2. Telemetria GPS em Segundo Plano]
-    Monitor --> SafeCheck{Está em Zona Segura?}
-    SafeCheck -- Sim --> SafeMode[Modo Preventivo: Trava de 2s contra falsos alertas]
-    SafeCheck -- Não --> NormalMode[Modo Risco Elevado: Disparo Imediato]
+    classDef primary fill:#003d71,stroke:#002444,color:#fff;
+    classDef emergency fill:#dc2626,stroke:#991b1b,color:#fff;
+    classDef success fill:#059669,stroke:#047857,color:#fff;
+    class B,C,D,H,I primary;
+    class E,F,G emergency;
+    class J,K,L success;
+```
 
-    %% Rotas Preventivas
-    NormalMode -.-> SafeRoute[Opção: Traçar Rota Iluminada até Guarita mais Próxima]
+---
 
-    %% Acionamento do SOS
-    SafeMode --> Trigger[3. Acionamento do Botão de Pânico SOS]
-    NormalMode --> Trigger
+## 🧩 Arquitetura atual
 
-    %% Captura e Evidência
-    Trigger --> Capture[4. Captura Instantânea da Foto da Câmera]
-    Capture --> Stamp[Carimbo Forense: Protocolo, Lat/Lng, Data/Hora e Bateria]
-    Stamp --> SMS[Envio de SMS com Link de Localização aos Contatos]
+| Camada | Tecnologias e finalidade |
+|---|---|
+| Protótipo web | React 19, TypeScript, Vite e Tailwind CSS |
+| Mapas | Leaflet no protótipo web |
+| Aplicativo móvel | Kotlin, Android SDK, Material Components e Google Maps |
+| Geolocalização Android | Google Play Services Location |
+| Sincronização opcional | Firebase Authentication, Firestore e Storage |
+| Modelo relacional | MySQL 8+ para estudo e evolução futura |
+| Hospedagem | Vercel |
+| Dados demonstrativos | Excel e CSV com informações simuladas |
 
-    %% Transmissão e Central
-    Stamp --> Transmit[5. Transmissão Prioritária para a Central UFPB]
-    Transmit --> SoundAlert[Sirene Sonora & Notificação no Painel de Segurança]
-    Transmit --> MapPlot[Plotagem no Mapa Tático com Rastro GPS]
+O aplicativo Android e o painel web podem compartilhar alertas pelo Firebase quando o ambiente é configurado. O modelo MySQL é uma alternativa arquitetural para evolução futura e deve ser acessado por uma API/backend, nunca diretamente pelo aplicativo.
 
-    %% Despacho e Resgate
-    MapPlot --> Dispatch[6. Despacho da Viatura / Ronda Mais Próxima]
-    Dispatch --> StatusUpdate{Status do Resgate}
-    StatusUpdate -->|A Caminho| EnRoute[Equipe em Deslocamento com Rota Otimizada]
-    EnRoute -->|No Local| OnScene[Abordagem, Apoio à Vítima e Neutralização do Risco]
-    OnScene --> Resolved[Resgate Concluído / Vítima em Segurança]
+---
 
-    %% Auditoria e Relatório
-    Resolved --> Audit[7. Arquivamento Seguro & Relatório de Ocorrência]
-    Audit --> Heatmap[Alimentação de Dados para Reforço de Iluminação e Ronda]
-    Heatmap --> End([Ocorrência Finalizada])
+## 📊 Apresentação e dados demonstrativos
 
-    %% Estilos Visuais
-    classDef primary fill:#003d71,stroke:#002444,stroke-width:2px,color:#fff;
-    classDef emergency fill:#dc2626,stroke:#991b1b,stroke-width:2px,color:#fff;
-    classDef safe fill:#059669,stroke:#047857,stroke-width:2px,color:#fff;
-    classDef info fill:#2563eb,stroke:#1d4ed8,stroke-width:2px,color:#fff;
-    classDef dark fill:#334155,stroke:#1e293b,stroke-width:2px,color:#fff;
+Todos os dados disponibilizados nesta seção são fictícios e foram preparados exclusivamente para apresentação acadêmica do projeto.
 
-    class Auth,Perms,CampusSelect primary;
-    class Trigger,Capture,Stamp,Transmit,SoundAlert emergency;
-    class SafeCheck,SafeMode,SafeRoute,Resolved safe;
-    class Dispatch,EnRoute,OnScene info;
-    class Audit,Heatmap dark;
+![Prévia dos indicadores demonstrativos](UniGuard_Preview_PowerBI.png)
 
+- 📄 [Apresentação profissional — PDF](UniGuard_Apresentacao_Profissional.pdf)
+- 📊 [Base demonstrativa para análise — Excel](UniGuard_Base_Demonstrativa_PowerBI.xlsx)
+- 🗃️ [Dados simulados — CSV](UniGuard_Dados_Simulados_PowerBI.csv)
+- 🖼️ [Prévia dos indicadores — PNG](UniGuard_Preview_PowerBI.png)
+
+> Os arquivos Excel e CSV funcionam como base demonstrativa para construção e exploração de indicadores. O repositório não contém, neste momento, um arquivo `.pbix`.
+
+---
+
+## 🗄️ Banco de dados
+
+O diretório [`UniGuard_Banco_MySQL`](UniGuard_Banco_MySQL/) contém um modelo relacional compatível com MySQL 8+, criado para representar usuários, dispositivos, campi, contatos de confiança, pontos seguros, alertas, localizações, evidências, equipes, despachos e auditoria.
+
+Consulte as [instruções específicas do banco](UniGuard_Banco_MySQL/README_BANCO.md) antes da execução.
+
+---
+
+## 📁 Organização do repositório
+
+```text
+UniGuard/
+├── app/                        # Aplicativo Android em Kotlin
+├── docs/                       # Orientações de configuração e imagens
+├── src/                        # Protótipo web em React/TypeScript
+│   ├── components/             # Telas, painéis e modais
+│   ├── data/                   # Dados simulados dos campi
+│   ├── services/               # Integração opcional com Firebase
+│   └── utils/                  # Geolocalização, câmera e recursos auxiliares
+├── UniGuard_Banco_MySQL/       # Modelo relacional e documentação do banco
+├── UniGuard_Apresentacao_Profissional.pdf
+├── UniGuard_Base_Demonstrativa_PowerBI.xlsx
+├── UniGuard_Dados_Simulados_PowerBI.csv
+├── UniGuard_Telas_Prototipo.png
+└── UniGuard_Preview_PowerBI.png
+```
+
+---
+
+## ▶️ Executar o protótipo web
+
+### Pré-requisitos
+
+- Node.js instalado;
+- npm ou Bun;
+- navegador atualizado.
+
+### Comandos
+
+```bash
+git clone https://github.com/Priscillacahino/UniGuard.git
+cd UniGuard
+npm install
+npm run dev
+```
+
+Abra no navegador o endereço informado pelo terminal, normalmente `http://localhost:3000`.
+
+Sem as credenciais do Firebase, o protótipo permanece em modo demonstrativo e utiliza dados locais/simulados.
+
+---
+
+## 🤖 Executar o aplicativo Android
+
+1. Clone ou baixe o repositório.
+2. Abra a raiz do projeto no Android Studio.
+3. Aguarde a sincronização do Gradle.
+4. Utilize um emulador compatível ou um aparelho Android com depuração USB.
+5. Execute o módulo `app`.
+6. Autorize somente as permissões necessárias durante o teste.
+
+O projeto está configurado com `minSdk 24`, `targetSdk 35`, Java 17 e Kotlin. A integração completa com Firebase exige configuração adicional conforme o arquivo [`docs/FIREBASE_SETUP.md`](docs/FIREBASE_SETUP.md).
+
+---
+
+## 🔐 Privacidade, segurança e LGPD
+
+Uma solução de emergência lida com localização, imagem, identificação e outros dados potencialmente sensíveis. Uma implantação real exigiria, entre outras medidas:
+
+- base legal e finalidade claramente definidas;
+- consentimento e transparência quando aplicáveis;
+- coleta mínima e retenção limitada dos dados;
+- criptografia e controle de acesso por perfil;
+- trilhas de auditoria e resposta a incidentes;
+- testes técnicos e validação jurídica/institucional;
+- regras específicas para acesso a imagens e localização;
+- canal para exercício dos direitos dos titulares.
+
+Não utilize dados pessoais reais durante testes públicos deste protótipo.
+
+---
+
+## 📌 Status do projeto
+
+**Em desenvolvimento acadêmico.** O repositório apresenta uma prova de conceito com diferentes camadas da solução. Ele ainda não representa um serviço de emergência disponível para uso real.
+
+---
+
+## 👩‍💻 Autoria
+
+**Priscilla Cahino**  
+Concepção, prototipação e desenvolvimento acadêmico do UniGuard.
+
+- [GitHub](https://github.com/Priscillacahino)
+- [Portfólio profissional](https://portifoliocpriscillacom.vercel.app/)
+- [LinkedIn](https://www.linkedin.com/in/priscilla-cahino-04a718aa/)
+
+---
+
+Desenvolvido com finalidade acadêmica e demonstrativa. 🛡️
