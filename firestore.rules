@@ -1,22 +1,44 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
     function isOperator() {
-      return request.auth != null
+      return isSignedIn()
         && exists(/databases/$(database)/documents/operators/$(request.auth.uid));
     }
+
+    function isOwner() {
+      return isSignedIn() && resource.data.authUid == request.auth.uid;
+    }
+
     match /emergencyAlerts/{alertId} {
-      allow create: if request.auth != null
+      // Android/Web do usuário podem criar apenas o próprio alerta e sempre como pendente.
+      allow create: if isSignedIn()
         && request.resource.data.id == alertId
         && request.resource.data.authUid == request.auth.uid
         && request.resource.data.status == 'pendente';
-      allow read: if request.auth != null
+
+      // Dono do alerta visualiza o próprio chamado; operadores visualizam todos.
+      allow read: if isSignedIn()
         && (resource.data.authUid == request.auth.uid || isOperator());
-      allow update: if request.auth != null && isOperator();
+
+      // Operador pode alterar o ciclo operacional completo.
+      allow update: if isOperator();
+
+      // Usuário pode somente cancelar o próprio alerta.
+      allow update: if isOwner()
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'updatedAt'])
+        && request.resource.data.status == 'cancelado_usuario';
+
       allow delete: if false;
     }
+
     match /operators/{operatorId} {
-      allow read: if request.auth != null && request.auth.uid == operatorId;
+      allow read: if isSignedIn() && request.auth.uid == operatorId;
       allow write: if false;
     }
   }

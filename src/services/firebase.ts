@@ -1,6 +1,7 @@
 import { getApp, getApps, initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { doc, getDoc, getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 
 const config = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -15,6 +16,7 @@ export const firebaseEnabled = Object.values(config).every(Boolean);
 
 const app = firebaseEnabled ? (getApps().length ? getApp() : initializeApp(config)) : null;
 export const firestore = app ? getFirestore(app) : null;
+export const firebaseStorage = app ? getStorage(app) : null;
 
 let authentication: Promise<void> | null = null;
 
@@ -31,7 +33,13 @@ export function ensureFirebaseAuthentication(): Promise<void> {
 
 export async function authenticateOperator(email: string, password: string): Promise<void> {
   if (!app) return;
-  await signInWithEmailAndPassword(getAuth(app), email, password);
+  const auth = getAuth(app);
+  const credential = await signInWithEmailAndPassword(auth, email, password);
+  const operator = await getDoc(doc(getFirestore(app), 'operators', credential.user.uid));
+  if (!operator.exists() || operator.data().active !== true) {
+    await signOut(auth);
+    throw new Error('OPERATOR_NOT_AUTHORIZED');
+  }
 }
 
 export function currentFirebaseUserId(): string | null {

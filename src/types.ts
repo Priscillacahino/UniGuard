@@ -106,7 +106,7 @@ export interface SmsNotification {
   contactPhone: string;
   message: string;
   sentAt: string;
-  status: 'enviado' | 'entregue' | 'falha';
+  status: 'simulado' | 'enviado' | 'entregue' | 'falha';
 }
 
 export type EmergencyCategory = 
@@ -184,4 +184,3 @@ export interface BreadcrumbPoint {
   isInSafeZone?: boolean;
   safeZoneName?: string;
 }
-

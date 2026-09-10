@@ -94,7 +94,7 @@ export function generateEmergencyEvidenceCanvas(
 
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 16px sans-serif';
-    ctx.fillText('🚨 REGISTRO DE EVIDÊNCIA DE SOS • GUARDIÃO UFPB', 20, 32);
+    ctx.fillText('🚨 REGISTRO DEMONSTRATIVO DE SOS • UNIGUARD', 20, 32);
 
     ctx.font = 'bold 12px monospace';
     ctx.fillText(options.protocolNumber || 'SOS-UFPB', 480, 32);
@@ -170,7 +170,7 @@ function stampRealPhoto(
 
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 14px sans-serif';
-    ctx.fillText('🚨 GUARDIÃO UFPB • FOTO NO ACIONAMENTO SOS', 15, 23);
+    ctx.fillText('🚨 UNIGUARD • FOTO AUTORIZADA NO ACIONAMENTO SOS', 15, 23);
 
     ctx.font = 'bold 12px monospace';
     ctx.fillText(options.protocolNumber || 'SOS-UFPB', canvas.width - 150, 23);

@@ -1,7 +1,7 @@
 # Checklist rápido — UniGuard
 
 [ ] Criar/confirmar um único projeto Firebase
-[ ] Android cadastrado com package `com.example.uniguard`
+[ ] Android cadastrado com package `com.priscillacahino.uniguard`
 [ ] `app/google-services.json` instalado
 [ ] Anonymous Auth habilitado
 [ ] Email/Password Auth habilitado

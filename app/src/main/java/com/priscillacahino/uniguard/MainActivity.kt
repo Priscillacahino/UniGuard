@@ -1,4 +1,4 @@
-package com.example.uniguard
+package com.priscillacahino.uniguard
 
 import android.Manifest
 import android.annotation.SuppressLint

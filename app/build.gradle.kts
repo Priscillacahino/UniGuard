@@ -10,11 +10,11 @@ if (file("google-services.json").exists()) {
 }
 
 android {
-    namespace = "com.example.uniguard"
+    namespace = "com.priscillacahino.uniguard"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.uniguard"
+        applicationId = "com.priscillacahino.uniguard"
         minSdk = 24
         targetSdk = 35
         versionCode = 1

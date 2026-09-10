@@ -15,7 +15,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAbout }) => {
           <div className="w-6 h-6 rounded-lg bg-[#003d71]/10 text-[#003d71] flex items-center justify-center border border-[#003d71]/20">
             <ShieldCheck className="w-3.5 h-3.5" />
           </div>
-          <span className="font-bold tracking-tight text-slate-800">Guardião <span className="text-[#003d71]">UFPB</span></span>
+          <span className="font-bold tracking-tight text-slate-800">Uni<span className="text-[#003d71]">Guard</span></span>
           <span className="text-slate-300 hidden sm:inline">•</span>
           <span className="text-slate-500 hidden sm:inline flex items-center gap-1">
             <MapPin className="w-3 h-3 text-emerald-600" /> Campus I - João Pessoa

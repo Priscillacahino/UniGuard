@@ -156,7 +156,7 @@ export const createSampleEvidencePhoto = (
     <line x1="320" y1="200" x2="320" y2="240" stroke="#ef4444" stroke-width="2" />
     <!-- Tarja Superior de Emergência -->
     <rect width="640" height="46" fill="#dc2626" />
-    <text x="20" y="28" fill="#ffffff" font-family="sans-serif" font-size="14" font-weight="bold">🚨 GUARDIÃO UFPB • FOTO NO ACIONAMENTO DO SOS</text>
+    <text x="20" y="28" fill="#ffffff" font-family="sans-serif" font-size="14" font-weight="bold">🚨 UNIGUARD • IMAGEM DEMONSTRATIVA DO SOS</text>
     <text x="480" y="28" fill="#ffffff" font-family="monospace" font-size="13" font-weight="bold">${protocol}</text>
     <!-- Tarja Inferior com Telemetria e Localização -->
     <rect y="390" width="640" height="90" fill="#020617" opacity="0.95" />
@@ -785,7 +785,7 @@ export const INITIAL_ALERTS: EmergencyAlert[] = [
         id: 'sms_01',
         contactName: 'Roberto Cavalcanti (Pai)',
         contactPhone: '(83) 99111-2233',
-        message: 'GUARDIÃO UFPB: Alerta SOS acionado por Lucas em Trilha do Bosque CCHLA (-7.14550, -34.84280). Foto e localização anexadas para segurança.',
+        message: 'UNIGUARD [SIMULAÇÃO]: alerta SOS acionado por Lucas em Trilha do Bosque CCHLA (-7.14550, -34.84280).',
         sentAt: new Date(Date.now() - 1000 * 60 * 4).toISOString(),
         status: 'entregue',
       },
@@ -850,7 +850,7 @@ export const INITIAL_ALERTS: EmergencyAlert[] = [
         id: 'sms_02',
         contactName: 'Dr. Paulo Sampaio (Esposo)',
         contactPhone: '(83) 99900-1122',
-        message: 'GUARDIÃO UFPB: Alerta SOS acionado por Helena em CT - Centro de Tecnologia (-7.14480, -34.84860). Segurança no local.',
+        message: 'UNIGUARD [SIMULAÇÃO]: alerta SOS acionado por Helena em CT - Centro de Tecnologia (-7.14480, -34.84860).',
         sentAt: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
         status: 'entregue',
       },
@@ -911,7 +911,7 @@ export const INITIAL_ALERTS: EmergencyAlert[] = [
         id: 'sms_03',
         contactName: 'Aline Ramos (Irmã)',
         contactPhone: '(83) 98112-9900',
-        message: 'GUARDIÃO UFPB: Alerta SOS com QUEDA DE SINAL para Gabriel. Última coordenada conhecida: Mata do CCEN (-7.13780, -34.84100). Foto gravada no servidor.',
+        message: 'UNIGUARD [SIMULAÇÃO]: alerta SOS com queda de sinal para Gabriel. Última coordenada conhecida: Mata do CCEN (-7.13780, -34.84100).',
         sentAt: new Date(Date.now() - 1000 * 60 * 18).toISOString(),
         status: 'entregue',
       },

@@ -1,9 +1,8 @@
-package com.example.uniguard
+package com.priscillacahino.uniguard
 
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
@@ -48,6 +47,11 @@ class IntegratedSosActivity : AppCompatActivity() {
     private var currentPhoto: File? = null
     private var statusListener: ListenerRegistration? = null
     private var longPressCompleted = false
+    private val holdAction = Runnable {
+        longPressCompleted = true
+        sosButton.clearAnimation()
+        triggerSos()
+    }
 
     private val smsPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
         requestLocationAndDispatch()
@@ -96,15 +100,11 @@ class IntegratedSosActivity : AppCompatActivity() {
                     longPressCompleted = false
                     sosButton.startAnimation(pulse)
                     statusText.text = "Continue pressionando..."
-                    handler.postDelayed({
-                        longPressCompleted = true
-                        sosButton.clearAnimation()
-                        triggerSos()
-                    }, HOLD_DURATION_MS)
+                    handler.postDelayed(holdAction, HOLD_DURATION_MS)
                     true
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    handler.removeCallbacksAndMessages(null)
+                    handler.removeCallbacks(holdAction)
                     sosButton.clearAnimation()
                     if (!longPressCompleted) statusText.text = "Mantenha pressionado por 2 segundos"
                     view.performClick()
@@ -212,13 +212,19 @@ class IntegratedSosActivity : AppCompatActivity() {
         statusListener?.remove()
         statusListener = FirebaseFirestore.getInstance().collection(ALERTS).document(alertId)
             .addSnapshotListener { snapshot, _ ->
-                statusText.text = when (snapshot?.getString("status")) {
+                val status = snapshot?.getString("status")
+                statusText.text = when (status) {
                     "em_deslocamento" -> "Central confirmou: equipe em deslocamento"
                     "no_local" -> "Equipe chegou ao local"
                     "resolvido" -> "Ocorrência encerrada"
                     "cancelado_usuario" -> "Ocorrência cancelada"
                     "pendente" -> "Alerta recebido pela central"
                     else -> return@addSnapshotListener
+                }
+                if (status == "resolvido" || status == "cancelado_usuario") {
+                    activeAlertId = null
+                    statusListener?.remove()
+                    statusListener = null
                 }
             }
     }
@@ -263,7 +269,7 @@ class IntegratedSosActivity : AppCompatActivity() {
             val manager = getSystemService(SmsManager::class.java)
             val message = "ALERTA SOS - UniGuard\nPreciso de ajuda.\n$location"
             manager.sendMultipartTextMessage(number, null, manager.divideMessage(message), null, null)
-            startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$number")))
+            toast("SMS de emergência enviado")
         } catch (_: Exception) {
             toast("Não foi possível enviar o SMS")
         }

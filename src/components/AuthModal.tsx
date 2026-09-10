@@ -220,6 +220,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         id="modal-auth-flow"
         className="relative w-full max-w-lg bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden text-slate-800 flex flex-col max-h-[92vh]"
       >
+        {!authenticate && (
+          <div className="bg-amber-50 border-b border-amber-200 px-5 py-2.5 text-[11px] font-semibold text-amber-900">
+            Modo demonstração: login, cadastro e recuperação de senha são apenas simulações locais e não criam contas reais.
+          </div>
+        )}
         {/* TOPO COM IDENTIDADE VISUAL INSTITUCIONAL */}
         <div className="p-5 sm:p-6 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -229,7 +234,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-                  Guardião <span className="text-[#003d71]">UFPB</span>
+                  Uni<span className="text-[#003d71]">Guard</span>
                 </h2>
                 <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-blue-100/70 text-[#003d71]">
                   Acesso Institucional
@@ -415,7 +420,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 ) : (
                   <>
                     <Lock className="w-4 h-4" />
-                    <span>Entrar no Guardião UFPB</span>
+                    <span>Entrar no UniGuard</span>
                   </>
                 )}
               </button>
@@ -568,10 +573,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       <span>Agora</span>
                     </div>
                     <div className="text-xs">
-                      <div className="font-bold text-white">De: seguranca@ufpb.br (Guardião UFPB)</div>
+                      <div className="font-bold text-white">De: demonstração local do UniGuard</div>
                       <div className="text-slate-400 text-[11px]">Para: {forgotEmail}</div>
                       <div className="mt-2 text-slate-300">
-                        Você solicitou a redefinição de senha para sua conta do Guardião UFPB. Clique no link seguro abaixo para criar sua nova senha:
+                        Esta é uma simulação local de redefinição de senha do UniGuard. Nenhum e-mail real foi enviado.
                       </div>
                     </div>
 
@@ -587,7 +592,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       className="w-full py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all shadow"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
-                      <span>Abrir: guardiao-ufpb.ufpb.br/redefinir-senha?token={generatedResetToken}</span>
+                      <span>Token demonstrativo: {generatedResetToken}</span>
                     </button>
                   </div>
 

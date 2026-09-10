@@ -81,7 +81,7 @@ export const AlertHistoryModal: React.FC<AlertHistoryModalProps> = ({
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `auditoria_guardiao_ufpb_${Date.now()}.csv`);
+    link.setAttribute('download', `historico_uniguard_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

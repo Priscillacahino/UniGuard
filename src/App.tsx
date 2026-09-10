@@ -1,10 +1,10 @@
 /**
  * @license
- * Guardião UFPB - Sistema de Apoio à Segurança e Geolocalização Universitária
+ * UniGuard - Protótipo de Apoio à Segurança e Geolocalização Universitária
  * © 2026 Priscilla S Cahino. Todos os direitos reservados.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
 import {
   UserProfile,
   GeoCoordinate,
@@ -25,6 +25,7 @@ import {
   UFPB_CAMPI,
 } from './data/ufpbData';
 import { isPointInsideCampus, getCampusById } from './utils/geo';
+import { parseStoredJson } from './utils/storage';
 import { SoundEffects } from './utils/sound';
 import {
   changeAlertStatus,
@@ -34,13 +35,18 @@ import {
 } from './services/alertRepository';
 import { authenticateOperator, signOutFirebase } from './services/firebase';
 
-import { UserApp } from './components/UserApp';
-import { SecurityDashboard } from './components/SecurityDashboard';
 import { IdentityModal } from './components/IdentityModal';
 import { AboutModal } from './components/AboutModal';
 import { FlowchartModal } from './components/FlowchartModal';
 import { AuthModal } from './components/AuthModal';
 import { Footer } from './components/Footer';
+
+const UserApp = lazy(() =>
+  import('./components/UserApp').then((module) => ({ default: module.UserApp })),
+);
+const SecurityDashboard = lazy(() =>
+  import('./components/SecurityDashboard').then((module) => ({ default: module.SecurityDashboard })),
+);
 
 import {
   Shield,
@@ -56,16 +62,34 @@ import {
   LogIn,
 } from 'lucide-react';
 
+const STORAGE_KEYS = {
+  loggedIn: 'uniguard_logged_in',
+  user: 'uniguard_user',
+  campus: 'uniguard_campus',
+  alerts: 'uniguard_alerts',
+  tracking: 'uniguard_tracking',
+} as const;
+
+function readStorageWithLegacy(key: string, legacyKey: string): string | null {
+  const currentValue = localStorage.getItem(key);
+  if (currentValue !== null) return currentValue;
+  const legacyValue = localStorage.getItem(legacyKey);
+  if (legacyValue !== null) localStorage.setItem(key, legacyValue);
+  return legacyValue;
+}
+
 export default function App() {
   // 1. Estados Globais do Usuário e Autenticação
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
-    return firebaseEnabled ? false : localStorage.getItem('guardiao_ufpb_logged_in') !== 'false';
+    return firebaseEnabled
+      ? false
+      : readStorageWithLegacy(STORAGE_KEYS.loggedIn, 'guardiao_ufpb_logged_in') !== 'false';
   });
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem('guardiao_ufpb_user');
-    return saved ? JSON.parse(saved) : DEFAULT_USER_PROFILE;
+    const saved = readStorageWithLegacy(STORAGE_KEYS.user, 'guardiao_ufpb_user');
+    return parseStoredJson(saved, DEFAULT_USER_PROFILE);
   });
 
   const [isIdentityModalOpen, setIsIdentityModalOpen] = useState(false);
@@ -101,7 +125,7 @@ export default function App() {
   const handleLogout = () => {
     SoundEffects.playClick();
     setIsLoggedIn(false);
-    localStorage.setItem('guardiao_ufpb_logged_in', 'false');
+    localStorage.setItem(STORAGE_KEYS.loggedIn, 'false');
     setIsAuthModalOpen(true);
     void signOutFirebase();
   };
@@ -110,8 +134,8 @@ export default function App() {
   const handleLoginSuccess = (profile: UserProfile) => {
     SoundEffects.playSuccess();
     setUserProfile(profile);
-    localStorage.setItem('guardiao_ufpb_user', JSON.stringify(profile));
-    localStorage.setItem('guardiao_ufpb_logged_in', 'true');
+    localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(profile));
+    localStorage.setItem(STORAGE_KEYS.loggedIn, 'true');
     setIsLoggedIn(true);
     setIsAuthModalOpen(false);
   };
@@ -121,7 +145,7 @@ export default function App() {
 
   // 3. Campus Ativo (Selecionável pelo usuário entre os 5 Campi da UFPB)
   const [selectedCampusId, setSelectedCampusId] = useState<UfpbCampusId>(() => {
-    const saved = localStorage.getItem('guardiao_ufpb_campus');
+    const saved = readStorageWithLegacy(STORAGE_KEYS.campus, 'guardiao_ufpb_campus');
     return (saved as UfpbCampusId) || 'campus_1_joao_pessoa';
   });
 
@@ -166,8 +190,8 @@ export default function App() {
 
   // 5. Alertas e Unidades de Segurança
   const [alerts, setAlerts] = useState<EmergencyAlert[]>(() => {
-    const saved = localStorage.getItem('guardiao_ufpb_alerts');
-    return saved ? JSON.parse(saved) : INITIAL_ALERTS;
+    const saved = readStorageWithLegacy(STORAGE_KEYS.alerts, 'guardiao_ufpb_alerts');
+    return parseStoredJson(saved, INITIAL_ALERTS);
   });
 
   // Quando o Firebase estiver configurado, esta coleção passa a ser a fonte
@@ -187,25 +211,28 @@ export default function App() {
 
   // 6. Configuração de Rastreamento de Localização
   const [trackingConfig, setTrackingConfig] = useState<LocationTrackingConfig>(() => {
-    const saved = localStorage.getItem('guardiao_ufpb_tracking');
-    return saved ? JSON.parse(saved) : DEFAULT_TRACKING_CONFIG;
+    const saved = readStorageWithLegacy(STORAGE_KEYS.tracking, 'guardiao_ufpb_tracking');
+    return parseStoredJson(saved, DEFAULT_TRACKING_CONFIG);
   });
 
   // Salvar no localStorage quando houver mudanças
   useEffect(() => {
-    localStorage.setItem('guardiao_ufpb_user', JSON.stringify(userProfile));
+    localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(userProfile));
   }, [userProfile]);
 
   useEffect(() => {
-    localStorage.setItem('guardiao_ufpb_alerts', JSON.stringify(alerts));
+    // Não persiste fotografias base64 no navegador. A captura fica apenas em
+    // memória durante a demonstração ou é armazenada no Firebase Storage.
+    const alertsWithoutEmbeddedPhotos = alerts.map(({ photoSnapshot: _photo, ...alert }) => alert);
+    localStorage.setItem(STORAGE_KEYS.alerts, JSON.stringify(alertsWithoutEmbeddedPhotos));
   }, [alerts]);
 
   useEffect(() => {
-    localStorage.setItem('guardiao_ufpb_tracking', JSON.stringify(trackingConfig));
+    localStorage.setItem(STORAGE_KEYS.tracking, JSON.stringify(trackingConfig));
   }, [trackingConfig]);
 
   useEffect(() => {
-    localStorage.setItem('guardiao_ufpb_campus', selectedCampusId);
+    localStorage.setItem(STORAGE_KEYS.campus, selectedCampusId);
   }, [selectedCampusId]);
 
   // Alterar campus ativo e reposicionar telemetria
@@ -398,7 +425,7 @@ export default function App() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-base sm:text-lg text-slate-800 tracking-tight">
-                  Guardião <span className="text-[#003d71]">UFPB</span>
+                  Uni<span className="text-[#003d71]">Guard</span>
                 </span>
                 <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-[#003d71] border border-blue-100 uppercase tracking-wide">
                   {activeCampus.shortName}
@@ -500,7 +527,7 @@ export default function App() {
                 SoundEffects.playClick();
                 setIsAboutModalOpen(true);
               }}
-              title="Sobre o Projeto Guardião UFPB"
+              title="Sobre o projeto UniGuard"
               className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200 text-xs transition-colors flex items-center gap-1.5 cursor-pointer font-medium"
             >
               <Info className="w-4 h-4 text-[#003d71]" />
@@ -512,7 +539,7 @@ export default function App() {
               <div className="flex items-center gap-1.5 pl-1.5 border-l border-slate-200">
                 <button
                   onClick={handleLogout}
-                  title="Encerrar sessão no Guardião UFPB"
+                  title="Encerrar sessão no UniGuard"
                   className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 border border-slate-200 hover:border-rose-200 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
                 >
                   <LogOut className="w-3.5 h-3.5 text-rose-600" />
@@ -543,7 +570,12 @@ export default function App() {
 
       {/* 2. CONTEÚDO PRINCIPAL (CONDICIONAL POR ABA) */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
-        {activeTab === 'user' ? (
+        <Suspense fallback={
+          <div className="min-h-[45vh] flex items-center justify-center text-sm font-semibold text-slate-500">
+            Carregando módulo do UniGuard...
+          </div>
+        }>
+          {activeTab === 'user' ? (
           <UserApp
             userProfile={userProfile}
             setUserProfile={setUserProfile}
@@ -569,7 +601,7 @@ export default function App() {
             onLogout={handleLogout}
             isOffline={!isOnline}
           />
-        ) : (
+          ) : (
           <SecurityDashboard
             alerts={alerts}
             securityUnits={securityUnits}
@@ -582,7 +614,8 @@ export default function App() {
             selectedCampusId={selectedCampusId}
             onSelectCampus={handleSelectCampus}
           />
-        )}
+          )}
+        </Suspense>
       </main>
 
       {/* 3. MODAIS */}

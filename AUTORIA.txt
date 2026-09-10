@@ -1,5 +1,5 @@
 ================================================================================
-GUARDIÃO UFPB - SISTEMA DE SEGURANÇA E GEOLOCALIZAÇÃO UNIVERSITÁRIA
+UNIGUARD - PROTÓTIPO DE SEGURANÇA E GEOLOCALIZAÇÃO UNIVERSITÁRIA
 ================================================================================
 
 Projeto Conceitual e Tecnológico voltado para o apoio à segurança de estudantes,

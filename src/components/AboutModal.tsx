@@ -12,7 +12,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div 
-        id="modal-about-guardiao"
+        id="modal-about-uniguard"
         className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white border border-slate-200 rounded-2xl shadow-2xl p-6 sm:p-8 text-slate-800"
       >
         {/* Botão Fechar */}
@@ -31,7 +31,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
           </div>
           <div>
             <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-              Guardião UFPB
+              UniGuard
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 font-medium">
               Sistema de Apoio à Segurança e Geolocalização Universitária
@@ -45,7 +45,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
           {/* Apresentação */}
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-medium">
             <p>
-              O <strong>Guardião UFPB</strong> é um projeto em desenvolvimento com o objetivo de contribuir diretamente para a segurança de estudantes, professores, servidores técnico-administrativos e visitantes dentro do campus da Universidade Federal da Paraíba (UFPB).
+              O <strong>UniGuard</strong> é um projeto acadêmico em desenvolvimento que explora como a tecnologia pode apoiar a segurança de estudantes, professores, servidores técnico-administrativos e visitantes em ambientes universitários, usando a UFPB como contexto demonstrativo.
             </p>
           </div>
 
@@ -124,7 +124,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
               <span>Aviso de Protótipo Conceitual</span>
             </div>
             <p className="font-medium leading-relaxed">
-              Atualmente, o Guardião UFPB é um protótipo conceitual para fins acadêmicos e de pesquisa. Os dados, simulações e localizações apresentados são simulações interativas e não possuem integração ativa com serviços oficiais de segurança pública neste ambiente demonstrativo.
+              Atualmente, o UniGuard é um protótipo conceitual para fins acadêmicos e de pesquisa. Os dados e as localizações apresentados são simulações interativas e não possuem integração ativa com a UFPB ou com serviços oficiais de segurança pública.
             </p>
           </div>
 

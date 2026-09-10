@@ -155,7 +155,7 @@ export const FlowchartModal: React.FC<FlowchartModalProps> = ({ isOpen, onClose 
                   Arquitetura de Processos
                 </span>
                 <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
-                  Fluxograma Geral do Projeto Guardião UFPB
+                  Fluxograma Geral do Projeto UniGuard
                 </h2>
               </div>
               <p className="text-xs text-slate-500 font-medium mt-0.5">

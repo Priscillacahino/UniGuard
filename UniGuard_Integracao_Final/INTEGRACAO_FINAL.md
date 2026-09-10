@@ -24,7 +24,7 @@ O próprio `app/build.gradle.kts` só ativa `com.google.gms.google-services` qua
 Ação:
 1. Firebase Console > Configurações do projeto.
 2. Adicionar/selecionar aplicativo Android.
-3. Package name: `com.example.uniguard`.
+3. Package name: `com.priscillacahino.uniguard`.
 4. Baixar `google-services.json`.
 5. Colocar em `app/google-services.json`.
 

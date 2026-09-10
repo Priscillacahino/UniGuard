@@ -25,6 +25,16 @@ Explorar como recursos de tecnologia, geolocalização e comunicação digital p
 
 ---
 
+## 💭 Por que criei o UniGuard
+
+O UniGuard nasceu da observação de que determinados trajetos dentro de ambientes universitários podem gerar insegurança, especialmente para pessoas que precisam circular desacompanhadas. Campi extensos, áreas de preservação, iluminação insuficiente e caminhos com pouca circulação podem aumentar essa sensação de vulnerabilidade.
+
+A proposta busca facilitar o pedido de ajuda e permitir que a equipe responsável receba informações essenciais, como localização e horário, com mais rapidez. O foco está principalmente em estudantes, servidores, mulheres, pessoas LGBTQIA+ e outros públicos que possam se sentir mais vulneráveis durante seus deslocamentos.
+
+Essa motivação parte de uma percepção e de experiências de circulação no ambiente universitário. Ela não representa uma afirmação sobre índices oficiais de criminalidade da UFPB.
+
+---
+
 ## 💡 Como a solução foi pensada
 
 1. O usuário realiza sua identificação e escolhe o campus.
@@ -87,6 +97,14 @@ As funcionalidades abaixo representam possibilidades de evolução e não devem 
 - implantação de uma API segura entre o aplicativo e um banco relacional;
 - relatórios institucionais, mapas de calor e indicadores com dados reais autorizados;
 - testes de segurança, privacidade, acessibilidade e desempenho em ambiente piloto.
+
+---
+
+## 📝 Validação com a comunidade universitária
+
+Uma etapa futura prevê a aplicação de um questionário com estudantes e servidores para compreender a percepção de segurança no campus. A pesquisa poderá abordar condições de iluminação, circulação, horários, trajetos e locais considerados pontos de atenção.
+
+As respostas poderão orientar melhorias no aplicativo e ajudar a avaliar se a solução atende a uma necessidade percebida pela comunidade. Enquanto a pesquisa não for realizada, o projeto não apresenta seus pressupostos como resultados comprovados.
 
 ---
 
@@ -207,7 +225,7 @@ Não utilize dados pessoais reais durante testes públicos deste protótipo.
 ## 👩‍💻 Autoria
 
 **Priscilla Cahino**  
-Concepção, prototipação e desenvolvimento acadêmico do UniGuard.
+Idealização, concepção do produto e prototipação do UniGuard.
 
 - [GitHub](https://github.com/Priscillacahino)
 - [Portfólio profissional](https://portifoliocpriscillacom.vercel.app/)
@@ -215,4 +233,8 @@ Concepção, prototipação e desenvolvimento acadêmico do UniGuard.
 
 ---
 
-Desenvolvido com finalidade acadêmica e demonstrativa. 🛡️
+### Direitos e uso
+
+O conteúdo autoral, a identidade visual e a documentação do UniGuard não estão autorizados para reprodução, comercialização ou uso institucional sem autorização prévia da autora. Bibliotecas, componentes e demais recursos de terceiros permanecem sujeitos às respectivas licenças.
+
+Desenvolvido como projeto tecnológico e acadêmico em evolução, com finalidade demonstrativa. 🛡️

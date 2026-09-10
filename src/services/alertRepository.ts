@@ -1,4 +1,5 @@
 import {
+  arrayUnion,
   collection,
   doc,
   onSnapshot,
@@ -7,24 +8,30 @@ import {
   setDoc,
   updateDoc,
 } from 'firebase/firestore';
-import type { AlertStatus, EmergencyAlert } from '../types';
+import { getDownloadURL, ref, uploadString } from 'firebase/storage';
+import type { AlertStatus, EmergencyAlert, EmergencyPhotoSnapshot } from '../types';
 import {
   ensureFirebaseAuthentication,
   firebaseEnabled,
+  firebaseStorage,
   firestore,
   currentFirebaseUserId,
 } from './firebase';
 
 const COLLECTION = 'emergencyAlerts';
 
-function normalizeAlert(value: EmergencyAlert & { photoUrl?: string; photoCapturedAt?: string }): EmergencyAlert {
+function normalizeAlert(value: EmergencyAlert & {
+  photoUrl?: string;
+  photoCapturedAt?: string;
+  photoSource?: EmergencyPhotoSnapshot['source'];
+}): EmergencyAlert {
   if (value.photoSnapshot || !value.photoUrl) return value;
   return {
     ...value,
     photoSnapshot: {
       dataUrl: value.photoUrl,
       capturedAt: value.photoCapturedAt || value.updatedAt,
-      source: 'camera_traseira',
+      source: value.photoSource || 'camera_traseira',
       latitude: value.location?.lat,
       longitude: value.location?.lng,
       protocolNumber: value.protocolNumber,
@@ -39,10 +46,31 @@ function withoutUndefined<T>(value: T): T {
 export async function publishAlert(alert: EmergencyAlert): Promise<void> {
   if (!firestore) return;
   await ensureFirebaseAuthentication();
-  await setDoc(doc(firestore, COLLECTION, alert.id), withoutUndefined({
-    ...alert,
+  const { photoSnapshot, ...alertWithoutEmbeddedPhoto } = alert;
+  const alertDocument = doc(firestore, COLLECTION, alert.id);
+
+  // A imagem base64 permanece apenas na memória/localStorage para a demonstração.
+  // Fotos reais são enviadas ao Storage; o Firestore recebe somente a URL.
+  await setDoc(alertDocument, withoutUndefined({
+    ...alertWithoutEmbeddedPhoto,
     authUid: currentFirebaseUserId(),
   }));
+
+  const isRealPhoto = photoSnapshot
+    && photoSnapshot.source !== 'simulacao_evidencia'
+    && photoSnapshot.dataUrl.startsWith('data:image/');
+
+  if (isRealPhoto && firebaseStorage) {
+    const photoReference = ref(firebaseStorage, `emergency-evidence/${alert.id}.jpg`);
+    await uploadString(photoReference, photoSnapshot.dataUrl, 'data_url');
+    const photoUrl = await getDownloadURL(photoReference);
+    await updateDoc(alertDocument, {
+      photoUrl,
+      photoCapturedAt: photoSnapshot.capturedAt,
+      photoSource: photoSnapshot.source,
+      updatedAt: new Date().toISOString(),
+    });
+  }
 }
 
 export async function changeAlertStatus(
@@ -60,7 +88,11 @@ export async function changeAlertStatus(
   };
   if (unitId) patch.assignedUnitId = unitId;
   if (unitName) patch.assignedUnitName = unitName;
-  if (note) patch.lastSecurityNote = note;
+  if (note) {
+    const timestampedNote = `[${new Date().toLocaleTimeString('pt-BR')}] ${note}`;
+    patch.lastSecurityNote = note;
+    patch.securityNotes = arrayUnion(timestampedNote);
+  }
   if (status === 'resolvido') patch.resolvedAt = new Date().toISOString();
   await updateDoc(doc(firestore, COLLECTION, alertId), patch);
 }

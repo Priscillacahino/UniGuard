@@ -20,11 +20,12 @@ export const PhotoEvidenceModal: React.FC<PhotoEvidenceModalProps> = ({
   locationName,
 }) => {
   if (!isOpen || !photoSnapshot) return null;
+  const isSimulated = photoSnapshot.source === 'simulacao_evidencia';
 
   const handleDownload = () => {
     const link = document.createElement('a');
     link.href = photoSnapshot.dataUrl;
-    link.download = `EVIDENCIA_${protocolNumber || 'SOS'}_${Date.now()}.jpg`;
+    link.download = `${isSimulated ? 'IMAGEM_DEMONSTRATIVA' : 'CAPTURA'}_${protocolNumber || 'SOS'}_${Date.now()}.jpg`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -50,14 +51,14 @@ export const PhotoEvidenceModal: React.FC<PhotoEvidenceModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-wider bg-red-600 text-white px-2 py-0.5 rounded-full">
-                  Evidência Instantânea
+                  {isSimulated ? 'Imagem demonstrativa' : 'Captura autorizada'}
                 </span>
                 <span className="font-mono text-xs text-slate-400 font-bold">
                   {protocolNumber || photoSnapshot.protocolNumber || 'SOS-UFPB'}
                 </span>
               </div>
               <h3 className="text-base font-bold text-white mt-0.5">
-                Foto Registrada no Acionamento do SOS
+                {isSimulated ? 'Representação visual sem foto real' : 'Foto registrada no acionamento do SOS'}
               </h3>
             </div>
           </div>
@@ -75,14 +76,14 @@ export const PhotoEvidenceModal: React.FC<PhotoEvidenceModalProps> = ({
           <div className="relative rounded-xl overflow-hidden border border-slate-800 bg-black flex items-center justify-center shadow-inner max-h-[50vh]">
             <img
               src={photoSnapshot.dataUrl}
-              alt="Evidência fotográfica de emergência"
+              alt={isSimulated ? 'Imagem demonstrativa do alerta' : 'Foto capturada durante o alerta'}
               className="w-full h-auto object-contain max-h-[50vh]"
               referrerPolicy="no-referrer"
             />
             
             <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/75 backdrop-blur-sm border border-red-500/40 text-[10px] font-bold text-red-300">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-              <span>CAPTURA MOMENTO DO SOS</span>
+              <span>{isSimulated ? 'SIMULAÇÃO — SEM FOTO REAL' : 'CAPTURA AUTORIZADA'}</span>
             </div>
           </div>
 
@@ -138,7 +139,9 @@ export const PhotoEvidenceModal: React.FC<PhotoEvidenceModalProps> = ({
           <div className="p-2.5 rounded-xl bg-blue-950/30 border border-blue-800/40 text-[11px] text-blue-300 flex items-start gap-2">
             <ShieldAlert className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
             <p>
-              Esta imagem foi autorizada pelo discente/servidor no momento do acionamento emergencial do botão SOS, sendo transmitida instantaneamente à Central de Segurança Universitária da UFPB para identificação visual e despacho tático das viaturas.
+              {isSimulated
+                ? 'Esta imagem foi gerada apenas para demonstrar o fluxo quando a câmera não está disponível ou não foi autorizada. Ela não constitui evidência fotográfica.'
+                : 'Esta imagem foi capturada mediante permissão do usuário e está associada ao alerta demonstrativo. O projeto não possui integração oficial com a segurança da UFPB.'}
             </p>
           </div>
         </div>
@@ -146,7 +149,7 @@ export const PhotoEvidenceModal: React.FC<PhotoEvidenceModalProps> = ({
         {/* Rodapé de Ações */}
         <div className="p-4 border-t border-slate-800 bg-slate-950/60 flex items-center justify-between">
           <span className="text-[11px] text-slate-500 font-mono">
-            Protocolo Certificado UFPB
+            {isSimulated ? 'Registro demonstrativo' : 'Captura associada ao protocolo'}
           </span>
 
           <div className="flex items-center gap-2">

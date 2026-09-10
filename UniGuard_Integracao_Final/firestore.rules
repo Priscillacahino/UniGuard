@@ -7,7 +7,8 @@ service cloud.firestore {
 
     function isOperator() {
       return isSignedIn()
-        && exists(/databases/$(database)/documents/operators/$(request.auth.uid));
+        && exists(/databases/$(database)/documents/operators/$(request.auth.uid))
+        && get(/databases/$(database)/documents/operators/$(request.auth.uid)).data.active == true;
     }
 
     function isOwner() {
@@ -17,22 +18,35 @@ service cloud.firestore {
     match /emergencyAlerts/{alertId} {
       // Android/Web do usuário podem criar apenas o próprio alerta e sempre como pendente.
       allow create: if isSignedIn()
+        && request.resource.data.keys().hasAll([
+          'id', 'authUid', 'status', 'createdAt', 'updatedAt', 'location'
+        ])
         && request.resource.data.id == alertId
         && request.resource.data.authUid == request.auth.uid
         && request.resource.data.status == 'pendente';
 
       // Dono do alerta visualiza o próprio chamado; operadores visualizam todos.
-      allow read: if isSignedIn()
-        && (resource.data.authUid == request.auth.uid || isOperator());
+      allow read: if isOwner() || isOperator();
 
-      // Operador pode alterar o ciclo operacional completo.
-      allow update: if isOperator();
-
-      // Usuário pode somente cancelar o próprio alerta.
+      // Usuário pode cancelar o próprio alerta sem alterar outros dados.
       allow update: if isOwner()
         && request.resource.data.diff(resource.data).affectedKeys()
           .hasOnly(['status', 'updatedAt'])
         && request.resource.data.status == 'cancelado_usuario';
+
+      // O Android pode associar a foto enviada ao Storage ao próprio alerta.
+      allow update: if isOwner()
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['photoUrl', 'photoCapturedAt', 'photoSource', 'updatedAt']);
+
+      // A central altera somente os campos operacionais do atendimento.
+      allow update: if isOperator()
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.authUid == resource.data.authUid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status', 'updatedAt', 'assignedUnitId', 'assignedUnitName',
+          'lastSecurityNote', 'securityNotes', 'resolvedAt'
+        ]);
 
       allow delete: if false;
     }

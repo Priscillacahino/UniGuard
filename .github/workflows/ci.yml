@@ -1,0 +1,58 @@
+name: Validar UniGuard
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    name: Web — testes e build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Executar testes
+        run: npm test
+
+      - name: Verificar TypeScript
+        run: npm run lint
+
+      - name: Gerar aplicação web
+        run: npm run build
+
+  android:
+    name: Android — testes e APK demonstrativo
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Autorizar Gradle Wrapper
+        run: chmod +x gradlew
+
+      - name: Testar e gerar APK demonstrativo
+        run: ./gradlew testDebugUnitTest assembleDebug

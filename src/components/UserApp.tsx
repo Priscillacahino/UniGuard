@@ -315,7 +315,7 @@ export const UserApp: React.FC<UserAppProps> = ({
     SoundEffects.playSosTriggered();
     setIsCapturing(true);
     setIsTransmittingSos(true);
-    setSosProgressStage('📸 Capturando foto instantânea e gerando evidência pericial...');
+    setSosProgressStage('📸 Solicitando captura de imagem autorizada...');
     setSosProgressPercent(25);
 
     // Efeito visual de Flash
@@ -363,7 +363,7 @@ export const UserApp: React.FC<UserAppProps> = ({
     await new Promise((r) => setTimeout(r, 400));
 
     // Etapa 3: Notificação SMS
-    setSosProgressStage('📱 Disparando notificações SMS para contatos de emergência...');
+    setSosProgressStage('📱 Simulando notificações aos contatos de emergência...');
     setSosProgressPercent(85);
 
     const smsNotifications: SmsNotification[] = [];
@@ -375,16 +375,16 @@ export const UserApp: React.FC<UserAppProps> = ({
           id: `sms_${Date.now()}_${contact.id}`,
           contactName: contact.name,
           contactPhone: contact.phone,
-          message: `GUARDIÃO UFPB: Alerta SOS acionado por ${userProfile.name} em ${locInfo.location.name} (${currentCampus.shortName}). Foto instantânea e coordenadas enviadas à Segurança Universitária.`,
+          message: `[SIMULAÇÃO] UniGuard: alerta SOS de ${userProfile.name} em ${locInfo.location.name} (${currentCampus.shortName}).`,
           sentAt: new Date().toISOString(),
-          status: 'entregue',
+          status: 'simulado',
         });
       });
       setSmsFeedbackList(smsNotifications);
     }
 
     // Etapa 4: Conexão com Central
-    setSosProgressStage('🚨 Conectando chamado prioritário com a Central de Segurança da UFPB...');
+    setSosProgressStage('🚨 Registrando chamado no ambiente demonstrativo...');
     setSosProgressPercent(100);
     await new Promise((r) => setTimeout(r, 500));
 
@@ -415,7 +415,9 @@ export const UserApp: React.FC<UserAppProps> = ({
       photoSnapshot: photoSnapshot,
       smsNotificationsSent: smsNotifications,
       securityNotes: [
-        `[${new Date().toLocaleTimeString('pt-BR')}] Chamado SOS emitido no ${currentCampus.shortName}. Imagem instantânea transmitida para a equipe de segurança.`,
+        photoSnapshot.source === 'simulacao_evidencia'
+          ? `[${new Date().toLocaleTimeString('pt-BR')}] Chamado demonstrativo emitido no ${currentCampus.shortName}, sem captura fotográfica real.`
+          : `[${new Date().toLocaleTimeString('pt-BR')}] Chamado emitido no ${currentCampus.shortName} com imagem autorizada.`,
         safeCheck.inZone
           ? `Alerta dentro de Zona Segura (${safeCheck.zone?.name}). Posto local alertado.`
           : 'Alerta emitido pelo discente. Central em prontidão.',
@@ -607,7 +609,7 @@ export const UserApp: React.FC<UserAppProps> = ({
             </div>
 
             <div className="text-[11px] text-slate-400">
-              Protocolo sendo registrado nos servidores do Guardião UFPB
+              Protocolo sendo registrado no ambiente demonstrativo do UniGuard
             </div>
           </div>
         </div>
@@ -651,7 +653,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                   <span>Contatos de Emergência ({userProfile.emergencyContacts?.length || 1})</span>
                 </button>
                 <span>•</span>
-                <span className="text-slate-600 font-medium">SMS Automático Ativo</span>
+                <span className="text-slate-600 font-medium">SMS demonstrativo</span>
               </div>
             </div>
           </div>
@@ -662,7 +664,7 @@ export const UserApp: React.FC<UserAppProps> = ({
               className="px-3.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#003d71] text-xs font-bold border border-blue-200 flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <Users className="w-3.5 h-3.5" />
-              <span>Contatos SMS</span>
+              <span>Contatos</span>
             </button>
             <button
               onClick={onEditProfile}
@@ -674,7 +676,7 @@ export const UserApp: React.FC<UserAppProps> = ({
             {onLogout && (
               <button
                 onClick={onLogout}
-                title="Encerrar sessão no Guardião UFPB"
+                title="Encerrar sessão no UniGuard"
                 className="px-3.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-800 text-xs font-semibold border border-rose-200 flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5 text-rose-600" />
@@ -828,12 +830,12 @@ export const UserApp: React.FC<UserAppProps> = ({
         </div>
       )}
 
-      {/* FEEDBACK DE SMS ENVIADOS AOS CONTATOS */}
+      {/* FEEDBACK DEMONSTRATIVO DE NOTIFICAÇÕES AOS CONTATOS */}
       {smsFeedbackList.length > 0 && (
         <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 text-blue-950 text-xs animate-in fade-in">
           <div className="font-bold text-[#003d71] flex items-center gap-2 mb-2">
             <MessageSquare className="w-4 h-4 text-[#003d71]" />
-            <span>Notificações SMS de Emergência Transmitidas ({smsFeedbackList.length}):</span>
+            <span>Simulação de notificações aos contatos ({smsFeedbackList.length}):</span>
           </div>
           <div className="space-y-1.5">
             {smsFeedbackList.map((s) => (
@@ -843,7 +845,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                   <div className="text-[11px] text-slate-600 font-mono mt-0.5">{s.message}</div>
                 </div>
                 <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px] shrink-0">
-                  SMS Entregue
+                  Não enviado — demonstração
                 </span>
               </div>
             ))}
@@ -896,7 +898,7 @@ export const UserApp: React.FC<UserAppProps> = ({
                 >
                   <img
                     src={userActiveAlert.photoSnapshot.dataUrl}
-                    alt="Foto momento do SOS"
+                    alt={userActiveAlert.photoSnapshot.source === 'simulacao_evidencia' ? 'Imagem demonstrativa do alerta' : 'Foto capturada no alerta'}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     referrerPolicy="no-referrer"
                   />
@@ -908,13 +910,21 @@ export const UserApp: React.FC<UserAppProps> = ({
                 <div>
                   <div className="flex items-center gap-1.5 text-xs text-red-400 font-bold">
                     <Camera className="w-3.5 h-3.5" />
-                    <span>FOTO ENVIADA À EQUIPE DE SEGURANÇA</span>
+                    <span>
+                      {userActiveAlert.photoSnapshot.source === 'simulacao_evidencia'
+                        ? 'IMAGEM DEMONSTRATIVA — SEM FOTO REAL'
+                        : 'CAPTURA AUTORIZADA ASSOCIADA AO ALERTA'}
+                    </span>
                   </div>
                   <h4 className="text-sm font-bold text-white mt-0.5">
-                    Imagem registrada no momento do acionamento
+                    {userActiveAlert.photoSnapshot.source === 'simulacao_evidencia'
+                      ? 'Representação visual do fluxo de emergência'
+                      : 'Imagem registrada no momento do acionamento'}
                   </h4>
                   <p className="text-[11px] text-slate-400 mt-0.5">
-                    A Central de Segurança já recebeu esta imagem juntamente com o seu último local conhecido para despacho tático.
+                    {userActiveAlert.photoSnapshot.source === 'simulacao_evidencia'
+                      ? 'A câmera não foi utilizada. Esta imagem existe somente para demonstrar a interface.'
+                      : 'Quando o Firebase está configurado, a imagem é armazenada separadamente e vinculada ao alerta.'}
                   </p>
                 </div>
               </div>
@@ -1509,9 +1519,9 @@ export const UserApp: React.FC<UserAppProps> = ({
             id: `sms_test_${Date.now()}`,
             contactName: c.name,
             contactPhone: c.phone,
-            message: `[TESTE] GUARDIÃO UFPB: Simulação de alerta SOS para ${c.name}. Usuário: ${userProfile.name}. Campus: ${currentCampus.shortName}. Local: ${nearestInfo.location.name}.`,
+            message: `[SIMULAÇÃO] UniGuard: alerta SOS para ${c.name}. Usuário: ${userProfile.name}. Campus: ${currentCampus.shortName}. Local: ${nearestInfo.location.name}.`,
             sentAt: new Date().toISOString(),
-            status: 'entregue',
+            status: 'simulado',
           };
           setSmsFeedbackList((prev) => [testSms, ...prev]);
         }}
