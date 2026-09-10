@@ -10,12 +10,15 @@ O **UniGuard** é uma proposta de solução digital voltada ao apoio da seguran�
 
 ---
 
-## 📱 Tela do protótipo
+## 📱 Telas e protótipo no Figma
 
+🔗 **Protótipo editável:** [Abrir o UniGuard no Figma](https://www.figma.com/design/HMchmhVu5HFhaoIdmP5p2q/UniGuard?node-id=0-1&p=f&m=draw)
+
+🖼️ **Galeria completa:** [Visualizar as 15 telas individualmente](docs/prototipo-figma/README.md)
 
 ![Visão geral das telas do protótipo UniGuard](UniGuard_Telas_Prototipo.png)
 
-> A imagem acima reúne a jornada proposta para o aplicativo móvel, outras funcionalidades planejadas, a central de segurança web e o design system do projeto. As telas representam a visão de produto e podem conter recursos que ainda estão em desenvolvimento.
+> A imagem acima reúne a visão geral do produto. A galeria apresenta separadamente as telas de acesso, configuração, SOS, acompanhamento e recursos complementares. O material representa a visão de produto e pode conter funcionalidades ainda em desenvolvimento.
 
 ---
 
@@ -183,7 +186,7 @@ Consulte as [instruções específicas do banco](UniGuard_Banco_MySQL/README_BAN
 ```text
 UniGuard/
 ├── app/                        # Aplicativo Android em Kotlin
-├── docs/                       # Orientações de configuração e imagens
+├── docs/                       # Orientações, imagens e galeria do protótipo
 ├── src/                        # Protótipo web em React/TypeScript
 │   ├── components/             # Telas, painéis e modais
 │   ├── data/                   # Dados simulados dos campi
