@@ -12,6 +12,7 @@ O **UniGuard** é uma proposta de solução digital voltada ao apoio da seguran�
 
 ## 📱 Tela do protótipo
 
+
 ![Visão geral das telas do protótipo UniGuard](UniGuard_Telas_Prototipo.png)
 
 > A imagem acima reúne a jornada proposta para o aplicativo móvel, outras funcionalidades planejadas, a central de segurança web e o design system do projeto. As telas representam a visão de produto e podem conter recursos que ainda estão em desenvolvimento.
@@ -178,43 +179,7 @@ UniGuard/
 └── UniGuard_Preview_PowerBI.png
 ```
 
----
 
-## ▶️ Executar o protótipo web
-
-### Pré-requisitos
-
-- Node.js instalado;
-- npm ou Bun;
-- navegador atualizado.
-
-### Comandos
-
-```bash
-git clone https://github.com/Priscillacahino/UniGuard.git
-cd UniGuard
-npm install
-npm run dev
-```
-
-Abra no navegador o endereço informado pelo terminal, normalmente `http://localhost:3000`.
-
-Sem as credenciais do Firebase, o protótipo permanece em modo demonstrativo e utiliza dados locais/simulados.
-
----
-
-## 🤖 Executar o aplicativo Android
-
-1. Clone ou baixe o repositório.
-2. Abra a raiz do projeto no Android Studio.
-3. Aguarde a sincronização do Gradle.
-4. Utilize um emulador compatível ou um aparelho Android com depuração USB.
-5. Execute o módulo `app`.
-6. Autorize somente as permissões necessárias durante o teste.
-
-O projeto está configurado com `minSdk 24`, `targetSdk 35`, Java 17 e Kotlin. A integração completa com Firebase exige configuração adicional conforme o arquivo [`docs/FIREBASE_SETUP.md`](docs/FIREBASE_SETUP.md).
-
----
 
 ## 🔐 Privacidade, segurança e LGPD
 
