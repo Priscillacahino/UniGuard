@@ -1,17 +1,41 @@
 rules_version = '2';
+
 service firebase.storage {
   match /b/{bucket}/o {
-    function isOperator() {
-      return request.auth != null
-        && firestore.exists(/databases/(default)/documents/operators/$(request.auth.uid))
-        && firestore.get(/databases/(default)/documents/operators/$(request.auth.uid)).data.active == true;
+    function isVerifiedUser() {
+      return request.auth != null && request.auth.token.email_verified == true;
     }
+
+    function alertDocument(alertId) {
+      return firestore.get(/databases/(default)/documents/emergencyAlerts/$(alertId));
+    }
+
+    function isActiveMemberForAlert(alertId) {
+      return isVerifiedUser()
+        && firestore.exists(/databases/(default)/documents/emergencyAlerts/$(alertId))
+        && firestore.exists(/databases/(default)/documents/memberships/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/memberships/$(request.auth.uid)).data.active == true
+        && firestore.get(/databases/(default)/documents/memberships/$(request.auth.uid)).data.institutionId
+          == alertDocument(alertId).data.institutionId
+        && alertDocument(alertId).data.authUid == request.auth.uid;
+    }
+
+    function isActiveOperatorForAlert(alertId) {
+      return isVerifiedUser()
+        && firestore.exists(/databases/(default)/documents/emergencyAlerts/$(alertId))
+        && firestore.exists(/databases/(default)/documents/operators/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/operators/$(request.auth.uid)).data.active == true
+        && firestore.get(/databases/(default)/documents/operators/$(request.auth.uid)).data.institutionId
+          == alertDocument(alertId).data.institutionId;
+    }
+
     match /emergency-evidence/{alertId}.jpg {
-      allow write: if request.auth != null
-        && firestore.get(/databases/(default)/documents/emergencyAlerts/$(alertId)).data.authUid == request.auth.uid
-        && request.resource.size < 10 * 1024 * 1024
+      allow write: if isActiveMemberForAlert(alertId) || isActiveOperatorForAlert(alertId)
+        && request.resource != null
+        && request.resource.size < 5 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
-      allow read: if isOperator();
+
+      allow read: if isActiveMemberForAlert(alertId) || isActiveOperatorForAlert(alertId);
     }
   }
 }
