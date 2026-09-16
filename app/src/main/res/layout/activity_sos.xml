@@ -7,12 +7,11 @@
     android:layout_height="match_parent"
     android:padding="24dp">
 
-    <!-- Título -->
     <TextView
         android:id="@+id/txtTitulo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="24dp"
         android:text="UniGuard"
         android:textColor="#212121"
         android:textSize="30sp"
@@ -21,28 +20,26 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Descrição -->
     <TextView
         android:id="@+id/txtDescricao"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="12dp"
         android:gravity="center"
-        android:text="Cadastre um número para contato em caso de emergência."
+        android:text="Entre com uma conta verificada para conectar o SOS à central."
         android:textColor="#424242"
-        android:textSize="16sp"
+        android:textSize="15sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/txtTitulo" />
 
-    <!-- Campo para número de emergência -->
     <EditText
-        android:id="@+id/edtNumeroEmergencia"
+        android:id="@+id/edtEmail"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:hint="Número de emergência"
-        android:inputType="phone"
+        android:layout_marginTop="12dp"
+        android:hint="E-mail institucional"
+        android:inputType="textEmailAddress"
         android:maxLines="1"
         android:minHeight="48dp"
         android:padding="12dp"
@@ -52,37 +49,101 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/txtDescricao" />
 
-    <!-- Botão para salvar o número -->
+    <EditText
+        android:id="@+id/edtSenha"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="Senha (mínimo 8 caracteres)"
+        android:inputType="textPassword"
+        android:maxLines="1"
+        android:minHeight="48dp"
+        android:padding="12dp"
+        android:textColor="#212121"
+        android:textColorHint="#616161"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/edtEmail" />
+
+    <Button
+        android:id="@+id/btnEntrar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="4dp"
+        android:text="Entrar"
+        app:layout_constraintEnd_toStartOf="@id/btnCriarConta"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/edtSenha" />
+
+    <Button
+        android:id="@+id/btnCriarConta"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="8dp"
+        android:text="Criar conta"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/btnEntrar"
+        app:layout_constraintTop_toBottomOf="@id/edtSenha" />
+
+    <TextView
+        android:id="@+id/txtAuthStatus"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:gravity="center"
+        android:text="Faça login com e-mail verificado e vínculo institucional ativo."
+        android:textColor="#616161"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnEntrar" />
+
+    <EditText
+        android:id="@+id/edtNumeroEmergencia"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:hint="Número de emergência"
+        android:inputType="phone"
+        android:maxLines="1"
+        android:minHeight="48dp"
+        android:padding="12dp"
+        android:textColor="#212121"
+        android:textColorHint="#616161"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/txtAuthStatus" />
+
     <Button
         android:id="@+id/btnSalvarNumero"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:minHeight="48dp"
         android:text="Salvar número"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/edtNumeroEmergencia" />
 
-    <!-- Botão SOS -->
     <Button
         android:id="@+id/btnSOS"
-        android:layout_width="180dp"
-        android:layout_height="180dp"
-        android:layout_marginTop="36dp"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:layout_marginTop="20dp"
         android:text="SOS"
-        android:textSize="32sp"
+        android:textSize="30sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btnSalvarNumero" />
 
-    <!-- Aviso -->
     <TextView
         android:id="@+id/txtAviso"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="10dp"
         android:gravity="center"
         android:text="Mantenha pressionado por 2 segundos"
         android:textColor="#616161"
@@ -91,7 +152,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btnSOS" />
 
-    <!-- Direitos autorais -->
     <TextView
         android:id="@+id/txtDireitosAutorais"
         android:layout_width="0dp"
