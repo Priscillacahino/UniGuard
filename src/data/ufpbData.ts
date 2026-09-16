@@ -725,7 +725,6 @@ export const DEFAULT_USER_PROFILE: UserProfile = {
     },
   ],
   department: 'Centro de Tecnologia (CT) - Engenharia de Produção',
-  medicalNotes: 'Alérgica a dipirona. Asmática leve (usa bombinha). Tipo sanguíneo O+.',
   registeredAt: '2026-03-01T08:00:00Z',
   avatarSeed: 'Mariana',
   preferredCampusId: 'campus_1_joao_pessoa',
