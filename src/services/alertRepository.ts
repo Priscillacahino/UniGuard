@@ -4,6 +4,7 @@ import {
   doc,
   onSnapshot,
   query,
+  runTransaction,
   where,
   Timestamp,
   writeBatch,
@@ -193,19 +194,25 @@ export async function acknowledgeAlert(alertId: string): Promise<void> {
   const now = new Date().toISOString();
   const alertDocument = doc(firestore, COLLECTION, alertId);
   const auditDocument = doc(collection(firestore, AUDIT_COLLECTION));
-  const batch = writeBatch(firestore);
 
-  batch.update(alertDocument, {
-    receiptStatus: 'recebido_pela_central' as AlertReceiptStatus,
-    centralReceiptAt: now,
-    centralReceiptByUid: account.uid,
-    updatedAt: now,
+  await runTransaction(firestore, async (transaction) => {
+    const currentAlert = await transaction.get(alertDocument);
+    if (!currentAlert.exists()) return;
+
+    const currentData = currentAlert.data() as EmergencyAlert;
+    if (currentData.receiptStatus === 'recebido_pela_central') return;
+
+    transaction.update(alertDocument, {
+      receiptStatus: 'recebido_pela_central' as AlertReceiptStatus,
+      centralReceiptAt: now,
+      centralReceiptByUid: account.uid,
+      updatedAt: now,
+    });
+    transaction.set(
+      auditDocument,
+      createAuditEvent(auditDocument.id, account, alertId, 'alert_received', now),
+    );
   });
-  batch.set(
-    auditDocument,
-    createAuditEvent(auditDocument.id, account, alertId, 'alert_received', now),
-  );
-  await batch.commit();
 }
 
 export async function cancelAlert(alertId: string): Promise<void> {
