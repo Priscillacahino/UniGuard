@@ -323,19 +323,7 @@ export const IdentityModal: React.FC<IdentityModalProps> = ({
             </div>
           </div>
 
-          {/* Observações Médicas */}
-          <div className="pt-3 border-t border-slate-100">
-            <label className="block text-slate-600 mb-1 font-semibold">
-              Observações Médicas Relevantes (opcional - alergias, tipo sanguíneo, etc.)
-            </label>
-            <input
-              type="text"
-              value={formData.medicalNotes || ''}
-              onChange={(e) => setFormData({ ...formData, medicalNotes: e.target.value })}
-              placeholder="Ex: Diabético, Alergia a medicamentos..."
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#003d71] text-xs font-medium"
-            />
-          </div>
+          {/* Dados clínicos não são coletados pelo UniGuard. */}
 
           {/* Autorização de Localização (Geolocalização) */}
           <div className="pt-3 border-t border-slate-100">
