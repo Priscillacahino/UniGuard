@@ -18,7 +18,7 @@ service cloud.firestore {
         && resource.data.authUid == request.auth.uid;
     }
 
-    function isAlertOwnerOnCreate() {
+    function isOwnerOnCreate() {
       return isSignedIn()
         && request.resource.data.authUid == request.auth.uid;
     }
@@ -40,6 +40,27 @@ service cloud.firestore {
         'resolvido',
         'cancelado_usuario'
       ];
+    }
+
+    function hasValidUserProfile(profile) {
+      return profile is map
+        && profile.keys().hasOnly([
+          'id',
+          'name',
+          'documentNumber',
+          'role',
+          'phone',
+          'email',
+          'emergencyContactName',
+          'emergencyContactPhone',
+          'emergencyContactRelation',
+          'emergencyContacts',
+          'department',
+          'medicalNotes',
+          'registeredAt',
+          'avatarSeed',
+          'preferredCampusId'
+        ]);
     }
 
     function hasValidAlertIdentity(data) {
@@ -71,7 +92,7 @@ service cloud.firestore {
         && data.userId is string
         && data.userId.size() > 0
         && data.userId.size() <= 160
-        && data.userProfile is map
+        && hasValidUserProfile(data.userProfile)
         && data.category in [
           'urgencia_geral',
           'violencia_ameaca',
@@ -95,10 +116,76 @@ service cloud.firestore {
         && data.lastSignalTimestamp.size() <= 80;
     }
 
+    function hasValidOptionalAlertFields(data) {
+      return (!data.keys().hasAny(['campusId'])
+          || (data.campusId is string && data.campusId.size() <= 100))
+        && (!data.keys().hasAny(['campusName'])
+          || (data.campusName is string && data.campusName.size() <= 160))
+        && (!data.keys().hasAny(['customNote'])
+          || (data.customNote is string && data.customNote.size() <= 1000))
+        && (!data.keys().hasAny(['batteryLevel'])
+          || (data.batteryLevel is number
+            && data.batteryLevel >= 0
+            && data.batteryLevel <= 100))
+        && (!data.keys().hasAny(['source'])
+          || data.source in ['android', 'web', 'painel', 'api'])
+        && (!data.keys().hasAny(['isInSafeZone'])
+          || data.isInSafeZone is bool)
+        && (!data.keys().hasAny(['safeZoneName'])
+          || (data.safeZoneName is string && data.safeZoneName.size() <= 160))
+        && (!data.keys().hasAny(['userRouteHistory'])
+          || (data.userRouteHistory is list && data.userRouteHistory.size() <= 500))
+        && (!data.keys().hasAny(['smsNotificationsSent'])
+          || (data.smsNotificationsSent is list && data.smsNotificationsSent.size() <= 20))
+        && (!data.keys().hasAny(['photoUrl'])
+          || (data.photoUrl is string && data.photoUrl.size() <= 4096))
+        && (!data.keys().hasAny(['photoCapturedAt'])
+          || (data.photoCapturedAt is string && data.photoCapturedAt.size() <= 80))
+        && (!data.keys().hasAny(['photoSource'])
+          || data.photoSource in [
+            'camera_frontal',
+            'camera_traseira',
+            'camera_automatica',
+            'simulacao_evidencia'
+          ]);
+    }
+
     match /emergencyAlerts/{alertId} {
-      // Um usuário autenticado só pode criar o próprio alerta, como pendente.
-      // A lista de campos impede que dados administrativos sejam injetados na criação.
-      allow create: if isAlertOwnerOnCreate()
+      // Usuários autenticados só podem criar o próprio alerta pendente.
+      // Campos administrativos e operacionais não podem ser injetados pelo usuário.
+      allow create: if isOwnerOnCreate()
+        && request.resource.data.keys().hasOnly([
+          'id',
+          'authUid',
+          'protocolNumber',
+          'userId',
+          'userProfile',
+          'category',
+          'customNote',
+          'status',
+          'createdAt',
+          'updatedAt',
+          'campusId',
+          'campusName',
+          'location',
+          'locationName',
+          'isInsideCampus',
+          'isInSafeZone',
+          'safeZoneName',
+          'signalLost',
+          'lastSignalTimestamp',
+          'batteryLevel',
+          'userRouteHistory',
+          'smsNotificationsSent',
+          'source'
+        ])
+        && request.resource.data.id == alertId
+        && hasValidAlertIdentity(request.resource.data)
+        && hasValidOptionalAlertFields(request.resource.data);
+
+      // Criações de demonstração podem ser feitas somente por operador ativo.
+      // Mesmo nesse caso, os campos precisam passar pela mesma validação.
+      allow create: if isActiveOperator()
         && request.resource.data.keys().hasOnly([
           'id',
           'authUid',
@@ -133,24 +220,23 @@ service cloud.firestore {
           'photoSource'
         ])
         && request.resource.data.id == alertId
+        && request.resource.data.authUid == request.auth.uid
         && hasValidAlertIdentity(request.resource.data)
-        && (!request.resource.data.keys().hasAny(['campusId'])
-          || request.resource.data.campusId is string)
-        && (!request.resource.data.keys().hasAny(['campusName'])
-          || (request.resource.data.campusName is string
-            && request.resource.data.campusName.size() <= 160))
-        && (!request.resource.data.keys().hasAny(['customNote'])
-          || (request.resource.data.customNote is string
-            && request.resource.data.customNote.size() <= 1000))
-        && (!request.resource.data.keys().hasAny(['batteryLevel'])
-          || (request.resource.data.batteryLevel is number
-            && request.resource.data.batteryLevel >= 0
-            && request.resource.data.batteryLevel <= 100))
-        && (!request.resource.data.keys().hasAny(['source'])
-          || request.resource.data.source in ['android', 'web', 'painel', 'api'])
-        && (!request.resource.data.keys().hasAny(['photoUrl'])
-          || (request.resource.data.photoUrl is string
-            && request.resource.data.photoUrl.size() <= 4096));
+        && hasValidOptionalAlertFields(request.resource.data)
+        && (!request.resource.data.keys().hasAny(['assignedUnitId'])
+          || (request.resource.data.assignedUnitId is string
+            && request.resource.data.assignedUnitId.size() <= 160))
+        && (!request.resource.data.keys().hasAny(['assignedUnitName'])
+          || (request.resource.data.assignedUnitName is string
+            && request.resource.data.assignedUnitName.size() <= 200))
+        && (!request.resource.data.keys().hasAny(['securityNotes'])
+          || (request.resource.data.securityNotes is list
+            && request.resource.data.securityNotes.size() <= 100))
+        && (!request.resource.data.keys().hasAny(['resolvedAt'])
+          || request.resource.data.resolvedAt is string)
+        && (!request.resource.data.keys().hasAny(['responseTimeMinutes'])
+          || (request.resource.data.responseTimeMinutes is number
+            && request.resource.data.responseTimeMinutes >= 0));
 
       // O titular acompanha somente os próprios alertas.
       // Operadores ativos acompanham os alertas da central.
@@ -222,7 +308,7 @@ service cloud.firestore {
         && (!request.resource.data.keys().hasAny(['responseTimeMinutes'])
           || (request.resource.data.responseTimeMinutes is number
             && request.resource.data.responseTimeMinutes >= 0));
-      
+
       allow delete: if false;
     }
 
