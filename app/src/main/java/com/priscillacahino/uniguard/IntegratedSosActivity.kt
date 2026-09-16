@@ -26,7 +26,9 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.firebase.FirebaseApp
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.storage.FirebaseStorage
@@ -38,14 +40,21 @@ import java.util.UUID
 
 class IntegratedSosActivity : AppCompatActivity() {
     private lateinit var numberInput: EditText
+    private lateinit var emailInput: EditText
+    private lateinit var passwordInput: EditText
+    private lateinit var authStatusText: TextView
     private lateinit var statusText: TextView
     private lateinit var sosButton: Button
+    private lateinit var loginButton: Button
+    private lateinit var registerButton: Button
     private val preferences by lazy { getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE) }
     private val handler = Handler(Looper.getMainLooper())
     private val locationClient by lazy { LocationServices.getFusedLocationProviderClient(this) }
     private var activeAlertId: String? = null
     private var currentPhoto: File? = null
     private var statusListener: ListenerRegistration? = null
+    private var authStateListener: FirebaseAuth.AuthStateListener? = null
+    private var institutionAuthorized = false
     private var longPressCompleted = false
     private val holdAction = Runnable {
         longPressCompleted = true
@@ -71,11 +80,147 @@ class IntegratedSosActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sos)
         numberInput = findViewById(R.id.edtNumeroEmergencia)
+        emailInput = findViewById(R.id.edtEmail)
+        passwordInput = findViewById(R.id.edtSenha)
+        authStatusText = findViewById(R.id.txtAuthStatus)
         statusText = findViewById(R.id.txtAviso)
         sosButton = findViewById(R.id.btnSOS)
+        loginButton = findViewById(R.id.btnEntrar)
+        registerButton = findViewById(R.id.btnCriarConta)
         numberInput.setText(preferences.getString(KEY_NUMBER, ""))
         findViewById<Button>(R.id.btnSalvarNumero).setOnClickListener { saveNumber() }
+        purgeExpiredLocalEvidence()
+        configureAuthentication()
         configureSosButton()
+    }
+
+    private fun firebaseConfigured(): Boolean = FirebaseApp.getApps(this).isNotEmpty()
+
+    private fun configureAuthentication() {
+        if (!firebaseConfigured()) {
+            authStatusText.text = "Modo local: configure o Firebase para autenticação institucional."
+            loginButton.isEnabled = false
+            registerButton.isEnabled = false
+            return
+        }
+
+        loginButton.setOnClickListener { loginInstitutionalAccount() }
+        registerButton.setOnClickListener { registerInstitutionalAccount() }
+
+        val listener = FirebaseAuth.AuthStateListener { auth ->
+            handleAuthState(auth.currentUser)
+        }
+        authStateListener = listener
+        FirebaseAuth.getInstance().addAuthStateListener(listener)
+        handleAuthState(FirebaseAuth.getInstance().currentUser)
+    }
+
+    private fun handleAuthState(user: FirebaseUser?) {
+        if (user == null) {
+            institutionAuthorized = false
+            authStatusText.text = "Faça login com e-mail verificado e vínculo institucional ativo."
+            return
+        }
+        if (!user.isEmailVerified) {
+            institutionAuthorized = false
+            user.sendEmailVerification().addOnCompleteListener {
+                FirebaseAuth.getInstance().signOut()
+                authStatusText.text = "Confirme o e-mail recebido antes de usar o SOS."
+            }
+            return
+        }
+        verifyInstitutionalMembership(user)
+    }
+
+    private fun verifyInstitutionalMembership(user: FirebaseUser) {
+        FirebaseFirestore.getInstance()
+            .collection(MEMBERSHIPS)
+            .document(user.uid)
+            .get()
+            .addOnSuccessListener { membership ->
+                val active = membership.exists()
+                    && membership.getBoolean("active") == true
+                    && membership.getString("institutionId") == INSTITUTION_ID
+                institutionAuthorized = active
+                if (active) {
+                    authStatusText.text = "Conta verificada e vinculada à UFPB."
+                } else {
+                    FirebaseAuth.getInstance().signOut()
+                    authStatusText.text = "Vínculo ainda não aprovado pela instituição."
+                }
+            }
+            .addOnFailureListener {
+                institutionAuthorized = false
+                authStatusText.text = "Não foi possível validar o vínculo institucional."
+            }
+    }
+
+    private fun loginInstitutionalAccount() {
+        val email = emailInput.text.toString().trim().lowercase(Locale.ROOT)
+        val password = passwordInput.text.toString()
+        if (!email.contains("@") || password.length < 8) {
+            authStatusText.text = "Informe e-mail válido e senha com pelo menos 8 caracteres."
+            return
+        }
+
+        loginButton.isEnabled = false
+        FirebaseAuth.getInstance()
+            .signInWithEmailAndPassword(email, password)
+            .addOnSuccessListener { credential ->
+                val user = credential.user
+                if (user == null) {
+                    authStatusText.text = "Não foi possível carregar a conta."
+                    return@addOnSuccessListener
+                }
+                if (!user.isEmailVerified) {
+                    user.sendEmailVerification()
+                    FirebaseAuth.getInstance().signOut()
+                    authStatusText.text = "E-mail ainda não confirmado. Enviamos um novo link."
+                } else {
+                    verifyInstitutionalMembership(user)
+                }
+            }
+            .addOnFailureListener {
+                authStatusText.text = "Credenciais inválidas ou conta sem vínculo aprovado."
+            }
+            .addOnCompleteListener {
+                loginButton.isEnabled = true
+            }
+    }
+
+    private fun registerInstitutionalAccount() {
+        val email = emailInput.text.toString().trim().lowercase(Locale.ROOT)
+        val password = passwordInput.text.toString()
+        if (!email.contains("@") || password.length < 8) {
+            authStatusText.text = "Informe e-mail válido e senha com pelo menos 8 caracteres."
+            return
+        }
+
+        registerButton.isEnabled = false
+        FirebaseAuth.getInstance()
+            .createUserWithEmailAndPassword(email, password)
+            .addOnSuccessListener { credential ->
+                val user = credential.user
+                if (user == null) {
+                    authStatusText.text = "Não foi possível criar a conta."
+                    return@addOnSuccessListener
+                }
+                user.sendEmailVerification()
+                    .addOnSuccessListener {
+                        FirebaseAuth.getInstance().signOut()
+                        authStatusText.text = "Conta criada. Confirme o e-mail e aguarde a aprovação institucional."
+                    }
+                    .addOnFailureListener {
+                        FirebaseAuth.getInstance().signOut()
+                        authStatusText.text = "Conta criada, mas o e-mail de confirmação não pôde ser enviado."
+                    }
+            }
+            .addOnFailureListener {
+                authStatusText.text = "Não foi possível criar a conta; o e-mail pode já estar cadastrado."
+            }
+            .addOnCompleteListener {
+                registerButton.isEnabled = true
+            }
     }
 
     private fun saveNumber() {
@@ -120,9 +265,50 @@ class IntegratedSosActivity : AppCompatActivity() {
             statusText.text = "Cadastre um número de emergência"
             return
         }
+        if (firebaseConfigured() && (!institutionAuthorized || FirebaseAuth.getInstance().currentUser?.isEmailVerified != true)) {
+            statusText.text = "Faça login com e-mail verificado antes de acionar o SOS"
+            return
+        }
+        if (!canDispatchAlert()) return
+
         statusText.text = "SOS acionado. Enviando alerta..."
         if (!hasPermission(Manifest.permission.SEND_SMS)) smsPermission.launch(Manifest.permission.SEND_SMS)
         else requestLocationAndDispatch()
+    }
+
+    private fun canDispatchAlert(): Boolean {
+        if (activeAlertId != null) {
+            statusText.text = "Já existe um alerta ativo; aguarde a central."
+            return false
+        }
+        val now = System.currentTimeMillis()
+        val recent = alertTimestamps(now)
+        if (recent.size >= MAX_ALERTS_PER_WINDOW) {
+            val retrySeconds = ((recent.minOrNull()!! + ALERT_WINDOW_MS - now) / 1000L).coerceAtLeast(1L)
+            statusText.text = "Limite de alertas atingido. Tente novamente em ${((retrySeconds + 59) / 60)} min."
+            return false
+        }
+        val latest = recent.maxOrNull()
+        if (latest != null && now - latest < ALERT_COOLDOWN_MS) {
+            val retrySeconds = ((ALERT_COOLDOWN_MS - (now - latest)) / 1000L).coerceAtLeast(1L)
+            statusText.text = "Aguarde ${retrySeconds}s antes de emitir outro alerta."
+            return false
+        }
+        return true
+    }
+
+    private fun alertTimestamps(now: Long): List<Long> {
+        return preferences.getString(KEY_ALERT_TIMESTAMPS, "")
+            .orEmpty()
+            .split(",")
+            .mapNotNull { it.toLongOrNull() }
+            .filter { it >= now - ALERT_WINDOW_MS }
+    }
+
+    private fun recordAlertTimestamp() {
+        val now = System.currentTimeMillis()
+        val values = (alertTimestamps(now) + now).takeLast(MAX_ALERTS_PER_WINDOW + 1)
+        preferences.edit().putString(KEY_ALERT_TIMESTAMPS, values.joinToString(",")).apply()
     }
 
     @SuppressLint("MissingPermission")
@@ -148,21 +334,27 @@ class IntegratedSosActivity : AppCompatActivity() {
     }
 
     private fun dispatchAlert(latitude: Double?, longitude: Double?, accuracy: Float?) {
-        if (activeAlertId != null) return
+        if (!canDispatchAlert()) return
+
         val id = UUID.randomUUID().toString()
         activeAlertId = id
+        recordAlertTimestamp()
         val now = isoDate(System.currentTimeMillis())
+        val authenticatedUid = FirebaseAuth.getInstance().currentUser?.uid
+        val userId = authenticatedUid ?: deviceUserId()
         val alert = hashMapOf<String, Any?>(
             "id" to id,
-            "protocolNumber" to "SOS-${id.take(8).uppercase()}",
-            "userId" to deviceUserId(),
+            "institutionId" to INSTITUTION_ID,
+            "protocolNumber" to "SOS-${id.take(8).uppercase(Locale.ROOT)}",
+            "userId" to userId,
             "userProfile" to mapOf(
-                "id" to deviceUserId(),
+                "id" to userId,
+                "institutionId" to INSTITUTION_ID,
                 "name" to "Usuário do aplicativo Android",
                 "documentNumber" to "Não informado",
                 "role" to "estudante",
                 "phone" to "Não informado",
-                "email" to "Não informado",
+                "email" to FirebaseAuth.getInstance().currentUser?.email.orEmpty(),
                 "emergencyContactName" to "Contato de emergência",
                 "emergencyContactPhone" to preferences.getString(KEY_NUMBER, ""),
                 "emergencyContactRelation" to "Não informado",
@@ -171,8 +363,10 @@ class IntegratedSosActivity : AppCompatActivity() {
             ),
             "category" to "urgencia_geral",
             "status" to "pendente",
+            "receiptStatus" to "aguardando_central",
             "createdAt" to now,
             "updatedAt" to now,
+            "retentionExpiresAt" to Timestamp(Date(System.currentTimeMillis() + ALERT_RETENTION_DAYS * DAY_MS)),
             "location" to mapOf("lat" to latitude, "lng" to longitude, "accuracy" to accuracy),
             "locationName" to "Localização enviada pelo Android",
             "isInsideCampus" to false,
@@ -189,23 +383,47 @@ class IntegratedSosActivity : AppCompatActivity() {
     }
 
     private fun publishToFirebase(alert: Map<String, Any?>) {
-        if (FirebaseApp.getApps(this).isEmpty()) {
+        if (!firebaseConfigured()) {
             toast("Modo local: configure o Firebase para conectar à central")
             return
         }
-        val publish = {
-            val authenticatedAlert = alert.toMutableMap().apply {
-                put("authUid", FirebaseAuth.getInstance().currentUser?.uid)
-            }
-            FirebaseFirestore.getInstance().collection(ALERTS).document(activeAlertId!!)
-                .set(authenticatedAlert)
-                .addOnSuccessListener { listenForStatus(activeAlertId!!) }
-                .addOnFailureListener { toast("SMS enviado, mas a central está indisponível") }
+
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser == null || !currentUser.isEmailVerified || !institutionAuthorized) {
+            activeAlertId = null
+            statusText.text = "Alerta local enviado, mas falta autenticação institucional."
+            return
         }
-        val auth = FirebaseAuth.getInstance()
-        if (auth.currentUser != null) publish()
-        else auth.signInAnonymously().addOnSuccessListener { publish() }
-            .addOnFailureListener { toast("Não foi possível autenticar na central") }
+
+        val id = activeAlertId ?: return
+        val authenticatedAlert = alert.toMutableMap().apply {
+            put("authUid", currentUser.uid)
+            put("institutionId", INSTITUTION_ID)
+        }
+        val firestore = FirebaseFirestore.getInstance()
+        val alertReference = firestore.collection(ALERTS).document(id)
+        val auditReference = firestore.collection(AUDIT_LOGS).document()
+        val now = isoDate(System.currentTimeMillis())
+        val audit = mapOf(
+            "id" to auditReference.id,
+            "institutionId" to INSTITUTION_ID,
+            "alertId" to id,
+            "actorUid" to currentUser.uid,
+            "actorType" to "user",
+            "eventType" to "alert_created",
+            "createdAt" to now,
+            "retentionExpiresAt" to Timestamp(Date(System.currentTimeMillis() + AUDIT_RETENTION_DAYS * DAY_MS)),
+            "metadata" to mapOf("source" to "android"),
+        )
+
+        firestore.runBatch { batch ->
+            batch.set(alertReference, authenticatedAlert)
+            batch.set(auditReference, audit)
+        }.addOnSuccessListener {
+            listenForStatus(id)
+        }.addOnFailureListener {
+            statusText.text = "SMS enviado, mas a central está indisponível."
+        }
     }
 
     private fun listenForStatus(alertId: String) {
@@ -213,12 +431,16 @@ class IntegratedSosActivity : AppCompatActivity() {
         statusListener = FirebaseFirestore.getInstance().collection(ALERTS).document(alertId)
             .addSnapshotListener { snapshot, _ ->
                 val status = snapshot?.getString("status")
-                statusText.text = when (status) {
-                    "em_deslocamento" -> "Central confirmou: equipe em deslocamento"
-                    "no_local" -> "Equipe chegou ao local"
-                    "resolvido" -> "Ocorrência encerrada"
-                    "cancelado_usuario" -> "Ocorrência cancelada"
-                    "pendente" -> "Alerta recebido pela central"
+                val receipt = snapshot?.getString("receiptStatus")
+                val centralReceiptAt = snapshot?.getString("centralReceiptAt")
+                statusText.text = when {
+                    receipt == "recebido_pela_central" || centralReceiptAt != null ->
+                        "Central confirmou o recebimento. Aguardando atendimento."
+                    status == "em_deslocamento" -> "Central confirmou: equipe em deslocamento"
+                    status == "no_local" -> "Equipe chegou ao local"
+                    status == "resolvido" -> "Ocorrência encerrada"
+                    status == "cancelado_usuario" -> "Ocorrência cancelada"
+                    status == "pendente" -> "Alerta enviado; aguardando confirmação da central"
                     else -> return@addSnapshotListener
                 }
                 if (status == "resolvido" || status == "cancelado_usuario") {
@@ -250,12 +472,41 @@ class IntegratedSosActivity : AppCompatActivity() {
     private fun uploadEvidence() {
         val id = activeAlertId ?: return
         val photo = currentPhoto ?: return
-        if (FirebaseApp.getApps(this).isEmpty()) return
+        if (!firebaseConfigured()) return
+        val user = FirebaseAuth.getInstance().currentUser ?: return
         val reference = FirebaseStorage.getInstance().reference.child("emergency-evidence/$id.jpg")
         reference.putFile(Uri.fromFile(photo)).continueWithTask { reference.downloadUrl }
             .addOnSuccessListener { url ->
-                FirebaseFirestore.getInstance().collection(ALERTS).document(id)
-                    .update("photoUrl", url.toString(), "photoCapturedAt", isoDate(System.currentTimeMillis()))
+                val firestore = FirebaseFirestore.getInstance()
+                val alertReference = firestore.collection(ALERTS).document(id)
+                val auditReference = firestore.collection(AUDIT_LOGS).document()
+                val now = isoDate(System.currentTimeMillis())
+                val audit = mapOf(
+                    "id" to auditReference.id,
+                    "institutionId" to INSTITUTION_ID,
+                    "alertId" to id,
+                    "actorUid" to user.uid,
+                    "actorType" to "user",
+                    "eventType" to "evidence_uploaded",
+                    "createdAt" to now,
+                    "retentionExpiresAt" to Timestamp(Date(System.currentTimeMillis() + AUDIT_RETENTION_DAYS * DAY_MS)),
+                    "metadata" to mapOf("source" to "android_camera"),
+                )
+                firestore.runBatch { batch ->
+                    batch.update(
+                        alertReference,
+                        mapOf(
+                            "photoUrl" to url.toString(),
+                            "photoCapturedAt" to now,
+                            "photoSource" to "camera_automatica",
+                            "updatedAt" to now,
+                        ),
+                    )
+                    batch.set(auditReference, audit)
+                }.addOnSuccessListener {
+                    photo.delete()
+                    currentPhoto = null
+                }
             }
             .addOnFailureListener { toast("Foto mantida somente neste aparelho") }
     }
@@ -267,12 +518,20 @@ class IntegratedSosActivity : AppCompatActivity() {
             "https://maps.google.com/?q=$latitude,$longitude" else "Localização indisponível"
         try {
             val manager = getSystemService(SmsManager::class.java)
-            val message = "ALERTA SOS - UniGuard\nPreciso de ajuda.\n$location"
+            val message = "ALERTA SOS - UniGuard
+Preciso de ajuda.
+$location"
             manager.sendMultipartTextMessage(number, null, manager.divideMessage(message), null, null)
             toast("SMS de emergência enviado")
         } catch (_: Exception) {
             toast("Não foi possível enviar o SMS")
         }
+    }
+
+    private fun purgeExpiredLocalEvidence() {
+        val folder = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "UniGuard")
+        val cutoff = System.currentTimeMillis() - LOCAL_EVIDENCE_RETENTION_DAYS * DAY_MS
+        folder.listFiles()?.filter { it.isFile && it.lastModified() < cutoff }?.forEach { it.delete() }
     }
 
     private fun deviceUserId(): String {
@@ -284,13 +543,18 @@ class IntegratedSosActivity : AppCompatActivity() {
 
     private fun hasPermission(permission: String) =
         ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+
     private fun toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+
     private fun isoDate(time: Long) =
         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.ROOT).format(Date(time))
 
     override fun onDestroy() {
         handler.removeCallbacksAndMessages(null)
         statusListener?.remove()
+        if (firebaseConfigured()) {
+            authStateListener?.let { FirebaseAuth.getInstance().removeAuthStateListener(it) }
+        }
         super.onDestroy()
     }
 
@@ -298,10 +562,21 @@ class IntegratedSosActivity : AppCompatActivity() {
         private const val PREFERENCES = "UniGuardPrefs"
         private const val KEY_NUMBER = "numero_emergencia"
         private const val KEY_USER_ID = "device_user_id"
+        private const val KEY_ALERT_TIMESTAMPS = "alert_timestamps"
+        private const val INSTITUTION_ID = "ufpb-demo"
+        private const val MEMBERSHIPS = "memberships"
         private const val ALERTS = "emergencyAlerts"
+        private const val AUDIT_LOGS = "auditLogs"
         private const val HOLD_DURATION_MS = 2_000L
         private const val LOCATION_TIMEOUT_MS = 10_000L
+        private const val MAX_ALERTS_PER_WINDOW = 3
+        private const val ALERT_WINDOW_MS = 30 * 60 * 1000L
+        private const val ALERT_COOLDOWN_MS = 60 * 1000L
+        private const val ALERT_RETENTION_DAYS = 90L
+        private const val AUDIT_RETENTION_DAYS = 365L
+        private const val LOCAL_EVIDENCE_RETENTION_DAYS = 7L
+        private const val DAY_MS = 24 * 60 * 60 * 1000L
         internal fun sanitizeNumber(value: String) = value.replace(Regex("[^0-9+]"), "")
-        internal fun isValidNumber(value: String) = value.matches(Regex("^\\+?[0-9]{10,15}$"))
+        internal fun isValidNumber(value: String) = value.matches(Regex("^\+?[0-9]{10,15}$"))
     }
 }
