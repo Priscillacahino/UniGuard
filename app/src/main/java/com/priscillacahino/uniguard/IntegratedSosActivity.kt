@@ -526,9 +526,7 @@ class IntegratedSosActivity : AppCompatActivity() {
             "https://maps.google.com/?q=$latitude,$longitude" else "Localização indisponível"
         try {
             val manager = getSystemService(SmsManager::class.java)
-            val message = "ALERTA SOS - UniGuard
-Preciso de ajuda.
-$location"
+            val message = "ALERTA SOS - UniGuard\nPreciso de ajuda.\n$location"
             manager.sendMultipartTextMessage(number, null, manager.divideMessage(message), null, null)
             toast("SMS de emergência enviado")
         } catch (_: Exception) {
@@ -585,6 +583,6 @@ $location"
         private const val LOCAL_EVIDENCE_RETENTION_DAYS = 7L
         private const val DAY_MS = 24 * 60 * 60 * 1000L
         internal fun sanitizeNumber(value: String) = value.replace(Regex("[^0-9+]"), "")
-        internal fun isValidNumber(value: String) = value.matches(Regex("^\+?[0-9]{10,15}$"))
+        internal fun isValidNumber(value: String) = value.matches(Regex("^\\+?[0-9]{10,15}$"))
     }
 }
