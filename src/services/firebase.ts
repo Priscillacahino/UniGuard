@@ -2,6 +2,7 @@ import { getApp, getApps, initializeApp } from 'firebase/app';
 import {
   createUserWithEmailAndPassword,
   getAuth,
+  sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
@@ -87,7 +88,7 @@ export async function authenticateAccount(email: string, password: string): Prom
   const auth = getAuth(app);
   const credential = await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
   if (!credential.user.emailVerified) {
-    await credential.user.sendEmailVerification().catch(() => undefined);
+    await sendEmailVerification(credential.user).catch(() => undefined);
     await signOut(auth);
     throw new Error('EMAIL_NOT_VERIFIED');
   }
@@ -120,7 +121,7 @@ export async function registerUserAccount(email: string, password: string): Prom
   const auth = getAuth(app);
   const credential = await createUserWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
   try {
-    await credential.user.sendEmailVerification();
+    await sendEmailVerification(credential.user);
   } finally {
     await signOut(auth);
   }
