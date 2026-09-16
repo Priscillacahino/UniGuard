@@ -271,6 +271,20 @@ export async function changeAlertStatus(
   await batch.commit();
 }
 
+export async function recordAlertViewed(alertId: string): Promise<void> {
+  if (!firestore || !firebaseEnabled) return;
+
+  const account = await requireAccount('operator');
+  const auditDocument = doc(collection(firestore, AUDIT_COLLECTION));
+  const now = new Date().toISOString();
+  const batch = writeBatch(firestore);
+  batch.set(
+    auditDocument,
+    createAuditEvent(auditDocument.id, account, alertId, 'alert_viewed', now),
+  );
+  await batch.commit();
+}
+
 export async function subscribeToAlerts(
   institutionId: string,
   role: AccessRole,
