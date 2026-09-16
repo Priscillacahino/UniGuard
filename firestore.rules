@@ -1,42 +1,233 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
     function isSignedIn() {
       return request.auth != null;
     }
 
-    function isOperator() {
+    // O operador precisa existir e estar explicitamente ativo.
+    function isActiveOperator() {
       return isSignedIn()
-        && exists(/databases/$(database)/documents/operators/$(request.auth.uid));
+        && exists(/databases/$(database)/documents/operators/$(request.auth.uid))
+        && get(/databases/$(database)/documents/operators/$(request.auth.uid)).data.active == true;
     }
 
     function isOwner() {
-      return isSignedIn() && resource.data.authUid == request.auth.uid;
+      return isSignedIn()
+        && resource.data.authUid == request.auth.uid;
+    }
+
+    function isAlertOwnerOnCreate() {
+      return isSignedIn()
+        && request.resource.data.authUid == request.auth.uid;
+    }
+
+    function isValidCoordinate(coordinate) {
+      return coordinate is map
+        && coordinate.keys().hasAll(['lat', 'lng'])
+        && (coordinate.lat == null || coordinate.lat is number)
+        && (coordinate.lng == null || coordinate.lng is number)
+        && (coordinate.lat == null || (coordinate.lat >= -90 && coordinate.lat <= 90))
+        && (coordinate.lng == null || (coordinate.lng >= -180 && coordinate.lng <= 180));
+    }
+
+    function isValidAlertStatus(status) {
+      return status in [
+        'pendente',
+        'em_deslocamento',
+        'no_local',
+        'resolvido',
+        'cancelado_usuario'
+      ];
+    }
+
+    function hasValidAlertIdentity(data) {
+      return data.keys().hasAll([
+          'id',
+          'authUid',
+          'protocolNumber',
+          'userId',
+          'userProfile',
+          'category',
+          'status',
+          'createdAt',
+          'updatedAt',
+          'location',
+          'locationName',
+          'isInsideCampus',
+          'signalLost',
+          'lastSignalTimestamp'
+        ])
+        && data.id is string
+        && data.id.size() > 0
+        && data.id.size() <= 100
+        && data.authUid is string
+        && data.authUid.size() > 0
+        && data.authUid.size() <= 160
+        && data.protocolNumber is string
+        && data.protocolNumber.size() > 0
+        && data.protocolNumber.size() <= 80
+        && data.userId is string
+        && data.userId.size() > 0
+        && data.userId.size() <= 160
+        && data.userProfile is map
+        && data.category in [
+          'urgencia_geral',
+          'violencia_ameaca',
+          'saude_desmaio',
+          'perseguicao_suspeito',
+          'acidente_queda',
+          'area_escura_risco',
+          'furto_roubo'
+        ]
+        && data.status == 'pendente'
+        && data.createdAt is string
+        && data.createdAt.size() <= 80
+        && data.updatedAt is string
+        && data.updatedAt.size() <= 80
+        && isValidCoordinate(data.location)
+        && data.locationName is string
+        && data.locationName.size() <= 255
+        && data.isInsideCampus is bool
+        && data.signalLost is bool
+        && data.lastSignalTimestamp is string
+        && data.lastSignalTimestamp.size() <= 80;
     }
 
     match /emergencyAlerts/{alertId} {
-      // Android/Web do usuário podem criar apenas o próprio alerta e sempre como pendente.
-      allow create: if isSignedIn()
+      // Um usuário autenticado só pode criar o próprio alerta, como pendente.
+      // A lista de campos impede que dados administrativos sejam injetados na criação.
+      allow create: if isAlertOwnerOnCreate()
+        && request.resource.data.keys().hasOnly([
+          'id',
+          'authUid',
+          'protocolNumber',
+          'userId',
+          'userProfile',
+          'category',
+          'customNote',
+          'status',
+          'createdAt',
+          'updatedAt',
+          'campusId',
+          'campusName',
+          'location',
+          'locationName',
+          'isInsideCampus',
+          'isInSafeZone',
+          'safeZoneName',
+          'signalLost',
+          'lastSignalTimestamp',
+          'batteryLevel',
+          'userRouteHistory',
+          'smsNotificationsSent',
+          'assignedUnitId',
+          'assignedUnitName',
+          'securityNotes',
+          'resolvedAt',
+          'responseTimeMinutes',
+          'source',
+          'photoUrl',
+          'photoCapturedAt',
+          'photoSource'
+        ])
         && request.resource.data.id == alertId
-        && request.resource.data.authUid == request.auth.uid
-        && request.resource.data.status == 'pendente';
+        && hasValidAlertIdentity(request.resource.data)
+        && (!request.resource.data.keys().hasAny(['campusId'])
+          || request.resource.data.campusId is string)
+        && (!request.resource.data.keys().hasAny(['campusName'])
+          || (request.resource.data.campusName is string
+            && request.resource.data.campusName.size() <= 160))
+        && (!request.resource.data.keys().hasAny(['customNote'])
+          || (request.resource.data.customNote is string
+            && request.resource.data.customNote.size() <= 1000))
+        && (!request.resource.data.keys().hasAny(['batteryLevel'])
+          || (request.resource.data.batteryLevel is number
+            && request.resource.data.batteryLevel >= 0
+            && request.resource.data.batteryLevel <= 100))
+        && (!request.resource.data.keys().hasAny(['source'])
+          || request.resource.data.source in ['android', 'web', 'painel', 'api'])
+        && (!request.resource.data.keys().hasAny(['photoUrl'])
+          || (request.resource.data.photoUrl is string
+            && request.resource.data.photoUrl.size() <= 4096));
 
-      // Dono do alerta visualiza o próprio chamado; operadores visualizam todos.
-      allow read: if isSignedIn()
-        && (resource.data.authUid == request.auth.uid || isOperator());
+      // O titular acompanha somente os próprios alertas.
+      // Operadores ativos acompanham os alertas da central.
+      allow read: if isOwner() || isActiveOperator();
 
-      // Operador pode alterar o ciclo operacional completo.
-      allow update: if isOperator();
-
-      // Usuário pode somente cancelar o próprio alerta.
+      // O usuário pode cancelar somente o próprio alerta.
+      // Não pode modificar autoria, localização, categoria ou qualquer outro campo.
       allow update: if isOwner()
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.authUid == resource.data.authUid
         && request.resource.data.diff(resource.data).affectedKeys()
           .hasOnly(['status', 'updatedAt'])
-        && request.resource.data.status == 'cancelado_usuario';
+        && resource.data.status in ['pendente', 'em_deslocamento', 'no_local']
+        && request.resource.data.status == 'cancelado_usuario'
+        && request.resource.data.updatedAt is string;
 
+      // O usuário pode associar a evidência fotográfica ao próprio alerta.
+      // A URL é gravada depois do upload no Storage.
+      allow update: if isOwner()
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.authUid == resource.data.authUid
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['photoUrl', 'photoCapturedAt', 'photoSource', 'updatedAt'])
+        && request.resource.data.photoUrl is string
+        && request.resource.data.photoUrl.size() <= 4096
+        && request.resource.data.updatedAt is string
+        && (!request.resource.data.keys().hasAny(['photoCapturedAt'])
+          || (request.resource.data.photoCapturedAt is string
+            && request.resource.data.photoCapturedAt.size() <= 80))
+        && (!request.resource.data.keys().hasAny(['photoSource'])
+          || request.resource.data.photoSource in [
+            'camera_frontal',
+            'camera_traseira',
+            'camera_automatica',
+            'simulacao_evidencia'
+          ]);
+
+      // Somente operadores ativos podem alterar o ciclo operacional.
+      // Campos de autoria, identificação e localização são imutáveis.
+      allow update: if isActiveOperator()
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.authUid == resource.data.authUid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status',
+          'updatedAt',
+          'assignedUnitId',
+          'assignedUnitName',
+          'lastSecurityNote',
+          'securityNotes',
+          'resolvedAt',
+          'responseTimeMinutes'
+        ])
+        && isValidAlertStatus(request.resource.data.status)
+        && request.resource.data.updatedAt is string
+        && (!request.resource.data.keys().hasAny(['assignedUnitId'])
+          || (request.resource.data.assignedUnitId is string
+            && request.resource.data.assignedUnitId.size() <= 160))
+        && (!request.resource.data.keys().hasAny(['assignedUnitName'])
+          || (request.resource.data.assignedUnitName is string
+            && request.resource.data.assignedUnitName.size() <= 200))
+        && (!request.resource.data.keys().hasAny(['lastSecurityNote'])
+          || (request.resource.data.lastSecurityNote is string
+            && request.resource.data.lastSecurityNote.size() <= 1000))
+        && (!request.resource.data.keys().hasAny(['securityNotes'])
+          || (request.resource.data.securityNotes is list
+            && request.resource.data.securityNotes.size() <= 100))
+        && (!request.resource.data.keys().hasAny(['resolvedAt'])
+          || request.resource.data.resolvedAt is string)
+        && (!request.resource.data.keys().hasAny(['responseTimeMinutes'])
+          || (request.resource.data.responseTimeMinutes is number
+            && request.resource.data.responseTimeMinutes >= 0));
+      
       allow delete: if false;
     }
 
+    // O documento do operador é administrado fora do cliente.
+    // O cliente pode apenas consultar o próprio registro para validação.
     match /operators/{operatorId} {
       allow read: if isSignedIn() && request.auth.uid == operatorId;
       allow write: if false;
