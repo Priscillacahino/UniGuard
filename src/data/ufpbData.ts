@@ -1,3 +1,6 @@
+export const DEFAULT_INSTITUTION_ID = 'ufpb-demo';
+export const DEFAULT_INSTITUTION_NAME = 'UFPB (demonstração)';
+
 import {
   CampusLocation,
   EmergencyAlert,
@@ -689,6 +692,7 @@ export const INITIAL_SECURITY_UNITS: SecurityPatrolUnit[] = [
 // Perfil de usuário padrão
 export const DEFAULT_USER_PROFILE: UserProfile = {
   id: 'user_ufpb_001',
+  institutionId: DEFAULT_INSTITUTION_ID,
   name: 'Mariana Medeiros de Albuquerque',
   documentNumber: '20220104892', // Matrícula UFPB
   role: 'estudante',
@@ -733,6 +737,7 @@ export const DEFAULT_USER_PROFILE: UserProfile = {
 export const INITIAL_ALERTS: EmergencyAlert[] = [
   {
     id: 'alert_001',
+    institutionId: DEFAULT_INSTITUTION_ID,
     protocolNumber: 'SOS-2026-0482',
     campusId: 'campus_1_joao_pessoa',
     campusName: 'Campus I - João Pessoa (Castelo Branco)',
@@ -799,6 +804,7 @@ export const INITIAL_ALERTS: EmergencyAlert[] = [
   },
   {
     id: 'alert_002',
+    institutionId: DEFAULT_INSTITUTION_ID,
     protocolNumber: 'SOS-2026-0480',
     campusId: 'campus_1_joao_pessoa',
     campusName: 'Campus I - João Pessoa (Castelo Branco)',
@@ -863,6 +869,7 @@ export const INITIAL_ALERTS: EmergencyAlert[] = [
   },
   {
     id: 'alert_003',
+    institutionId: DEFAULT_INSTITUTION_ID,
     protocolNumber: 'SOS-2026-0479',
     campusId: 'campus_1_joao_pessoa',
     campusName: 'Campus I - João Pessoa (Castelo Branco)',
@@ -925,6 +932,7 @@ export const INITIAL_ALERTS: EmergencyAlert[] = [
   },
   {
     id: 'alert_005_areia',
+    institutionId: DEFAULT_INSTITUTION_ID,
     protocolNumber: 'SOS-2026-0483',
     campusId: 'campus_2_areia',
     campusName: 'Campus II - Areia (CCA)',
