@@ -340,7 +340,11 @@ class IntegratedSosActivity : AppCompatActivity() {
         activeAlertId = id
         recordAlertTimestamp()
         val now = isoDate(System.currentTimeMillis())
-        val authenticatedUid = FirebaseAuth.getInstance().currentUser?.uid
+        val authenticatedUid = if (firebaseConfigured()) {
+            FirebaseAuth.getInstance().currentUser?.uid
+        } else {
+            null
+        }
         val userId = authenticatedUid ?: deviceUserId()
         val alert = hashMapOf<String, Any?>(
             "id" to id,
@@ -354,7 +358,11 @@ class IntegratedSosActivity : AppCompatActivity() {
                 "documentNumber" to "Não informado",
                 "role" to "estudante",
                 "phone" to "Não informado",
-                "email" to FirebaseAuth.getInstance().currentUser?.email.orEmpty(),
+                "email" to if (firebaseConfigured()) {
+                    FirebaseAuth.getInstance().currentUser?.email.orEmpty()
+                } else {
+                    ""
+                },
                 "emergencyContactName" to "Contato de emergência",
                 "emergencyContactPhone" to preferences.getString(KEY_NUMBER, ""),
                 "emergencyContactRelation" to "Não informado",
