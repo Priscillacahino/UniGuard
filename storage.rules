@@ -30,7 +30,7 @@ service firebase.storage {
     }
 
     match /emergency-evidence/{alertId}.jpg {
-      allow write: if isActiveMemberForAlert(alertId) || isActiveOperatorForAlert(alertId)
+      allow write: if (isActiveMemberForAlert(alertId) || isActiveOperatorForAlert(alertId))
         && request.resource != null
         && request.resource.size < 5 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
