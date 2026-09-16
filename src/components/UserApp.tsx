@@ -1216,7 +1216,7 @@ export const UserApp: React.FC<UserAppProps> = ({
             ) : (
               <div className="space-y-2 text-left bg-slate-50 p-3.5 rounded-xl border border-slate-200">
                 <label className="block text-[11px] font-bold text-slate-700">
-                  Descreva brevemente sua localização exata ou ocorrência:
+                  Descreva brevemente o local ou a situação. Não informe diagnóstico, alergia, tipo sanguíneo ou outro dado médico:
                 </label>
                 <input
                   type="text"
