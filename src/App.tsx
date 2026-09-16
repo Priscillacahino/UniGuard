@@ -15,6 +15,7 @@ import {
   LocationTrackingConfig,
   UfpbCampusId,
   EmergencyPhotoSnapshot,
+  AccessRole,
 } from './types';
 import {
   DEFAULT_USER_PROFILE,
@@ -23,17 +24,28 @@ import {
   INITIAL_SECURITY_UNITS,
   UFPB_CAMPUS_CENTER,
   UFPB_CAMPI,
+  DEFAULT_INSTITUTION_ID,
 } from './data/ufpbData';
 import { isPointInsideCampus, getCampusById } from './utils/geo';
 import { parseStoredJson } from './utils/storage';
 import { SoundEffects } from './utils/sound';
 import {
+  cancelAlert,
   changeAlertStatus,
   firebaseEnabled,
   publishAlert,
   subscribeToAlerts,
 } from './services/alertRepository';
-import { authenticateOperator, signOutFirebase } from './services/firebase';
+import {
+  authenticateAccount,
+  getCurrentAuthorization,
+  registerUserAccount,
+  requestPasswordReset,
+  signOutFirebase,
+  type FirebaseAccount,
+} from './services/firebase';
+import { checkAlertAllowance } from './services/abuseControl';
+import { purgeExpiredLocalAlerts } from './services/retention';
 
 import { IdentityModal } from './components/IdentityModal';
 import { AboutModal } from './components/AboutModal';
@@ -78,6 +90,15 @@ function readStorageWithLegacy(key: string, legacyKey: string): string | null {
   return legacyValue;
 }
 
+function sanitizeProfile(profile: UserProfile): UserProfile {
+  const { medicalNotes: _legacyMedicalNotes, ...safeProfile } =
+    profile as UserProfile & { medicalNotes?: unknown };
+  return {
+    ...safeProfile,
+    institutionId: safeProfile.institutionId || DEFAULT_INSTITUTION_ID,
+  };
+}
+
 export default function App() {
   // 1. Estados Globais do Usuário e Autenticação
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
@@ -86,10 +107,13 @@ export default function App() {
       : readStorageWithLegacy(STORAGE_KEYS.loggedIn, 'guardiao_ufpb_logged_in') !== 'false';
   });
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [accountRole, setAccountRole] = useState<AccessRole | null>(() =>
+    firebaseEnabled ? null : 'operator',
+  );
 
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
     const saved = readStorageWithLegacy(STORAGE_KEYS.user, 'guardiao_ufpb_user');
-    return parseStoredJson(saved, DEFAULT_USER_PROFILE);
+    return sanitizeProfile(parseStoredJson(saved, DEFAULT_USER_PROFILE));
   });
 
   const [isIdentityModalOpen, setIsIdentityModalOpen] = useState(false);
@@ -125,20 +149,46 @@ export default function App() {
   const handleLogout = () => {
     SoundEffects.playClick();
     setIsLoggedIn(false);
+    setAccountRole(null);
+    setActiveTab('user');
     localStorage.setItem(STORAGE_KEYS.loggedIn, 'false');
     setIsAuthModalOpen(true);
     void signOutFirebase();
   };
 
   // Handler de Sucesso de Login
-  const handleLoginSuccess = (profile: UserProfile) => {
+  const handleLoginSuccess = (profile: UserProfile, account?: FirebaseAccount) => {
+    const safeProfile = sanitizeProfile(profile);
     SoundEffects.playSuccess();
-    setUserProfile(profile);
-    localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(profile));
+    setUserProfile(safeProfile);
+    setAccountRole(account?.role || (firebaseEnabled ? null : 'operator'));
+    localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(safeProfile));
     localStorage.setItem(STORAGE_KEYS.loggedIn, 'true');
     setIsLoggedIn(true);
     setIsAuthModalOpen(false);
   };
+
+  // Reidrata somente uma sessão Firebase já autorizada; nunca cria identidade anônima.
+  useEffect(() => {
+    if (!firebaseEnabled) return;
+    let cancelled = false;
+    void getCurrentAuthorization()
+      .then((account) => {
+        if (cancelled || !account) return;
+        setAccountRole(account.role);
+        setUserProfile((previous) => sanitizeProfile({
+          ...previous,
+          id: account.uid,
+          email: account.email || previous.email,
+          institutionId: account.institutionId,
+        }));
+        setIsLoggedIn(true);
+      })
+      .catch((error) => console.error('Falha ao reidratar autorização Firebase', error));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // 2. Modo da Interface (App do Usuário vs Painel da Segurança)
   const [activeTab, setActiveTab] = useState<'user' | 'security'>('user');
@@ -191,21 +241,25 @@ export default function App() {
   // 5. Alertas e Unidades de Segurança
   const [alerts, setAlerts] = useState<EmergencyAlert[]>(() => {
     const saved = readStorageWithLegacy(STORAGE_KEYS.alerts, 'guardiao_ufpb_alerts');
-    return parseStoredJson(saved, INITIAL_ALERTS);
+    return purgeExpiredLocalAlerts(parseStoredJson(saved, INITIAL_ALERTS));
   });
 
   // Quando o Firebase estiver configurado, esta coleção passa a ser a fonte
   // compartilhada entre o Android e o painel. Sem configuração, o modo demo
   // local permanece disponível para apresentações seguras.
   useEffect(() => {
-    if (!firebaseEnabled || !isLoggedIn) return;
+    if (!firebaseEnabled || !isLoggedIn || !accountRole || !userProfile.institutionId) return;
     let unsubscribe = () => undefined;
     void subscribeToAlerts(
+      userProfile.institutionId,
+      accountRole,
       setAlerts,
       (error) => console.error('Falha ao acompanhar alertas em tempo real', error),
-    ).then((stop) => { unsubscribe = stop; });
+    )
+      .then((stop) => { unsubscribe = stop; })
+      .catch((error) => console.error('Sessão sem autorização para acompanhar alertas', error));
     return () => unsubscribe();
-  }, [isLoggedIn]);
+  }, [accountRole, isLoggedIn, userProfile.institutionId]);
 
   const [securityUnits, setSecurityUnits] = useState<SecurityPatrolUnit[]>(INITIAL_SECURITY_UNITS);
 
@@ -269,13 +323,20 @@ export default function App() {
 
   // Alerta ativo emitido pelo próprio usuário atual
   const userActiveAlert = alerts.find(
-    (a) => a.userId === userProfile.id && a.status !== 'resolvido' && a.status !== 'cancelado_usuario'
+    (a) => a.institutionId === userProfile.institutionId
+      && a.userId === userProfile.id
+      && a.status !== 'resolvido'
+      && a.status !== 'cancelado_usuario'
   ) || null;
 
   // Handler para Salvar Identificação
   const handleSaveProfile = (profile: UserProfile, grantLocation: boolean) => {
     SoundEffects.playClick();
-    setUserProfile(profile);
+    const safeProfile = sanitizeProfile({
+      ...profile,
+      institutionId: userProfile.institutionId || DEFAULT_INSTITUTION_ID,
+    });
+    setUserProfile(safeProfile);
     setIsIdentityModalOpen(false);
     setIsFirstTimeOnboarding(false);
 
@@ -302,8 +363,18 @@ export default function App() {
 
   // Handler para Envio de Alerta SOS pelo Usuário (já com foto capturada)
   const handleSendAlert = (newAlert: EmergencyAlert) => {
-    setAlerts((prev) => [newAlert, ...prev]);
-    void publishAlert(newAlert).catch((error) => {
+    const safeProfile = sanitizeProfile({
+      ...newAlert.userProfile,
+      institutionId: userProfile.institutionId || DEFAULT_INSTITUTION_ID,
+    });
+    const safeAlert: EmergencyAlert = {
+      ...newAlert,
+      institutionId: userProfile.institutionId || DEFAULT_INSTITUTION_ID,
+      userProfile: safeProfile,
+      receiptStatus: 'aguardando_central',
+    };
+    setAlerts((prev) => [safeAlert, ...prev]);
+    void publishAlert(safeAlert).catch((error) => {
       console.error('O alerta ficou somente neste dispositivo', error);
     });
   };
@@ -311,10 +382,14 @@ export default function App() {
   // Handler para Cancelamento de Alerta pelo Usuário
   const handleCancelAlert = (alertId: string) => {
     setAlerts((prev) =>
-      prev.map((a) => (a.id === alertId ? { ...a, status: 'cancelado_usuario', updatedAt: new Date().toISOString() } : a))
+      prev.map((a) => (a.id === alertId
+        ? { ...a, status: 'cancelado_usuario', updatedAt: new Date().toISOString() }
+        : a))
     );
-    void changeAlertStatus(alertId, 'cancelado_usuario').catch(console.error);
+    void cancelAlert(alertId).catch(console.error);
   };
+
+  const canTriggerAlert = () => checkAlertAllowance(alerts, userProfile.id);
 
   // Handler para a Central de Segurança Atualizar Status / Despachar
   const handleUpdateAlertStatus = (alertId: string, status: AlertStatus, unitId?: string, note?: string) => {
@@ -371,12 +446,14 @@ export default function App() {
     const campus = getCampusById(campusId);
     const simAlert: EmergencyAlert = {
       id: `alert_sim_${Date.now()}`,
+      institutionId: DEFAULT_INSTITUTION_ID,
       protocolNumber: `SOS-2026-${Math.floor(1000 + Math.random() * 9000)}`,
       campusId: campusId,
       campusName: campus.name,
       userId: `user_sim_${Date.now()}`,
       userProfile: {
         id: `user_sim_${Date.now()}`,
+        institutionId: DEFAULT_INSTITUTION_ID,
         name: 'Aluno(a) Simulado(a) UFPB',
         documentNumber: `2024${Math.floor(100000 + Math.random() * 900000)}`,
         role: 'estudante',
@@ -390,6 +467,7 @@ export default function App() {
       },
       category: category,
       status: 'pendente',
+      receiptStatus: 'aguardando_central',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       location: coord,
@@ -455,6 +533,7 @@ export default function App() {
               <span>App do Usuário</span>
             </button>
 
+            {accountRole === 'operator' && (
             <button
               id="tab-security-view"
               onClick={() => {
@@ -473,6 +552,7 @@ export default function App() {
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
               )}
             </button>
+            )}
           </div>
 
           {/* Indicador Visual do Status GPS / Rede (Bolinha Verde / Amarela / Vermelha no topo) */}
@@ -575,7 +655,20 @@ export default function App() {
             Carregando módulo do UniGuard...
           </div>
         }>
-          {activeTab === 'user' ? (
+          {activeTab === 'security' && accountRole === 'operator' ? (
+          <SecurityDashboard
+            alerts={alerts}
+            securityUnits={securityUnits}
+            onUpdateAlertStatus={handleUpdateAlertStatus}
+            onAddSimulatedAlert={handleAddSimulatedAlert}
+            userCoordinate={userCoordinate}
+            userSignalLost={userSignalLost}
+            lastKnownCoordinate={lastKnownCoordinate}
+            breadcrumbs={breadcrumbs}
+            selectedCampusId={selectedCampusId}
+            onSelectCampus={handleSelectCampus}
+          />
+          ) : (
           <UserApp
             userProfile={userProfile}
             setUserProfile={setUserProfile}
@@ -591,6 +684,7 @@ export default function App() {
             userActiveAlert={userActiveAlert}
             onSendAlert={handleSendAlert}
             onCancelAlert={handleCancelAlert}
+            canTriggerAlert={canTriggerAlert}
             onEditProfile={() => setIsIdentityModalOpen(true)}
             breadcrumbs={breadcrumbs}
             setBreadcrumbs={setBreadcrumbs}
@@ -600,19 +694,6 @@ export default function App() {
             onSelectCampus={handleSelectCampus}
             onLogout={handleLogout}
             isOffline={!isOnline}
-          />
-          ) : (
-          <SecurityDashboard
-            alerts={alerts}
-            securityUnits={securityUnits}
-            onUpdateAlertStatus={handleUpdateAlertStatus}
-            onAddSimulatedAlert={handleAddSimulatedAlert}
-            userCoordinate={userCoordinate}
-            userSignalLost={userSignalLost}
-            lastKnownCoordinate={lastKnownCoordinate}
-            breadcrumbs={breadcrumbs}
-            selectedCampusId={selectedCampusId}
-            onSelectCampus={handleSelectCampus}
           />
           )}
         </Suspense>
@@ -624,7 +705,9 @@ export default function App() {
         onClose={isLoggedIn ? () => setIsAuthModalOpen(false) : undefined}
         onLoginSuccess={handleLoginSuccess}
         currentProfile={userProfile}
-        authenticate={firebaseEnabled ? authenticateOperator : undefined}
+        authenticate={firebaseEnabled ? authenticateAccount : undefined}
+         register={firebaseEnabled ? registerUserAccount : undefined}
+         sendPasswordReset={firebaseEnabled ? requestPasswordReset : undefined}
       />
 
       <IdentityModal
