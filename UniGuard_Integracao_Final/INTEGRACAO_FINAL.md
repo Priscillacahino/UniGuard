@@ -60,6 +60,9 @@ Depois de criar o usuário de Email/Password no Firebase Authentication:
    - active: true
 
 ### 5. Regras
+
+> **Fonte oficial das regras:** use somente o arquivo `firestore.rules` da raiz do repositório. A cópia desta pasta foi removida para evitar divergência entre documentação e implantação.
+
 Substituir as regras atuais pelo arquivo `firestore.rules` deste pacote.
 Essa versão mantém o operador como responsável pelas mudanças operacionais e permite ao dono apenas cancelar seu próprio alerta.
 
