@@ -79,6 +79,7 @@ interface UserAppProps {
   onSelectCampus?: (campusId: UfpbCampusId) => void;
   onLogout?: () => void;
   isOffline?: boolean;
+  canTriggerAlert?: () => { allowed: boolean; message?: string };
 }
 
 const CATEGORIES: { id: EmergencyCategory; label: string; icon: string; desc: string }[] = [
@@ -116,6 +117,7 @@ export const UserApp: React.FC<UserAppProps> = ({
   onSelectCampus = () => {},
   onLogout,
   isOffline = false,
+  canTriggerAlert,
 }: UserAppProps) => {
   const [selectedCategory, setSelectedCategory] = useState<EmergencyCategory>('urgencia_geral');
   const [customNote, setCustomNote] = useState('');
@@ -145,6 +147,7 @@ export const UserApp: React.FC<UserAppProps> = ({
   const [isTransmittingSos, setIsTransmittingSos] = useState(false);
   const [sosProgressStage, setSosProgressStage] = useState<string>('');
   const [sosProgressPercent, setSosProgressPercent] = useState<number>(0);
+  const [alertGuardMessage, setAlertGuardMessage] = useState<string | null>(null);
 
   // Campus Atual
   const currentCampus = getCampusById(selectedCampusId);
@@ -186,8 +189,18 @@ export const UserApp: React.FC<UserAppProps> = ({
     }
   }, []);
 
+  const checkAlertAllowance = () => {
+    const allowance = canTriggerAlert?.();
+    if (!allowance || allowance.allowed) return true;
+    setAlertGuardMessage(allowance.message || 'Não é possível emitir outro alerta neste momento.');
+    window.setTimeout(() => setAlertGuardMessage(null), 6000);
+    SoundEffects.playAlertSound();
+    return false;
+  };
+
   // Iniciar SOS com contagem de 3 segundos
   const handleStartSos = () => {
+    if (!checkAlertAllowance()) return;
     SoundEffects.playClick();
     setIsCountingDown(true);
     setCountdown(3);
@@ -219,7 +232,7 @@ export const UserApp: React.FC<UserAppProps> = ({
 
   // Long Press para Zonas Seguras
   const startLongPress = () => {
-    if (!isInSafeZone) return;
+    if (!isInSafeZone || !checkAlertAllowance()) return;
     setIsPressing(true);
     setLongPressProgress(0);
     SoundEffects.playClick();
@@ -312,6 +325,7 @@ export const UserApp: React.FC<UserAppProps> = ({
 
   // Disparo efetivo do Alerta SOS com captura de foto e indicador de carregamento
   const triggerActualAlert = async () => {
+    if (!checkAlertAllowance()) return;
     SoundEffects.playSosTriggered();
     setIsCapturing(true);
     setIsTransmittingSos(true);
@@ -393,14 +407,19 @@ export const UserApp: React.FC<UserAppProps> = ({
 
     const newAlert: EmergencyAlert = {
       id: `alert_${Date.now()}`,
+      institutionId: userProfile.institutionId || 'ufpb-demo',
       protocolNumber: protocol,
       campusId: selectedCampusId,
       campusName: currentCampus.name,
       userId: userProfile.id,
-      userProfile: userProfile,
+      userProfile: {
+        ...userProfile,
+        institutionId: userProfile.institutionId || 'ufpb-demo',
+      },
       category: selectedCategory,
       customNote: customNote.trim() ? customNote.trim() : undefined,
       status: 'pendente',
+      receiptStatus: 'aguardando_central',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       location: currentPos,
@@ -414,15 +433,7 @@ export const UserApp: React.FC<UserAppProps> = ({
       userRouteHistory: [...breadcrumbs],
       photoSnapshot: photoSnapshot,
       smsNotificationsSent: smsNotifications,
-      securityNotes: [
-        photoSnapshot.source === 'simulacao_evidencia'
-          ? `[${new Date().toLocaleTimeString('pt-BR')}] Chamado demonstrativo emitido no ${currentCampus.shortName}, sem captura fotográfica real.`
-          : `[${new Date().toLocaleTimeString('pt-BR')}] Chamado emitido no ${currentCampus.shortName} com imagem autorizada.`,
-        safeCheck.inZone
-          ? `Alerta dentro de Zona Segura (${safeCheck.zone?.name}). Posto local alertado.`
-          : 'Alerta emitido pelo discente. Central em prontidão.',
-      ],
-    };
+   };
 
     onSendAlert(newAlert);
   };
@@ -550,6 +561,13 @@ export const UserApp: React.FC<UserAppProps> = ({
     <div className="space-y-5 pb-8 max-w-4xl mx-auto text-slate-800 relative">
       
       {/* Alerta de Modo Offline Detectado pela API do Navegador */}
+      {alertGuardMessage && (
+        <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          <span>{alertGuardMessage}</span>
+        </div>
+      )}
+
       {isOffline && (
         <div className="p-4 rounded-2xl bg-amber-500 text-white shadow-md flex items-start gap-3 animate-in fade-in">
           <div className="p-2 bg-amber-600 rounded-xl shrink-0">
