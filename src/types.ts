@@ -1,5 +1,17 @@
 export type UserRole = 'estudante' | 'docente' | 'tecnico' | 'terceirizado' | 'visitante';
 
+export type AccessRole = 'user' | 'operator';
+
+export type AlertReceiptStatus = 'aguardando_central' | 'recebido_pela_central';
+
+export type AuditEventType =
+  | 'alert_created'
+  | 'alert_received'
+  | 'alert_viewed'
+  | 'alert_status_changed'
+  | 'alert_cancelled_by_user'
+  | 'evidence_uploaded';
+
 export type UfpbCampusId = 
   | 'campus_1_joao_pessoa'
   | 'campus_2_areia'
@@ -42,6 +54,8 @@ export interface EmergencyContact {
 
 export interface UserProfile {
   id: string;
+  /** Instituição autorizadora do perfil; nunca deve ser confiada ao cliente sem validar a membership. */
+  institutionId?: string;
   name: string;
   documentNumber: string; // Matrícula / SIAPE / CPF
   role: UserRole;
@@ -52,7 +66,6 @@ export interface UserProfile {
   emergencyContactRelation: string;
   emergencyContacts?: EmergencyContact[]; // Lista completa de contatos de emergência
   department: string; // ex: Centro de Tecnologia (CT), CCHLA, CCEN, etc.
-  medicalNotes?: string;
   registeredAt: string;
   avatarSeed?: string;
   preferredCampusId?: UfpbCampusId;
@@ -120,14 +133,26 @@ export type EmergencyCategory =
 
 export type AlertStatus = 'pendente' | 'em_deslocamento' | 'no_local' | 'resolvido' | 'cancelado_usuario';
 
+export interface FirestoreTimestampLike {
+  seconds: number;
+  nanoseconds: number;
+}
+
 export interface EmergencyAlert {
   id: string;
+  /** Partição de segurança: todo alerta pertence a uma única instituição. */
+  institutionId: string;
   protocolNumber: string;
   userId: string;
   userProfile: UserProfile;
   category: EmergencyCategory;
   customNote?: string;
   status: AlertStatus;
+  receiptStatus?: AlertReceiptStatus;
+  centralReceiptAt?: string;
+  centralReceiptByUid?: string;
+  /** Timestamp usado pela política TTL do Firestore; não é exibido ao usuário. */
+  retentionExpiresAt?: string | FirestoreTimestampLike;
   createdAt: string;
   updatedAt: string;
   
@@ -160,6 +185,18 @@ export interface EmergencyAlert {
   securityNotes?: string[];
   resolvedAt?: string;
   responseTimeMinutes?: number;
+}
+
+export interface AuditEvent {
+  id: string;
+  institutionId: string;
+  alertId: string;
+  actorUid: string;
+  actorType: AccessRole;
+  eventType: AuditEventType;
+  createdAt: string;
+  retentionExpiresAt?: string | FirestoreTimestampLike;
+  metadata?: Record<string, string | number | boolean | null>;
 }
 
 export interface SecurityPatrolUnit {
