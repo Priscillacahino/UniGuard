@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   EmergencyAlert,
   SecurityPatrolUnit,
@@ -16,6 +16,7 @@ import { PhotoEvidenceModal } from './PhotoEvidenceModal';
 import { SoundEffects } from '../utils/sound';
 import { formatDistance, calculateDistance, getCampusById } from '../utils/geo';
 import { generateEmergencyEvidenceCanvas } from '../utils/camera';
+import { recordAlertViewed } from '../services/alertRepository';
 import {
   ShieldAlert,
   Radio,
@@ -107,6 +108,15 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
   // Alerta atualmente em foco
   const currentAlert = alerts.find((a) => a.id === selectedAlertId) || null;
   const currentAlertCampus = currentAlert ? getCampusById(currentAlert.campusId) : getCampusById(selectedCampusId);
+  const viewedAlertIds = useRef(new Set<string>());
+
+  useEffect(() => {
+    if (!currentAlert || viewedAlertIds.current.has(currentAlert.id)) return;
+    viewedAlertIds.current.add(currentAlert.id);
+    void recordAlertViewed(currentAlert.id).catch((error) => {
+      console.error('Falha ao registrar acesso ao alerta', error);
+    });
+  }, [currentAlert?.id]);
 
   // Filtragem dos alertas
   const filteredAlerts = alerts.filter((alert) => {
@@ -643,6 +653,26 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
                     {new Date(currentAlert.createdAt).toLocaleTimeString('pt-BR')}
                   </div>
                 </div>
+              </div>
+
+              <div className={`p-3 rounded-xl border text-xs flex items-center justify-between gap-3 ${
+                currentAlert.receiptStatus === 'recebido_pela_central' || currentAlert.centralReceiptAt
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                  : 'bg-amber-50 border-amber-200 text-amber-900'
+              }`}>
+                <div className="flex items-center gap-2 font-bold">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>
+                    {currentAlert.receiptStatus === 'recebido_pela_central' || currentAlert.centralReceiptAt
+                      ? 'Recebimento confirmado pela central'
+                      : 'Aguardando confirmação de recebimento pela central'}
+                  </span>
+                </div>
+                {currentAlert.centralReceiptAt && (
+                  <span className="font-mono text-[10px] shrink-0">
+                    {new Date(currentAlert.centralReceiptAt).toLocaleTimeString('pt-BR')}
+                  </span>
+                )}
               </div>
 
               {/* CARD DE EVIDÊNCIA FOTOGRÁFICA DO DISPARO (REQUISITO CRUCIAL) */}
