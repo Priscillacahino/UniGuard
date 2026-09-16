@@ -6,21 +6,40 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // O operador precisa existir e estar explicitamente ativo.
+    function hasVerifiedEmail() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
     function isActiveOperator() {
-      return isSignedIn()
+      return hasVerifiedEmail()
         && exists(/databases/$(database)/documents/operators/$(request.auth.uid))
         && get(/databases/$(database)/documents/operators/$(request.auth.uid)).data.active == true;
     }
 
+    function isActiveOperatorFor(institutionId) {
+      return isActiveOperator()
+        && get(/databases/$(database)/documents/operators/$(request.auth.uid)).data.keys().hasAll(['institutionId'])
+        && get(/databases/$(database)/documents/operators/$(request.auth.uid)).data.institutionId == institutionId;
+    }
+
+    function isActiveMemberOf(institutionId) {
+      return hasVerifiedEmail()
+        && exists(/databases/$(database)/documents/memberships/$(request.auth.uid))
+        && get(/databases/$(database)/documents/memberships/$(request.auth.uid)).data.keys().hasAll(['institutionId', 'active'])
+        && get(/databases/$(database)/documents/memberships/$(request.auth.uid)).data.institutionId == institutionId
+        && get(/databases/$(database)/documents/memberships/$(request.auth.uid)).data.active == true;
+    }
+
     function isOwner() {
       return isSignedIn()
-        && resource.data.authUid == request.auth.uid;
+        && resource.data.authUid == request.auth.uid
+        && isActiveMemberOf(resource.data.institutionId);
     }
 
     function isOwnerOnCreate() {
-      return isSignedIn()
-        && request.resource.data.authUid == request.auth.uid;
+      return hasVerifiedEmail()
+        && request.resource.data.authUid == request.auth.uid
+        && isActiveMemberOf(request.resource.data.institutionId);
     }
 
     function isValidCoordinate(coordinate) {
@@ -42,10 +61,15 @@ service cloud.firestore {
       ];
     }
 
+    function isValidReceiptStatus(status) {
+      return status in ['aguardando_central', 'recebido_pela_central'];
+    }
+
     function hasValidUserProfile(profile) {
       return profile is map
         && profile.keys().hasOnly([
           'id',
+          'institutionId',
           'name',
           'documentNumber',
           'role',
@@ -56,7 +80,6 @@ service cloud.firestore {
           'emergencyContactRelation',
           'emergencyContacts',
           'department',
-          'medicalNotes',
           'registeredAt',
           'avatarSeed',
           'preferredCampusId'
@@ -66,12 +89,15 @@ service cloud.firestore {
     function hasValidAlertIdentity(data) {
       return data.keys().hasAll([
           'id',
+          'institutionId',
           'authUid',
           'protocolNumber',
           'userId',
           'userProfile',
           'category',
           'status',
+          'receiptStatus',
+          'retentionExpiresAt',
           'createdAt',
           'updatedAt',
           'location',
@@ -83,6 +109,9 @@ service cloud.firestore {
         && data.id is string
         && data.id.size() > 0
         && data.id.size() <= 100
+        && data.institutionId is string
+        && data.institutionId.size() > 0
+        && data.institutionId.size() <= 100
         && data.authUid is string
         && data.authUid.size() > 0
         && data.authUid.size() <= 160
@@ -93,6 +122,8 @@ service cloud.firestore {
         && data.userId.size() > 0
         && data.userId.size() <= 160
         && hasValidUserProfile(data.userProfile)
+        && (!data.userProfile.keys().hasAny(['institutionId'])
+          || data.userProfile.institutionId == data.institutionId)
         && data.category in [
           'urgencia_geral',
           'violencia_ameaca',
@@ -103,6 +134,9 @@ service cloud.firestore {
           'furto_roubo'
         ]
         && data.status == 'pendente'
+        && isValidReceiptStatus(data.receiptStatus)
+        && data.receiptStatus == 'aguardando_central'
+        && data.retentionExpiresAt is timestamp
         && data.createdAt is string
         && data.createdAt.size() <= 80
         && data.updatedAt is string
@@ -147,15 +181,35 @@ service cloud.firestore {
             'camera_traseira',
             'camera_automatica',
             'simulacao_evidencia'
-          ]);
+          ])
+        && (!data.keys().hasAny(['centralReceiptAt'])
+          || (data.centralReceiptAt is string && data.centralReceiptAt.size() <= 80))
+        && (!data.keys().hasAny(['centralReceiptByUid'])
+          || (data.centralReceiptByUid is string && data.centralReceiptByUid.size() <= 160))
+        && (!data.keys().hasAny(['receiptStatus'])
+          || isValidReceiptStatus(data.receiptStatus))
+        && (!data.keys().hasAny(['lastSecurityNote'])
+          || (data.lastSecurityNote is string && data.lastSecurityNote.size() <= 1000))
+        && (!data.keys().hasAny(['assignedUnitId'])
+          || (data.assignedUnitId is string && data.assignedUnitId.size() <= 160))
+        && (!data.keys().hasAny(['assignedUnitName'])
+          || (data.assignedUnitName is string && data.assignedUnitName.size() <= 200))
+        && (!data.keys().hasAny(['securityNotes'])
+          || (data.securityNotes is list && data.securityNotes.size() <= 100))
+        && (!data.keys().hasAny(['resolvedAt'])
+          || (data.resolvedAt is string && data.resolvedAt.size() <= 80))
+        && (!data.keys().hasAny(['responseTimeMinutes'])
+          || (data.responseTimeMinutes is number
+            && data.responseTimeMinutes >= 0));
     }
 
     match /emergencyAlerts/{alertId} {
-      // Usuários autenticados só podem criar o próprio alerta pendente.
-      // Campos administrativos e operacionais não podem ser injetados pelo usuário.
+      // O usuário só cria um alerta próprio, dentro da instituição de seu vínculo.
+      // Campos operacionais, médicos e de auditoria não podem ser injetados.
       allow create: if isOwnerOnCreate()
         && request.resource.data.keys().hasOnly([
           'id',
+          'institutionId',
           'authUid',
           'protocolNumber',
           'userId',
@@ -163,6 +217,8 @@ service cloud.firestore {
           'category',
           'customNote',
           'status',
+          'receiptStatus',
+          'retentionExpiresAt',
           'createdAt',
           'updatedAt',
           'campusId',
@@ -183,11 +239,11 @@ service cloud.firestore {
         && hasValidAlertIdentity(request.resource.data)
         && hasValidOptionalAlertFields(request.resource.data);
 
-      // Criações de demonstração podem ser feitas somente por operador ativo.
-      // Mesmo nesse caso, os campos precisam passar pela mesma validação.
-      allow create: if isActiveOperator()
+      // Alertas de teste só podem ser criados por operador ativo da mesma instituição.
+      allow create: if isActiveOperatorFor(request.resource.data.institutionId)
         && request.resource.data.keys().hasOnly([
           'id',
+          'institutionId',
           'authUid',
           'protocolNumber',
           'userId',
@@ -195,6 +251,8 @@ service cloud.firestore {
           'category',
           'customNote',
           'status',
+          'receiptStatus',
+          'retentionExpiresAt',
           'createdAt',
           'updatedAt',
           'campusId',
@@ -222,62 +280,37 @@ service cloud.firestore {
         && request.resource.data.id == alertId
         && request.resource.data.authUid == request.auth.uid
         && hasValidAlertIdentity(request.resource.data)
-        && hasValidOptionalAlertFields(request.resource.data)
-        && (!request.resource.data.keys().hasAny(['assignedUnitId'])
-          || (request.resource.data.assignedUnitId is string
-            && request.resource.data.assignedUnitId.size() <= 160))
-        && (!request.resource.data.keys().hasAny(['assignedUnitName'])
-          || (request.resource.data.assignedUnitName is string
-            && request.resource.data.assignedUnitName.size() <= 200))
-        && (!request.resource.data.keys().hasAny(['securityNotes'])
-          || (request.resource.data.securityNotes is list
-            && request.resource.data.securityNotes.size() <= 100))
-        && (!request.resource.data.keys().hasAny(['resolvedAt'])
-          || request.resource.data.resolvedAt is string)
-        && (!request.resource.data.keys().hasAny(['responseTimeMinutes'])
-          || (request.resource.data.responseTimeMinutes is number
-            && request.resource.data.responseTimeMinutes >= 0));
+        && hasValidOptionalAlertFields(request.resource.data);
 
-      // O titular acompanha somente os próprios alertas.
-      // Operadores ativos acompanham os alertas da central.
-      allow read: if isOwner() || isActiveOperator();
+      // A consulta precisa ser particionada pela instituição; o titular só vê o próprio alerta.
+      allow read: if isOwner() || isActiveOperatorFor(resource.data.institutionId);
 
-      // O usuário pode cancelar somente o próprio alerta.
-      // Não pode modificar autoria, localização, categoria ou qualquer outro campo.
+      // Cancelamento exclusivo do titular; a confirmação da central não é forjada pelo usuário.
       allow update: if isOwner()
         && request.resource.data.id == resource.data.id
+        && request.resource.data.institutionId == resource.data.institutionId
         && request.resource.data.authUid == resource.data.authUid
-        && request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['status', 'updatedAt'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt'])
         && resource.data.status in ['pendente', 'em_deslocamento', 'no_local']
         && request.resource.data.status == 'cancelado_usuario'
         && request.resource.data.updatedAt is string;
 
-      // O usuário pode associar a evidência fotográfica ao próprio alerta.
-      // A URL é gravada depois do upload no Storage.
+      // A evidência é anexada pelo titular após o upload autorizado no Storage.
       allow update: if isOwner()
         && request.resource.data.id == resource.data.id
+        && request.resource.data.institutionId == resource.data.institutionId
         && request.resource.data.authUid == resource.data.authUid
         && request.resource.data.diff(resource.data).affectedKeys()
           .hasOnly(['photoUrl', 'photoCapturedAt', 'photoSource', 'updatedAt'])
         && request.resource.data.photoUrl is string
         && request.resource.data.photoUrl.size() <= 4096
         && request.resource.data.updatedAt is string
-        && (!request.resource.data.keys().hasAny(['photoCapturedAt'])
-          || (request.resource.data.photoCapturedAt is string
-            && request.resource.data.photoCapturedAt.size() <= 80))
-        && (!request.resource.data.keys().hasAny(['photoSource'])
-          || request.resource.data.photoSource in [
-            'camera_frontal',
-            'camera_traseira',
-            'camera_automatica',
-            'simulacao_evidencia'
-          ]);
+        && hasValidOptionalAlertFields(request.resource.data);
 
-      // Somente operadores ativos podem alterar o ciclo operacional.
-      // Campos de autoria, identificação e localização são imutáveis.
-      allow update: if isActiveOperator()
+      // Somente operador ativo da instituição pode alterar despacho, status ou recibo.
+      allow update: if isActiveOperatorFor(resource.data.institutionId)
         && request.resource.data.id == resource.data.id
+        && request.resource.data.institutionId == resource.data.institutionId
         && request.resource.data.authUid == resource.data.authUid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'status',
@@ -287,35 +320,115 @@ service cloud.firestore {
           'lastSecurityNote',
           'securityNotes',
           'resolvedAt',
-          'responseTimeMinutes'
+          'responseTimeMinutes',
+          'receiptStatus',
+          'centralReceiptAt',
+          'centralReceiptByUid'
         ])
         && isValidAlertStatus(request.resource.data.status)
+        && request.resource.data.status != 'cancelado_usuario'
         && request.resource.data.updatedAt is string
-        && (!request.resource.data.keys().hasAny(['assignedUnitId'])
-          || (request.resource.data.assignedUnitId is string
-            && request.resource.data.assignedUnitId.size() <= 160))
-        && (!request.resource.data.keys().hasAny(['assignedUnitName'])
-          || (request.resource.data.assignedUnitName is string
-            && request.resource.data.assignedUnitName.size() <= 200))
-        && (!request.resource.data.keys().hasAny(['lastSecurityNote'])
-          || (request.resource.data.lastSecurityNote is string
-            && request.resource.data.lastSecurityNote.size() <= 1000))
-        && (!request.resource.data.keys().hasAny(['securityNotes'])
-          || (request.resource.data.securityNotes is list
-            && request.resource.data.securityNotes.size() <= 100))
-        && (!request.resource.data.keys().hasAny(['resolvedAt'])
-          || request.resource.data.resolvedAt is string)
-        && (!request.resource.data.keys().hasAny(['responseTimeMinutes'])
-          || (request.resource.data.responseTimeMinutes is number
-            && request.resource.data.responseTimeMinutes >= 0));
-
+        && hasValidOptionalAlertFields(request.resource.data)
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny([
+            'receiptStatus',
+            'centralReceiptAt',
+            'centralReceiptByUid'
+          ])
+          || (
+            request.resource.data.receiptStatus == 'recebido_pela_central'
+            && request.resource.data.centralReceiptAt is string
+            && request.resource.data.centralReceiptByUid == request.auth.uid
+          ));
+      
       allow delete: if false;
     }
 
-    // O documento do operador é administrado fora do cliente.
-    // O cliente pode apenas consultar o próprio registro para validação.
+    match /auditLogs/{eventId} {
+      // Auditoria é append-only. O evento deve pertencer à mesma instituição do alerta.
+      allow create: if hasVerifiedEmail()
+        && request.resource.data.keys().hasOnly([
+          'id',
+          'institutionId',
+          'alertId',
+          'actorUid',
+          'actorType',
+          'eventType',
+          'createdAt',
+          'retentionExpiresAt',
+          'metadata'
+        ])
+        && request.resource.data.id == eventId
+        && request.resource.data.institutionId is string
+        && request.resource.data.institutionId.size() > 0
+        && request.resource.data.institutionId.size() <= 100
+        && request.resource.data.alertId is string
+        && request.resource.data.alertId.size() > 0
+        && request.resource.data.actorUid == request.auth.uid
+        && request.resource.data.actorType in ['user', 'operator']
+        && request.resource.data.eventType in [
+          'alert_created',
+          'alert_received',
+          'alert_viewed',
+          'alert_status_changed',
+          'alert_cancelled_by_user',
+          'evidence_uploaded'
+        ]
+        && request.resource.data.createdAt is string
+        && request.resource.data.createdAt.size() <= 80
+        && request.resource.data.retentionExpiresAt is timestamp
+        && (!request.resource.data.keys().hasAny(['metadata'])
+          || request.resource.data.metadata is map)
+        && (
+          (
+            request.resource.data.actorType == 'user'
+            && isActiveMemberOf(request.resource.data.institutionId)
+            && request.resource.data.eventType in [
+              'alert_created',
+              'alert_cancelled_by_user',
+              'evidence_uploaded'
+            ]
+            && getAfter(/databases/$(database)/documents/emergencyAlerts/$(request.resource.data.alertId)).data.authUid == request.auth.uid
+            && getAfter(/databases/$(database)/documents/emergencyAlerts/$(request.resource.data.alertId)).data.institutionId == request.resource.data.institutionId
+          )
+          || (
+            request.resource.data.actorType == 'operator'
+            && isActiveOperatorFor(request.resource.data.institutionId)
+            && request.resource.data.eventType in [
+              'alert_created',
+              'alert_received',
+              'alert_viewed',
+              'alert_status_changed',
+              'evidence_uploaded'
+            ]
+            && getAfter(/databases/$(database)/documents/emergencyAlerts/$(request.resource.data.alertId)).data.institutionId == request.resource.data.institutionId
+          )
+        );
+
+      allow read: if hasVerifiedEmail()
+        && (
+          isActiveOperatorFor(resource.data.institutionId)
+          || (
+            resource.data.actorUid == request.auth.uid
+            && isActiveMemberOf(resource.data.institutionId)
+          )
+        );
+      allow update, delete: if false;
+    }
+
+    match /memberships/{memberId} {
+      // Vínculos são provisionados por administrador/SSO; nunca pelo cliente.
+      allow read: if hasVerifiedEmail() && request.auth.uid == memberId;
+      allow write: if false;
+    }
+
     match /operators/{operatorId} {
-      allow read: if isSignedIn() && request.auth.uid == operatorId;
+      // O registro de operador é administrado fora do cliente.
+      allow read: if hasVerifiedEmail() && request.auth.uid == operatorId;
+      allow write: if false;
+    }
+
+    match /institutions/{institutionId} {
+      allow read: if isActiveMemberOf(institutionId) || isActiveOperatorFor(institutionId);
       allow write: if false;
     }
   }
