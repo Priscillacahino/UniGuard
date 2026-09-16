@@ -277,7 +277,11 @@ export default function App() {
   useEffect(() => {
     // Não persiste fotografias base64 no navegador. A captura fica apenas em
     // memória durante a demonstração ou é armazenada no Firebase Storage.
-    const alertsWithoutEmbeddedPhotos = alerts.map(({ photoSnapshot: _photo, ...alert }) => alert);
+    const retainedAlerts = purgeExpiredLocalAlerts(alerts);
+    if (retainedAlerts.length !== alerts.length) {
+      setAlerts(retainedAlerts);
+    }
+    const alertsWithoutEmbeddedPhotos = retainedAlerts.map(({ photoSnapshot: _photo, ...alert }) => alert);
     localStorage.setItem(STORAGE_KEYS.alerts, JSON.stringify(alertsWithoutEmbeddedPhotos));
   }, [alerts]);
 
