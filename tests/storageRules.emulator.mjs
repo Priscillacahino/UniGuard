@@ -32,7 +32,7 @@ try {
   const userB = env.authenticatedContext('userB', { email_verified: true });
   const opA = env.authenticatedContext('opA', { email_verified: true });
   const userAUnverified = env.authenticatedContext('userA', { email_verified: false });
-  const path = 'emergency-evidence/a1.jpg';
+  const path = 'emergency-evidence/a1/evidence.jpg';
   const jpg = new Uint8Array([0xff,0xd8,0xff,0xd9]);
 
   await assertSucceeds(uploadBytes(ref(userA.storage(), path), jpg, { contentType: 'image/jpeg' }));
@@ -41,7 +41,7 @@ try {
   await assertFails(getBytes(ref(userB.storage(), path)));
   await assertFails(getBytes(ref(userAUnverified.storage(), path)));
   await assertFails(uploadBytes(ref(userA.storage(), path), jpg, { contentType: 'image/jpeg' }));
-  await assertFails(uploadBytes(ref(userA.storage(), 'emergency-evidence/other.jpg'), new TextEncoder().encode('texto'), { contentType: 'text/plain' }));
+  await assertFails(uploadBytes(ref(userA.storage(), 'emergency-evidence/other/evidence.jpg'), new TextEncoder().encode('texto'), { contentType: 'text/plain' }));
 
   console.log('Storage Emulator: cenarios criticos aprovados.');
 } finally {
