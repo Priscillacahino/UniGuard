@@ -1,5 +1,6 @@
 name: Atualizar PDF profissional
 
+# Gera o PDF profissional a partir da fonte versionada no repositório.
 on:
   push:
     branches: [main]
