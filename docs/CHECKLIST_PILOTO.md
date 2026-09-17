@@ -60,7 +60,8 @@
 - [ ] **BLOQUEADOR** — configurar ciclo de vida do Firebase Storage.
 - [ ] comprovar exclusão automática em ambiente de teste.
 - [ ] definir procedimento administrativo para exclusão antecipada.
-- [ ] definir tratamento para exceções legais e incidentes.
+- [x] procedimento preparatório para tratamento de incidentes documentado em `RUNBOOK_INCIDENTES.md`.
+- [ ] validar tratamento para exceções legais e incidentes com responsáveis institucionais.
 
 ## 6. Evidências e integridade
 
@@ -76,10 +77,12 @@
 - [x] ausência de prontuário médico como regra do projeto.
 - [x] dados públicos/demonstrativos devem ser fictícios.
 - [ ] **BLOQUEADOR** — validar juridicamente base legal, finalidade e papéis dos agentes de tratamento.
-- [ ] definir aviso de privacidade aplicável ao piloto.
-- [ ] definir canal para direitos dos titulares.
-- [ ] revisar minimização de identificação, localização e imagem.
-- [ ] definir processo de resposta a incidentes de dados pessoais.
+- [x] conteúdo mínimo de aviso de privacidade preparado em `PACOTE_LGPD_PREPARATORIO.md`.
+- [x] fluxo preparatório para direitos dos titulares documentado.
+- [x] inventário preliminar de dados, finalidades, retenção e acessos documentado.
+- [x] checklist Privacy by Design documentado.
+- [x] processo preparatório de resposta a incidentes de dados pessoais documentado.
+- [ ] validar aviso, canal, bases legais, papéis dos agentes e procedimento com instituição/jurídico/DPO.
 
 ## 8. Controle contra abuso
 
@@ -128,9 +131,11 @@
 - [ ] **BLOQUEADOR** — definir responsáveis operacionais e níveis de acesso.
 - [ ] **BLOQUEADOR** — definir protocolo de recebimento e resposta a SOS.
 - [ ] definir horários/cobertura do serviço.
-- [ ] definir contingência para indisponibilidade do sistema.
-- [ ] definir critérios de escalonamento para serviços externos de emergência.
-- [ ] definir comunicação clara de que o app não substitui canais oficiais, quando aplicável.
+- [x] plano preparatório de contingência documentado em `PLANO_CONTINGENCIA.md`.
+- [x] runbook preparatório de incidentes documentado.
+- [x] níveis de severidade e critérios de escalonamento técnico documentados.
+- [x] comunicação de que o app não substitui canais oficiais documentada.
+- [ ] validar contingência, escalonamento externo, cobertura e canais alternativos com a instituição responsável.
 
 ## 13. Governança
 
@@ -140,8 +145,10 @@
 - [x] Dependabot configurado.
 - [x] `CHANGELOG.md` mantido.
 - [x] release acadêmica `v0.8.0` registrada.
-- [ ] definir processo de aprovação para mudanças de segurança antes de piloto.
-- [ ] definir responsáveis por incidentes e manutenção durante eventual piloto.
+- [x] matriz RACI preparatória criada em `MATRIZ_RACI.md`.
+- [x] papéis e responsabilidades propostos para operação, incidentes e privacidade documentados.
+- [ ] formalizar processo de aprovação de mudanças de segurança com a instituição responsável.
+- [ ] nomear formalmente responsáveis por incidentes e manutenção durante eventual piloto.
 
 ## Critério mínimo para considerar um piloto
 
@@ -155,5 +162,10 @@ Mesmo após os bloqueadores técnicos serem concluídos, a realização de um pi
 - [`MATRIZ_RASTREABILIDADE.md`](MATRIZ_RASTREABILIDADE.md)
 - [`MATRIZ_RISCOS.md`](MATRIZ_RISCOS.md)
 - [`ARQUITETURA.md`](ARQUITETURA.md)
+- [`PLANO_OPERACIONAL.md`](PLANO_OPERACIONAL.md)
+- [`PLANO_CONTINGENCIA.md`](PLANO_CONTINGENCIA.md)
+- [`RUNBOOK_INCIDENTES.md`](RUNBOOK_INCIDENTES.md)
+- [`PACOTE_LGPD_PREPARATORIO.md`](PACOTE_LGPD_PREPARATORIO.md)
+- [`MATRIZ_RACI.md`](MATRIZ_RACI.md)
 - [`FIREBASE_SETUP.md`](FIREBASE_SETUP.md)
 - [`../SECURITY.md`](../SECURITY.md)
