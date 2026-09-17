@@ -304,8 +304,15 @@ service cloud.firestore {
           .hasOnly(['photoUrl', 'photoCapturedAt', 'photoSource', 'updatedAt'])
         && request.resource.data.photoUrl is string
         && request.resource.data.photoUrl.size() <= 4096
-        && request.resource.data.updatedAt is string
-        && hasValidOptionalAlertFields(request.resource.data);
+        && request.resource.data.photoCapturedAt is string
+        && request.resource.data.photoCapturedAt.size() <= 80
+        && request.resource.data.photoSource in [
+          'camera_frontal',
+          'camera_traseira',
+          'camera_automatica',
+          'simulacao_evidencia'
+        ]
+        && request.resource.data.updatedAt is string;
 
       // Somente operador ativo da instituição pode alterar despacho, status ou recibo.
       allow update: if isActiveOperatorFor(resource.data.institutionId)
@@ -328,7 +335,6 @@ service cloud.firestore {
         && isValidAlertStatus(request.resource.data.status)
         && request.resource.data.status != 'cancelado_usuario'
         && request.resource.data.updatedAt is string
-        && hasValidOptionalAlertFields(request.resource.data)
         && (!request.resource.data.diff(resource.data).affectedKeys().hasAny([
             'receiptStatus',
             'centralReceiptAt',
