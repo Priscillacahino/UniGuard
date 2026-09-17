@@ -55,7 +55,7 @@ export interface EmergencyContact {
 export interface UserProfile {
   id: string;
   /** Instituição autorizadora do perfil; nunca deve ser confiada ao cliente sem validar a membership. */
-  institutionId?: string;
+  institutionId: string;
   name: string;
   documentNumber: string; // Matrícula / SIAPE / CPF
   role: UserRole;
