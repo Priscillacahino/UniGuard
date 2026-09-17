@@ -26,6 +26,12 @@ O **UniGuard** é uma proposta de solução digital voltada ao apoio da seguran�
 
 🔏 **LGPD preparatório:** [Consultar pacote de privacidade](docs/PACOTE_LGPD_PREPARATORIO.md)
 
+🧪 **Matriz de testes:** [Consultar cenários e evidências](docs/MATRIZ_TESTES.md)
+
+🧾 **Checklist de release:** [Consultar critérios de publicação](docs/CHECKLIST_RELEASE.md)
+
+🕵️ **Política de logs:** [Consultar mascaramento e retenção](docs/POLITICA_LOGS_MASCARAMENTO.md)
+
 🔐 **Segurança:** [Consultar SECURITY.md](SECURITY.md)
 
 ⚠️ **Matriz de riscos:** [Consultar riscos e tratamentos](docs/MATRIZ_RISCOS.md)
@@ -121,6 +127,9 @@ A proposta busca facilitar o pedido de ajuda e permitir que a equipe responsáve
 - matriz formal de testes com cenários positivos, negativos, contingência e Firebase;
 - auditoria de permissões Android com remoção de permissão não utilizada;
 - headers de segurança web versionados para a Vercel;
+- suíte de Firebase Emulator adicionada ao CI para regras de Firestore e Storage;
+- política de logs/mascaramento com utilitário `safeLogger` testado;
+- checklist formal de release;
 - templates padronizados para bug, melhoria e pull request;
 - `CODEOWNERS` com Priscilla Cahino como responsável geral;
 - Dependabot para dependências web, Android e GitHub Actions;
@@ -271,6 +280,8 @@ UniGuard/
 │   ├── MATRIZ_RACI.md                # Responsabilidades propostas
 │   ├── MATRIZ_TESTES.md              # Casos de teste e evidências esperadas
 │   ├── AUDITORIA_PERMISSOES_ANDROID.md # Minimização de permissões
+│   ├── POLITICA_LOGS_MASCARAMENTO.md    # Logging seguro e mascaramento
+│   ├── CHECKLIST_RELEASE.md             # Critérios mínimos de release
 │   ├── apresentacao/                 # PDF e PowerPoint profissionais
 │   ├── dados/                        # Excel e CSV demonstrativos
 │   ├── imagens/                      # Imagens e previews principais
@@ -285,6 +296,7 @@ UniGuard/
 ├── README.md
 ├── SECURITY.md
 ├── CHANGELOG.md
+├── firebase.json                       # Configuração dos emuladores e regras
 ├── firestore.rules
 ├── storage.rules
 └── vercel.json                       # Headers de segurança web
@@ -312,6 +324,8 @@ Consulte:
 - [`docs/MATRIZ_RACI.md`](docs/MATRIZ_RACI.md)
 - [`docs/MATRIZ_TESTES.md`](docs/MATRIZ_TESTES.md)
 - [`docs/AUDITORIA_PERMISSOES_ANDROID.md`](docs/AUDITORIA_PERMISSOES_ANDROID.md)
+- [`docs/POLITICA_LOGS_MASCARAMENTO.md`](docs/POLITICA_LOGS_MASCARAMENTO.md)
+- [`docs/CHECKLIST_RELEASE.md`](docs/CHECKLIST_RELEASE.md)
 - [`docs/CONTROLES_AUDITORIA_RETENCAO_ABUSO.md`](docs/CONTROLES_AUDITORIA_RETENCAO_ABUSO.md)
 - [`docs/FIREBASE_SETUP.md`](docs/FIREBASE_SETUP.md)
 
