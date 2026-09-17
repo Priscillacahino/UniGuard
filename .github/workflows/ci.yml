@@ -29,6 +29,9 @@ jobs:
       - name: Executar testes
         run: npm test
 
+      - name: Verificar dependências vulneráveis
+        run: npm audit --audit-level=high
+
       - name: Verificar TypeScript
         run: npm run lint
 
