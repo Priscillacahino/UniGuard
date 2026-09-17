@@ -39,13 +39,13 @@
 | R03 | Uso indevido ou repetitivo do botão SOS | Alta | Alto | Alto | 1 alerta ativo, 3 alertas/30 min, intervalo de 60 s | Implementar App Check e rate limit em backend confiável | Parcialmente mitigado |
 | R04 | Cliente adulterado contornar limites locais contra abuso | Média | Alto | Alto | Limites no web/Android e regras de acesso | Mover criação sensível para função/API confiável | Aberto |
 | R05 | Evidência fotográfica ser substituída após envio | Baixa | Alto | Médio | Regras do Storage impedem sobrescrita pelo cliente | Validar tentativa de substituição com conta de teste | Mitigado tecnicamente, pendente validação |
-| R06 | Exposição indevida de imagem ou localização | Média | Crítico | Crítico | Controle por autenticação, instituição e finalidade documentada | Revisar regras, logs, permissões e processo de acesso institucional | Parcialmente mitigado |
+| R06 | Exposição indevida de imagem ou localização | Média | Crítico | Crítico | Controle por autenticação, instituição, finalidade documentada e inventário preliminar de dados | Validar regras, logs, permissões e processo de acesso institucional | Parcialmente mitigado |
 | R07 | Armazenamento excessivo de dados pessoais | Média | Alto | Alto | Minimização de dados, bloqueio de `medicalNotes`, retenção definida | Ativar TTL e ciclo de vida remoto; revisar campos futuros | Parcialmente mitigado |
 | R08 | Dados permanecerem após o prazo de retenção | Alta | Alto | Alto | `retentionExpiresAt` e prazos documentados | Ativar TTL Firestore e lifecycle do Storage; comprovar exclusão | Aberto |
 | R09 | Dados médicos/diagnósticos serem inseridos indevidamente | Baixa | Alto | Médio | Campo `medicalNotes` removido/bloqueado e documentação proibitiva | Manter validações e revisar novos campos antes de releases | Mitigado |
 | R10 | Falha de geolocalização ou localização imprecisa | Média | Alto | Alto | Permissões e uso de serviços de localização | Tratar indisponibilidade, precisão e comunicação clara ao usuário | Parcialmente mitigado |
 | R11 | Usuário interpretar o protótipo como serviço oficial de emergência | Média | Crítico | Crítico | Avisos no README, documentação e apresentação | Manter avisos visíveis e não divulgar como serviço operacional | Mitigado documentalmente |
-| R12 | Firebase indisponível durante um acionamento | Média | Alto | Alto | Modo demonstrativo local existe para apresentação | Não tratar modo local como fallback operacional; definir estratégia real de disponibilidade | Aberto para produção |
+| R12 | Firebase indisponível durante um acionamento | Média | Alto | Alto | Modo demonstrativo local e plano de contingência documentado | Não tratar modo local como fallback operacional; validar estratégia real de disponibilidade e canais alternativos | Parcialmente preparado |
 | R13 | Falha na sincronização Android → Firebase → Central | Média | Alto | Alto | Estrutura de integração e recibo/status implementados | Executar teste ponta a ponta e registrar evidências | Aberto |
 | R14 | Operador inativo continuar com acesso | Baixa | Alto | Médio | Campo `active` em `operators/{uid}` | Testar revogação em sessão ativa e nova autenticação | Parcialmente mitigado |
 | R15 | Conta com e-mail não verificado acessar recursos | Baixa | Alto | Médio | Verificação de e-mail exigida nas regras | Testar cenários negativos de autenticação | Parcialmente mitigado |
@@ -57,7 +57,7 @@
 | R21 | Dados legados sem `institutionId` escaparem da nova segregação | Média | Crítico | Crítico | Novas regras não devem tornar legado visível | Inventariar, migrar ou eliminar documentos legados antes do piloto | Aberto |
 | R22 | Integração futura com MySQL expor banco diretamente ao cliente | Baixa | Crítico | Alto | Arquitetura documenta API/backend obrigatório | Nunca incluir credenciais MySQL em Android/web; implementar API segura | Controlado por arquitetura |
 | R23 | Permissões de câmera/localização serem usadas sem compreensão do usuário | Média | Alto | Alto | Solicitação de permissões e finalidade descrita | Melhorar textos de consentimento/contexto e revisar UX | Parcialmente mitigado |
-| R24 | Ausência de autorização institucional/jurídica para piloto real | Alta | Crítico | Crítico | Projeto explicitamente acadêmico e não oficial | Obter validação institucional, operacional e jurídica antes de uso real | Bloqueador de piloto |
+| R24 | Ausência de autorização institucional/jurídica para piloto real | Alta | Crítico | Crítico | Projeto explicitamente acadêmico, pacote LGPD preparatório, RACI, plano operacional e contingência | Obter validação institucional, operacional e jurídica antes de uso real | Bloqueador de piloto |
 
 ---
 
@@ -106,6 +106,12 @@ A matriz deve ser revisada sempre que houver mudança relevante em:
 - implantação de piloto.
 
 Documentos relacionados:
+
+- [`PLANO_OPERACIONAL.md`](PLANO_OPERACIONAL.md)
+- [`PLANO_CONTINGENCIA.md`](PLANO_CONTINGENCIA.md)
+- [`RUNBOOK_INCIDENTES.md`](RUNBOOK_INCIDENTES.md)
+- [`PACOTE_LGPD_PREPARATORIO.md`](PACOTE_LGPD_PREPARATORIO.md)
+- [`MATRIZ_RACI.md`](MATRIZ_RACI.md)
 
 - [`SECURITY.md`](../SECURITY.md)
 - [`docs/ARQUITETURA.md`](ARQUITETURA.md)
