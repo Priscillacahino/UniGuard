@@ -54,6 +54,7 @@ O formato segue, de maneira simplificada, a ideia do [Keep a Changelog](https://
 - aplicação web endurecida com CSP, anti-framing, `nosniff`, Referrer-Policy e Permissions-Policy;
 - CI ampliado com job dedicado às regras Firebase no Emulator;
 - CI ampliado com testes do backend e build Android release;
+- rodada CI #175 concluída com sucesso em Web, Backend, Firebase Emulator e Android debug/release;
 - fluxo Android legado removido, mantendo somente `IntegratedSosActivity`;
 - regras Firestore simplificadas para reduzir custo de avaliação em updates.
 
