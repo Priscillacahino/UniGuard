@@ -221,7 +221,16 @@ Não utilize dados pessoais reais durante testes públicos deste protótipo.
 
 ## 📌 Status do projeto
 
-**Em desenvolvimento acadêmico.** O repositório apresenta uma prova de conceito com diferentes camadas da solução. Ele ainda não representa um serviço de emergência disponível para uso real.
+**Protótipo acadêmico avançado / MVP demonstrativo.** O repositório reúne aplicativo Android, painel web, regras de segurança, controle institucional, auditoria, políticas de retenção e documentação de implantação. A integração com o Firebase real e a validação ponta a ponta ainda dependem de configuração autorizada, testes controlados e aprovação institucional.
+
+### Documentação de segurança
+
+- [Modelo de segurança e governança](docs/SECURITY_GOVERNANCE.md)
+- [Checklist de publicação do Firebase](docs/FIREBASE_DEPLOYMENT_CHECKLIST.md)
+- [Estratégia de ambientes](docs/ENVIRONMENT_STRATEGY.md)
+- [Backlog de hardening](docs/SECURITY_HARDENING_BACKLOG.md)
+
+O projeto ainda não representa um serviço de emergência disponível para uso real.
 
 ---
 
