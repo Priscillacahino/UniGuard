@@ -1,0 +1,60 @@
+name: Sugerir melhoria
+about: Propor evolução funcional, técnica, de segurança ou documentação
+title: "[MELHORIA] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use este formulário para melhorias do protótipo acadêmico UniGuard. Não apresente integrações ainda não validadas como já existentes.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Categoria
+      options:
+        - Funcionalidade
+        - Segurança
+        - Privacidade / LGPD
+        - Android
+        - Web
+        - Firebase
+        - Dados / BI
+        - UX / Acessibilidade
+        - Documentação
+        - Arquitetura
+        - Outro
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema ou oportunidade
+      description: Qual problema esta melhoria pretende resolver?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposta
+      description: Descreva a solução sugerida sem assumir que ela já está implementada.
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impacto esperado
+      description: Informe benefícios e possíveis riscos, dependências ou mudanças em requisitos/regras de negócio.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmações
+      options:
+        - label: A proposta respeita o caráter acadêmico e demonstrativo atual do projeto.
+          required: true
+        - label: Não incluí dados pessoais reais ou segredos.
+          required: true
