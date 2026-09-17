@@ -23,7 +23,10 @@ O formato segue, de maneira simplificada, a ideia do [Keep a Changelog](https://
 - plano de contingência em `docs/PLANO_CONTINGENCIA.md`;
 - runbook de incidentes em `docs/RUNBOOK_INCIDENTES.md`;
 - pacote LGPD preparatório em `docs/PACOTE_LGPD_PREPARATORIO.md`;
-- matriz RACI preparatória em `docs/MATRIZ_RACI.md`.
+- matriz RACI preparatória em `docs/MATRIZ_RACI.md`;
+- matriz formal de testes em `docs/MATRIZ_TESTES.md`;
+- auditoria de permissões Android em `docs/AUDITORIA_PERMISSOES_ANDROID.md`;
+- configuração `vercel.json` com headers de segurança web.
 
 ### Alterado
 
@@ -33,7 +36,10 @@ O formato segue, de maneira simplificada, a ideia do [Keep a Changelog](https://
 - artefatos de apresentação movidos para `docs/apresentacao/`;
 - bases demonstrativas movidas para `docs/dados/`;
 - imagens principais movidas para `docs/imagens/`;
-- metadados locais do Android Studio (`.idea/`) removidos do versionamento.
+- metadados locais do Android Studio (`.idea/`) removidos do versionamento;
+- permissão Android `VIBRATE` removida por ausência de uso no código atual;
+- permissões Android documentadas sob princípio de menor privilégio;
+- aplicação web endurecida com CSP, anti-framing, `nosniff`, Referrer-Policy e Permissions-Policy.
 
 ### Planejado
 
