@@ -28,6 +28,7 @@ import {
 } from './firebase';
 import { RETENTION_POLICY } from './retention';
 import { createAlertViaTrustedBackend, trustedBackendEnabled } from './trustedBackend';
+import { safeLog } from './safeLogger';
 
 const COLLECTION = 'emergencyAlerts';
 const AUDIT_COLLECTION = 'auditLogs';
@@ -338,7 +339,7 @@ export async function subscribeToAlerts(
             acknowledgedInSession.add(item.id);
             void acknowledgeAlert(item.id).catch((error) => {
               acknowledgedInSession.delete(item.id);
-              console.error('Falha ao confirmar recebimento do alerta', error);
+              safeLog('error', 'alert_acknowledgement_failed', { message: error instanceof Error ? error.message : 'unknown_error' });
             });
           });
       }
