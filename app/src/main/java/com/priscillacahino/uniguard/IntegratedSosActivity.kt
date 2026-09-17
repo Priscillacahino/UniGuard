@@ -34,6 +34,7 @@ import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.functions.FirebaseFunctions
 import com.google.firebase.storage.FirebaseStorage
 import java.io.File
 import java.text.SimpleDateFormat
@@ -422,6 +423,33 @@ class IntegratedSosActivity : AppCompatActivity() {
             put("authUid", currentUser.uid)
             put("institutionId", INSTITUTION_ID)
         }
+        if (BuildConfig.USE_TRUSTED_BACKEND) {
+            val location = authenticatedAlert["location"] as? Map<*, *>
+            val userProfile = authenticatedAlert["userProfile"] as? Map<*, *>
+            val payload = hashMapOf<String, Any?>(
+                "id" to id,
+                "category" to authenticatedAlert["category"],
+                "userName" to userProfile?.get("name"),
+                "role" to userProfile?.get("role"),
+                "location" to mapOf(
+                    "lat" to location?.get("lat"),
+                    "lng" to location?.get("lng"),
+                ),
+                "locationName" to authenticatedAlert["locationName"],
+                "isInsideCampus" to authenticatedAlert["isInsideCampus"],
+                "source" to "android",
+            )
+            FirebaseFunctions.getInstance()
+                .getHttpsCallable("createEmergencyAlert")
+                .call(payload)
+                .addOnSuccessListener { listenForStatus(id) }
+                .addOnFailureListener {
+                    activeAlertId = null
+                    statusText.text = "SMS enviado, mas o backend institucional está indisponível."
+                }
+            return
+        }
+
         val firestore = FirebaseFirestore.getInstance()
         val alertReference = firestore.collection(ALERTS).document(id)
         val auditReference = firestore.collection(AUDIT_LOGS).document()
