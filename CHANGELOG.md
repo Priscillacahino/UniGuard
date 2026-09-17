@@ -31,7 +31,14 @@ O formato segue, de maneira simplificada, a ideia do [Keep a Changelog](https://
 - testes reais de regras em `tests/firestoreRules.emulator.mjs` e `tests/storageRules.emulator.mjs`;
 - política de logs e mascaramento em `docs/POLITICA_LOGS_MASCARAMENTO.md`;
 - utilitário `safeLogger` e testes de mascaramento;
-- checklist formal de release em `docs/CHECKLIST_RELEASE.md`.
+- checklist formal de release em `docs/CHECKLIST_RELEASE.md`;
+- App Check preparado para web e Android;
+- backend confiável em `functions/` com rate limiting server-side;
+- endpoint `health` para observabilidade;
+- chave `trustedBackendRequired` para cutover seguro;
+- auditor dry-run de dados legados;
+- lifecycle de Storage preparado em `infra/storage-lifecycle.json`;
+- documentação de retenção remota, App Check/backend, monitoramento, rollback e roadmap v0.9.
 
 ### Alterado
 
@@ -45,16 +52,19 @@ O formato segue, de maneira simplificada, a ideia do [Keep a Changelog](https://
 - permissão Android `VIBRATE` removida por ausência de uso no código atual;
 - permissões Android documentadas sob princípio de menor privilégio;
 - aplicação web endurecida com CSP, anti-framing, `nosniff`, Referrer-Policy e Permissions-Policy;
-- CI ampliado com job dedicado às regras Firebase no Emulator.
+- CI ampliado com job dedicado às regras Firebase no Emulator;
+- CI ampliado com testes do backend e build Android release;
+- fluxo Android legado removido, mantendo somente `IntegratedSosActivity`;
+- regras Firestore simplificadas para reduzir custo de avaliação em updates.
 
 ### Planejado
 
 - validação ponta a ponta Android → Firebase → Central;
-- testes negativos de isolamento entre instituições;
+- validação E2E no ambiente Firebase real;
 - ativação e comprovação dos TTLs no Firestore;
-- configuração do ciclo de vida do Firebase Storage;
-- Firebase App Check;
-- rate limit em backend confiável;
+- aplicação do ciclo de vida do Firebase Storage;
+- enforcement do Firebase App Check;
+- deploy do backend confiável e cutover dos clientes;
 - procedimentos administrativos de exclusão com execução via camada confiável;
 - validação externa do plano operacional e de contingência;
 - validação jurídica das bases legais, agentes de tratamento, aviso de privacidade e eventual RIPD;
