@@ -33,13 +33,11 @@ service firebase.storage {
     match /emergency-evidence/{alertId}.jpg {
       // Evidência é criada uma única vez e não pode ser sobrescrita.
       // A atualização posterior do alerta deve registrar a URL e a auditoria.
-      allow create: if (isActiveMemberForAlert(alertId) || isActiveOperatorForAlert(alertId))
+      allow write: if (isActiveMemberForAlert(alertId) || isActiveOperatorForAlert(alertId))
         && request.resource != null
         && resource == null
         && request.resource.size < 5 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
-
-      allow update, delete: if false;
 
       allow read: if isActiveMemberForAlert(alertId) || isActiveOperatorForAlert(alertId);
     }
