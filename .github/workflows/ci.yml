@@ -45,7 +45,7 @@ jobs:
         run: npm run build
 
       - name: Publicar artefato do build web
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: uniguard-web-dist
           path: dist/
@@ -86,7 +86,7 @@ jobs:
         run: ./gradlew assembleRelease
 
       - name: Publicar APK demonstrativo
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: uniguard-android-debug-apk
           path: app/build/outputs/apk/debug/*.apk
@@ -94,7 +94,7 @@ jobs:
           retention-days: 7
 
       - name: Publicar APK release não assinado
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: uniguard-android-release-unsigned
           path: app/build/outputs/apk/release/*.apk
@@ -103,7 +103,7 @@ jobs:
 
       - name: Publicar relatório de lint Android
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: uniguard-android-lint
           path: app/build/reports/lint-results-debug.*
