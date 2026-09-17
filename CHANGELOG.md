@@ -6,6 +6,25 @@ O formato segue, de maneira simplificada, a ideia do [Keep a Changelog](https://
 
 ## [Não publicado]
 
+### Adicionado
+
+- matriz de riscos em `docs/MATRIZ_RISCOS.md`, com riscos técnicos, operacionais, de segurança, privacidade e governança;
+- identificação de riscos bloqueadores para um futuro piloto institucional;
+- templates padronizados de issue para bug e melhoria;
+- template de pull request com checklist de testes, requisitos, segurança e privacidade;
+- `CODEOWNERS` com Priscilla Cahino como responsável geral pela revisão do projeto;
+- Dependabot configurado para dependências npm, Gradle e GitHub Actions;
+- reorganização dos artefatos de apresentação, dados e imagens dentro de `docs/`;
+- documentação detalhada de arquitetura em `docs/ARQUITETURA.md`.
+
+### Alterado
+
+- README atualizado para refletir a nova organização do repositório, arquitetura, gestão de riscos e governança;
+- artefatos de apresentação movidos para `docs/apresentacao/`;
+- bases demonstrativas movidas para `docs/dados/`;
+- imagens principais movidas para `docs/imagens/`;
+- metadados locais do Android Studio (`.idea/`) removidos do versionamento.
+
 ### Planejado
 
 - validação ponta a ponta Android → Firebase → Central;
