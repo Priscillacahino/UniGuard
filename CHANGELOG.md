@@ -26,7 +26,12 @@ O formato segue, de maneira simplificada, a ideia do [Keep a Changelog](https://
 - matriz RACI preparatória em `docs/MATRIZ_RACI.md`;
 - matriz formal de testes em `docs/MATRIZ_TESTES.md`;
 - auditoria de permissões Android em `docs/AUDITORIA_PERMISSOES_ANDROID.md`;
-- configuração `vercel.json` com headers de segurança web.
+- configuração `vercel.json` com headers de segurança web;
+- configuração de Firebase Emulator para Firestore e Storage;
+- testes reais de regras em `tests/firestoreRules.emulator.mjs` e `tests/storageRules.emulator.mjs`;
+- política de logs e mascaramento em `docs/POLITICA_LOGS_MASCARAMENTO.md`;
+- utilitário `safeLogger` e testes de mascaramento;
+- checklist formal de release em `docs/CHECKLIST_RELEASE.md`.
 
 ### Alterado
 
@@ -39,7 +44,8 @@ O formato segue, de maneira simplificada, a ideia do [Keep a Changelog](https://
 - metadados locais do Android Studio (`.idea/`) removidos do versionamento;
 - permissão Android `VIBRATE` removida por ausência de uso no código atual;
 - permissões Android documentadas sob princípio de menor privilégio;
-- aplicação web endurecida com CSP, anti-framing, `nosniff`, Referrer-Policy e Permissions-Policy.
+- aplicação web endurecida com CSP, anti-framing, `nosniff`, Referrer-Policy e Permissions-Policy;
+- CI ampliado com job dedicado às regras Firebase no Emulator.
 
 ### Planejado
 
