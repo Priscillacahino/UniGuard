@@ -60,6 +60,11 @@ try {
   await assertSucceeds(setDoc(doc(userA, 'emergencyAlerts/a3'), alert('a3', 'userA', 'instA')));
 
   await env.withSecurityRulesDisabled(async (ctx) => {
+    await setDoc(doc(ctx.firestore(), 'settings/security'), { trustedBackendRequired: true });
+  });
+  await assertFails(setDoc(doc(userA, 'emergencyAlerts/a4'), alert('a4', 'userA', 'instA')));
+
+  await env.withSecurityRulesDisabled(async (ctx) => {
     const db = ctx.firestore();
     await setDoc(doc(db, 'auditLogs/log1'), {
       id: 'log1', institutionId: 'instA', alertId: 'a1', actorUid: 'userA', actorType: 'user',
