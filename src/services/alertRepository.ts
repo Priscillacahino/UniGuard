@@ -272,7 +272,11 @@ export async function changeAlertStatus(
       alertId,
       'alert_status_changed',
       now,
-      { status, ...(unitId ? { unitId } : {}), ...(note ? { hasNote: true } : {}) },
+      {
+        newStatus: status,
+        source: 'security_panel',
+        ...(note ? { reason: 'security_note_added' } : {}),
+      },
     ),
   );
   await batch.commit();
