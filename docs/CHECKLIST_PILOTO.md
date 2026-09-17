@@ -108,6 +108,8 @@
 - [x] permissões Android auditadas em `AUDITORIA_PERMISSOES_ANDROID.md`; `VIBRATE` removida por ausência de uso atual.
 - [x] headers de segurança web versionados em `vercel.json`, incluindo CSP, proteção contra framing, `nosniff`, política de referência e Permissions-Policy.
 - [x] política de logs e mascaramento documentada, com utilitário testado no web.
+- [x] backend versionado passa por testes, sintaxe e auditoria crítica no CI.
+- [x] build Android release com Play Integrity validado no CI #175.
 
 ## 10. Qualidade e testes
 
@@ -115,7 +117,7 @@
 - [ ] **BLOQUEADOR** — executar e registrar suíte de testes completa antes do piloto.
 - [x] matriz formal de testes criada em `MATRIZ_TESTES.md`.
 - [x] suíte Firebase Emulator integrada ao CI para Firestore e Storage.
-- [x] suíte Emulator teve execução verde após correção das regras de Storage; nova rodada continua obrigatória a cada mudança.
+- [x] suíte Emulator executada com sucesso no CI #175, incluindo identidade, segregação, auditoria, cutover e Storage.
 - [ ] validar comportamento com perda de rede.
 - [ ] validar perda/negação de localização.
 - [ ] validar câmera negada ou indisponível.
