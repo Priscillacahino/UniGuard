@@ -28,6 +28,8 @@ await env.withSecurityRulesDisabled(async (ctx) => {
   await setDoc(doc(db, 'memberships/userB'), { institutionId: 'instB', active: true });
   await setDoc(doc(db, 'operators/opA'), { institutionId: 'instA', active: true });
   await setDoc(doc(db, 'operators/opB'), { institutionId: 'instB', active: true });
+  await setDoc(doc(db, 'memberships/inactiveUser'), { institutionId: 'instA', active: false });
+  await setDoc(doc(db, 'operators/inactiveOp'), { institutionId: 'instA', active: false });
   await setDoc(doc(db, 'emergencyAlerts/a1'), alert('a1', 'userA', 'instA'));
   await setDoc(doc(db, 'emergencyAlerts/b1'), alert('b1', 'userB', 'instB'));
 });
@@ -37,11 +39,15 @@ try {
   const userAUnverified = env.authenticatedContext('userA', { email_verified: false }).firestore();
   const opA = env.authenticatedContext('opA', { email_verified: true }).firestore();
   const ghost = env.authenticatedContext('ghost', { email_verified: true }).firestore();
+  const inactiveUser = env.authenticatedContext('inactiveUser', { email_verified: true }).firestore();
+  const inactiveOp = env.authenticatedContext('inactiveOp', { email_verified: true }).firestore();
 
   await assertSucceeds(getDoc(doc(userA, 'emergencyAlerts/a1')));
   await assertFails(getDoc(doc(userA, 'emergencyAlerts/b1')));
   await assertFails(getDoc(doc(userAUnverified, 'emergencyAlerts/a1')));
   await assertFails(getDoc(doc(ghost, 'emergencyAlerts/a1')));
+  await assertFails(getDoc(doc(inactiveUser, 'emergencyAlerts/a1')));
+  await assertFails(getDoc(doc(inactiveOp, 'emergencyAlerts/a1')));
   await assertSucceeds(getDoc(doc(opA, 'emergencyAlerts/a1')));
   await assertFails(getDoc(doc(opA, 'emergencyAlerts/b1')));
   await assertFails(updateDoc(doc(userA, 'emergencyAlerts/b1'), { updatedAt: now, status: 'cancelado_usuario' }));
@@ -52,6 +58,16 @@ try {
   injected.medicalNotes = 'dado proibido';
   await assertFails(setDoc(doc(userA, 'emergencyAlerts/a2'), injected));
   await assertSucceeds(setDoc(doc(userA, 'emergencyAlerts/a3'), alert('a3', 'userA', 'instA')));
+
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const db = ctx.firestore();
+    await setDoc(doc(db, 'auditLogs/log1'), {
+      id: 'log1', institutionId: 'instA', alertId: 'a1', actorUid: 'userA', actorType: 'user',
+      eventType: 'alert_created', createdAt: now, retentionExpiresAt: expiry, metadata: { source: 'test' },
+    });
+  });
+  await assertFails(updateDoc(doc(userA, 'auditLogs/log1'), { metadata: { changed: true } }));
+  await assertFails(deleteDoc(doc(userA, 'auditLogs/log1')));
 
   console.log('Firestore Emulator: cenarios criticos aprovados.');
 } finally {
