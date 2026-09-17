@@ -965,11 +965,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     required
                     value={registerPass}
                     onChange={(e) => setRegisterPass(e.target.value)}
-                    placeholder="Mínimo 6 dígitos"
+                    placeholder="Mínimo 8 caracteres"
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-[#003d71]"
                   />
                   {registerPass.length > 0 && !isRegPassValid && (
-                    <p className="text-[10px] text-rose-600 font-medium">Mínimo 6 caracteres.</p>
+                    <p className="text-[10px] text-rose-600 font-medium">Mínimo 8 caracteres.</p>
                   )}
                 </div>
 
