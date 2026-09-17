@@ -3,7 +3,8 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     function isVerifiedUser() {
-      return request.auth != null && request.auth.token.email_verified == true;
+      return request.auth != null
+        && request.auth.token.email_verified == true;
     }
 
     function alertDocument(alertId) {
@@ -30,10 +31,15 @@ service firebase.storage {
     }
 
     match /emergency-evidence/{alertId}.jpg {
-      allow write: if (isActiveMemberForAlert(alertId) || isActiveOperatorForAlert(alertId))
+      // Evidência é criada uma única vez e não pode ser sobrescrita.
+      // A atualização posterior do alerta deve registrar a URL e a auditoria.
+      allow create: if (isActiveMemberForAlert(alertId) || isActiveOperatorForAlert(alertId))
         && request.resource != null
+        && resource == null
         && request.resource.size < 5 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
+
+      allow update, delete: if false;
 
       allow read: if isActiveMemberForAlert(alertId) || isActiveOperatorForAlert(alertId);
     }
