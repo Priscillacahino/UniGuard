@@ -18,6 +18,14 @@ O **UniGuard** é uma proposta de solução digital voltada ao apoio da seguran�
 
 🧪 **Prontidão para piloto:** [Consultar checklist](docs/CHECKLIST_PILOTO.md)
 
+🛠️ **Plano operacional:** [Consultar plano operacional](docs/PLANO_OPERACIONAL.md)
+
+🧯 **Contingência:** [Consultar plano de contingência](docs/PLANO_CONTINGENCIA.md)
+
+🚨 **Runbook de incidentes:** [Consultar procedimentos](docs/RUNBOOK_INCIDENTES.md)
+
+🔏 **LGPD preparatório:** [Consultar pacote de privacidade](docs/PACOTE_LGPD_PREPARATORIO.md)
+
 🔐 **Segurança:** [Consultar SECURITY.md](SECURITY.md)
 
 ⚠️ **Matriz de riscos:** [Consultar riscos e tratamentos](docs/MATRIZ_RISCOS.md)
@@ -105,6 +113,11 @@ A proposta busca facilitar o pedido de ajuda e permitir que a equipe responsáve
 - requisitos formais com status de implementação;
 - matriz de rastreabilidade entre requisitos, regras, código e documentação;
 - checklist de prontidão para piloto com itens bloqueadores;
+- plano operacional preparatório;
+- plano de contingência para indisponibilidades e degradações;
+- runbook de incidentes com severidade, contenção e recuperação;
+- pacote LGPD preparatório com inventário de dados, finalidades, retenção, Privacy by Design e fluxo de direitos;
+- matriz RACI preparatória para responsabilidades futuras;
 - templates padronizados para bug, melhoria e pull request;
 - `CODEOWNERS` com Priscilla Cahino como responsável geral;
 - Dependabot para dependências web, Android e GitHub Actions;
@@ -124,7 +137,9 @@ A proposta busca facilitar o pedido de ajuda e permitir que a equipe responsáve
 - base demonstrativa em Excel e CSV;
 - apresentação profissional em PDF e PowerPoint;
 - documentação de arquitetura com diagramas Mermaid;
-- matriz de riscos em `docs/MATRIZ_RISCOS.md`.
+- matriz de riscos em `docs/MATRIZ_RISCOS.md`;
+- plano operacional, contingência e runbook de incidentes;
+- pacote LGPD preparatório e matriz RACI.
 
 ---
 
@@ -245,6 +260,11 @@ UniGuard/
 │   ├── MATRIZ_RASTREABILIDADE.md     # Requisito → código → evidência
 │   ├── MATRIZ_RISCOS.md              # Gestão e tratamento de riscos
 │   ├── CHECKLIST_PILOTO.md           # Prontidão e bloqueadores do piloto
+│   ├── PLANO_OPERACIONAL.md          # Operação preparatória
+│   ├── PLANO_CONTINGENCIA.md         # Contingência e recuperação
+│   ├── RUNBOOK_INCIDENTES.md         # Resposta a incidentes
+│   ├── PACOTE_LGPD_PREPARATORIO.md   # Privacidade e LGPD para futura validação
+│   ├── MATRIZ_RACI.md                # Responsabilidades propostas
 │   ├── apresentacao/                 # PDF e PowerPoint profissionais
 │   ├── dados/                        # Excel e CSV demonstrativos
 │   ├── imagens/                      # Imagens e previews principais
@@ -278,6 +298,11 @@ Consulte:
 - [`docs/MATRIZ_RASTREABILIDADE.md`](docs/MATRIZ_RASTREABILIDADE.md)
 - [`docs/MATRIZ_RISCOS.md`](docs/MATRIZ_RISCOS.md)
 - [`docs/CHECKLIST_PILOTO.md`](docs/CHECKLIST_PILOTO.md)
+- [`docs/PLANO_OPERACIONAL.md`](docs/PLANO_OPERACIONAL.md)
+- [`docs/PLANO_CONTINGENCIA.md`](docs/PLANO_CONTINGENCIA.md)
+- [`docs/RUNBOOK_INCIDENTES.md`](docs/RUNBOOK_INCIDENTES.md)
+- [`docs/PACOTE_LGPD_PREPARATORIO.md`](docs/PACOTE_LGPD_PREPARATORIO.md)
+- [`docs/MATRIZ_RACI.md`](docs/MATRIZ_RACI.md)
 - [`docs/CONTROLES_AUDITORIA_RETENCAO_ABUSO.md`](docs/CONTROLES_AUDITORIA_RETENCAO_ABUSO.md)
 - [`docs/FIREBASE_SETUP.md`](docs/FIREBASE_SETUP.md)
 
