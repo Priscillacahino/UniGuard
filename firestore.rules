@@ -6,6 +6,11 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function trustedBackendRequired() {
+      return exists(/databases/$(database)/documents/settings/security)
+        && get(/databases/$(database)/documents/settings/security).data.trustedBackendRequired == true;
+    }
+
     function hasVerifiedEmail() {
       return isSignedIn() && request.auth.token.email_verified == true;
     }
@@ -206,7 +211,8 @@ service cloud.firestore {
     match /emergencyAlerts/{alertId} {
       // O usuário só cria um alerta próprio, dentro da instituição de seu vínculo.
       // Campos operacionais, médicos e de auditoria não podem ser injetados.
-      allow create: if isOwnerOnCreate()
+      allow create: if !trustedBackendRequired()
+        && isOwnerOnCreate()
         && request.resource.data.keys().hasOnly([
           'id',
           'institutionId',
@@ -240,7 +246,8 @@ service cloud.firestore {
         && hasValidOptionalAlertFields(request.resource.data);
 
       // Alertas de teste só podem ser criados por operador ativo da mesma instituição.
-      allow create: if isActiveOperatorFor(request.resource.data.institutionId)
+      allow create: if !trustedBackendRequired()
+        && isActiveOperatorFor(request.resource.data.institutionId)
         && request.resource.data.keys().hasOnly([
           'id',
           'institutionId',
@@ -419,6 +426,11 @@ service cloud.firestore {
           )
         );
       allow update, delete: if false;
+    }
+
+    match /settings/{settingId} {
+      allow read: if false;
+      allow write: if false;
     }
 
     match /memberships/{memberId} {
