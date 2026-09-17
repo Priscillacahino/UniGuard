@@ -30,8 +30,6 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.appcheck.FirebaseAppCheck
-import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
-import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.functions.FirebaseFunctions
@@ -103,12 +101,8 @@ class IntegratedSosActivity : AppCompatActivity() {
 
     private fun configureAppCheck() {
         if (!firebaseConfigured()) return
-        val appCheck = FirebaseAppCheck.getInstance()
-        if (BuildConfig.DEBUG) {
-            appCheck.installAppCheckProviderFactory(DebugAppCheckProviderFactory.getInstance())
-        } else {
-            appCheck.installAppCheckProviderFactory(PlayIntegrityAppCheckProviderFactory.getInstance())
-        }
+        FirebaseAppCheck.getInstance()
+            .installAppCheckProviderFactory(appCheckProviderFactory())
     }
 
     private fun configureAuthentication() {
