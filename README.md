@@ -32,6 +32,14 @@ O **UniGuard** é uma proposta de solução digital voltada ao apoio da seguran�
 
 🕵️ **Política de logs:** [Consultar mascaramento e retenção](docs/POLITICA_LOGS_MASCARAMENTO.md)
 
+🧱 **App Check e backend confiável:** [Consultar preparação](docs/APPCHECK_BACKEND.md)
+
+📡 **Monitoramento:** [Consultar plano de observabilidade](docs/MONITORAMENTO_OBSERVABILIDADE.md)
+
+↩️ **Rollback e recuperação:** [Consultar plano](docs/ROLLBACK_RECUPERACAO.md)
+
+🗺️ **Roadmap v0.9:** [Validation & Security](docs/ROADMAP_v0.9.md)
+
 🔐 **Segurança:** [Consultar SECURITY.md](SECURITY.md)
 
 ⚠️ **Matriz de riscos:** [Consultar riscos e tratamentos](docs/MATRIZ_RISCOS.md)
@@ -130,6 +138,13 @@ A proposta busca facilitar o pedido de ajuda e permitir que a equipe responsáve
 - suíte de Firebase Emulator adicionada ao CI para regras de Firestore e Storage;
 - política de logs/mascaramento com utilitário `safeLogger` testado;
 - checklist formal de release;
+- App Check preparado para web e Android;
+- backend confiável em `functions/` com criação de SOS, membership server-side e rate limiting;
+- chave de cutover para bloquear escrita direta quando o backend estiver ativo;
+- auditor dry-run de dados legados;
+- lifecycle de evidências preparado;
+- endpoint de health check, plano de monitoramento e rollback;
+- fluxo Android legado removido, mantendo apenas o fluxo integrado;
 - templates padronizados para bug, melhoria e pull request;
 - `CODEOWNERS` com Priscilla Cahino como responsável geral;
 - Dependabot para dependências web, Android e GitHub Actions;
@@ -161,11 +176,11 @@ A proposta busca facilitar o pedido de ajuda e permitir que a equipe responsáve
 Antes de qualquer piloto institucional, ainda são necessários, entre outros pontos:
 
 - validação ponta a ponta Android → Firebase → Central;
-- testes negativos de isolamento entre instituições;
+- validação E2E no projeto Firebase real;
 - ativação e comprovação de TTL no Firestore;
-- configuração do ciclo de vida do Firebase Storage;
-- Firebase App Check;
-- rate limiting em backend confiável;
+- aplicação do ciclo de vida do Firebase Storage;
+- registro/enforcement do Firebase App Check;
+- deploy do backend confiável e cutover dos clientes;
 - testes técnicos de segurança, privacidade, acessibilidade e desempenho;
 - formalização jurídica, operacional e institucional;
 - procedimentos administrativos para exclusão, incidentes e exceções legais.
@@ -267,6 +282,8 @@ Consulte as [instruções específicas do banco](UniGuard_Banco_MySQL/README_BAN
 UniGuard/
 ├── app/                              # Aplicativo Android em Kotlin
 ├── src/                              # Protótipo web React/TypeScript
+├── functions/                        # Backend confiável e auditor de legado
+├── infra/                            # Configurações preparatórias de infraestrutura
 ├── docs/
 │   ├── ARQUITETURA.md                # Arquitetura técnica e diagramas
 │   ├── REQUISITOS.md                 # RF, RNF e regras de negócio
