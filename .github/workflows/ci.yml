@@ -98,3 +98,37 @@ jobs:
           path: app/build/reports/lint-results-debug.*
           if-no-files-found: ignore
           retention-days: 7
+
+  firebase-rules:
+    name: Firebase — regras no Emulator
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Instalar dependências do projeto
+        run: npm ci
+
+      - name: Instalar ferramentas de teste Firebase
+        run: npm install --no-save --package-lock=false @firebase/rules-unit-testing@5.0.2 firebase-tools@15.30.1
+
+      - name: Validar regras Firestore e Storage no Emulator
+        run: >
+          npx firebase-tools@15.30.1 emulators:exec
+          --project uniguard-ci-demo
+          --only firestore,storage
+          "node tests/firestoreRules.emulator.mjs && node tests/storageRules.emulator.mjs"
