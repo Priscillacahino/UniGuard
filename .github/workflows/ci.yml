@@ -82,11 +82,22 @@ jobs:
       - name: Gerar APK demonstrativo
         run: ./gradlew assembleDebug
 
+      - name: Validar build release
+        run: ./gradlew assembleRelease
+
       - name: Publicar APK demonstrativo
         uses: actions/upload-artifact@v4
         with:
           name: uniguard-android-debug-apk
           path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Publicar APK release não assinado
+        uses: actions/upload-artifact@v4
+        with:
+          name: uniguard-android-release-unsigned
+          path: app/build/outputs/apk/release/*.apk
           if-no-files-found: error
           retention-days: 7
 
@@ -132,3 +143,33 @@ jobs:
           --project uniguard-ci-demo
           --only firestore,storage
           "node tests/firestoreRules.emulator.mjs && node tests/storageRules.emulator.mjs"
+
+  backend:
+    name: Backend — rate limit e validação
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Instalar dependências do backend
+        working-directory: functions
+        run: npm install --ignore-scripts
+
+      - name: Testar rate limiting confiável
+        working-directory: functions
+        run: npm test
+
+      - name: Validar sintaxe das funções
+        working-directory: functions
+        run: node --check index.js && node --check auditLegacyData.js
+
+      - name: Auditar dependências críticas do backend
+        working-directory: functions
+        run: npm audit --audit-level=critical
