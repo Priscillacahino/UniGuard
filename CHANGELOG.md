@@ -18,11 +18,18 @@ O formato segue, de maneira simplificada, a ideia do [Keep a Changelog](https://
 - `CODEOWNERS` com Priscilla Cahino como responsável geral pela revisão do projeto;
 - Dependabot configurado para dependências npm, Gradle e GitHub Actions;
 - reorganização dos artefatos de apresentação, dados e imagens dentro de `docs/`;
-- documentação detalhada de arquitetura em `docs/ARQUITETURA.md`.
+- documentação detalhada de arquitetura em `docs/ARQUITETURA.md`;
+- plano operacional preparatório em `docs/PLANO_OPERACIONAL.md`;
+- plano de contingência em `docs/PLANO_CONTINGENCIA.md`;
+- runbook de incidentes em `docs/RUNBOOK_INCIDENTES.md`;
+- pacote LGPD preparatório em `docs/PACOTE_LGPD_PREPARATORIO.md`;
+- matriz RACI preparatória em `docs/MATRIZ_RACI.md`.
 
 ### Alterado
 
-- README atualizado para refletir a nova organização do repositório, arquitetura, gestão de riscos, requisitos, rastreabilidade, prontidão para piloto e governança;
+- README atualizado para refletir a nova organização do repositório, arquitetura, gestão de riscos, requisitos, rastreabilidade, prontidão para piloto, operação, contingência, privacidade e governança;
+- checklist de piloto atualizado com controles preparatórios operacionais, de incidentes e LGPD;
+- matriz de riscos atualizada com planos de contingência e preparação de privacidade;
 - artefatos de apresentação movidos para `docs/apresentacao/`;
 - bases demonstrativas movidas para `docs/dados/`;
 - imagens principais movidas para `docs/imagens/`;
@@ -36,8 +43,10 @@ O formato segue, de maneira simplificada, a ideia do [Keep a Changelog](https://
 - configuração do ciclo de vida do Firebase Storage;
 - Firebase App Check;
 - rate limit em backend confiável;
-- procedimentos administrativos de exclusão e incidentes;
-- validação jurídica/LGPD e institucional antes de qualquer piloto real.
+- procedimentos administrativos de exclusão com execução via camada confiável;
+- validação externa do plano operacional e de contingência;
+- validação jurídica das bases legais, agentes de tratamento, aviso de privacidade e eventual RIPD;
+- autorização institucional antes de qualquer piloto real.
 
 ---
 
