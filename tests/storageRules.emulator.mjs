@@ -42,6 +42,8 @@ try {
   await assertFails(getBytes(ref(userAUnverified.storage(), path)));
   await assertFails(uploadBytes(ref(userA.storage(), path), jpg, { contentType: 'image/jpeg' }));
   await assertFails(uploadBytes(ref(userA.storage(), 'emergency-evidence/other/evidence.jpg'), new TextEncoder().encode('texto'), { contentType: 'text/plain' }));
+  const oversized = new Uint8Array(5 * 1024 * 1024 + 1);
+  await assertFails(uploadBytes(ref(userA.storage(), 'emergency-evidence/large/evidence.jpg'), oversized, { contentType: 'image/jpeg' }));
 
   console.log('Storage Emulator: cenarios criticos aprovados.');
 } finally {
