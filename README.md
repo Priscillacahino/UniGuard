@@ -2,11 +2,19 @@
 
 > **Protótipo acadêmico em desenvolvimento.** O UniGuard não possui integração oficial com a Universidade Federal da Paraíba (UFPB), seus sistemas institucionais, a Superintendência de Segurança, o SAMU ou a Polícia Militar. Os dados, usuários, mapas, alertas e indicadores apresentados são fictícios e utilizados exclusivamente para demonstração.
 
-O **UniGuard** é uma proposta de solução digital voltada ao apoio da segurança de estudantes, docentes e servidores em ambientes universitários. O projeto combina um aplicativo Android para acionamento de emergência, um protótipo web com visão do usuário e painel de segurança, geolocalização, registro de ocorrências e estruturas demonstrativas de dados.
+O **UniGuard** é uma proposta de solução digital voltada ao apoio da segurança de estudantes, docentes e servidores em ambientes universitários. O projeto combina aplicativo Android, aplicação web, geolocalização, acionamento de SOS, painel de acompanhamento, integração opcional com Firebase, documentação de segurança, modelagem de dados e artefatos demonstrativos.
 
 🔗 **Protótipo web:** [Acessar o UniGuard](https://uniguardvercelapp.vercel.app/)
 
-📄 **Apresentação profissional:** [Visualizar o PDF](UniGuard_Apresentacao_Profissional.pdf)
+📄 **Apresentação profissional:** [Visualizar o PDF](docs/apresentacao/UniGuard_Apresentacao_Profissional.pdf)
+
+📊 **PowerPoint:** [Abrir apresentação editável](docs/apresentacao/UniGuard_Apresentacao_Profissional_Atualizada.pptx)
+
+🏗️ **Arquitetura:** [Consultar documentação técnica](docs/ARQUITETURA.md)
+
+🔐 **Segurança:** [Consultar SECURITY.md](SECURITY.md)
+
+🧾 **Histórico de evolução:** [Consultar CHANGELOG.md](CHANGELOG.md)
 
 ---
 
@@ -16,7 +24,7 @@ O **UniGuard** é uma proposta de solução digital voltada ao apoio da seguran�
 
 🖼️ **Galeria completa:** [Visualizar as 15 telas individualmente](docs/prototipo-figma/README.md)
 
-![Visão geral das telas do protótipo UniGuard](UniGuard_Telas_Prototipo.png)
+![Visão geral das telas do protótipo UniGuard](docs/imagens/UniGuard_Telas_Prototipo.png)
 
 > A imagem acima reúne a visão geral do produto. A galeria apresenta separadamente as telas de acesso, configuração, SOS, acompanhamento e recursos complementares. O material representa a visão de produto e pode conter funcionalidades ainda em desenvolvimento.
 
@@ -30,24 +38,24 @@ Explorar como recursos de tecnologia, geolocalização e comunicação digital p
 
 ## 💭 Por que criei o UniGuard
 
-O UniGuard nasceu da observação de que determinados trajetos dentro de ambientes universitários podem gerar insegurança, especialmente para pessoas que precisam circular desacompanhadas. Campi extensos, áreas de preservação, iluminação insuficiente e caminhos com pouca circulação podem aumentar essa sensação de vulnerabilidade.
+O UniGuard nasceu da observação de que determinados trajetos em ambientes universitários podem gerar insegurança, especialmente para pessoas que circulam desacompanhadas. Campi extensos, áreas de preservação, iluminação insuficiente e caminhos com pouca circulação podem aumentar essa sensação de vulnerabilidade.
 
-A proposta busca facilitar o pedido de ajuda e permitir que a equipe responsável receba informações essenciais, como localização e horário, com mais rapidez. O foco está principalmente em estudantes, servidores, mulheres, pessoas LGBTQIA+ e outros públicos que possam se sentir mais vulneráveis durante seus deslocamentos.
-
-Essa motivação parte de uma percepção e de experiências de circulação no ambiente universitário. Ela não representa uma afirmação sobre índices oficiais de criminalidade da UFPB.
+A proposta busca facilitar o pedido de ajuda e permitir que a equipe responsável receba informações essenciais, como localização e horário, com mais rapidez. Essa motivação parte de uma percepção e de experiências de circulação no ambiente universitário e não representa afirmação sobre índices oficiais de criminalidade da UFPB.
 
 ---
 
-## 💡 Como a solução foi pensada
+## 💡 Fluxo da solução
 
-1. O usuário realiza sua identificação e escolhe o campus.
-2. O dispositivo solicita autorização para utilizar localização e câmera.
-3. Em uma situação de emergência, o usuário aciona o botão SOS.
-4. O alerta reúne categoria, data, hora e localização disponível.
-5. Quando autorizada, uma imagem pode ser associada ao registro da ocorrência.
-6. O painel de segurança recebe ou simula o chamado para acompanhamento.
-7. A equipe atualiza o status até a finalização do atendimento.
-8. Os registros podem apoiar análises demonstrativas sobre ocorrências e pontos de atenção.
+1. O usuário se autentica.
+2. Para o fluxo institucional, o e-mail deve estar verificado e o vínculo institucional precisa estar ativo.
+3. O sistema identifica a `institutionId` autorizada.
+4. O dispositivo solicita as permissões necessárias, como localização e câmera.
+5. Em situação de emergência, o usuário aciona o SOS.
+6. O alerta reúne categoria, data, hora e localização disponível.
+7. Quando autorizada, uma evidência fotográfica pode ser vinculada ao alerta.
+8. A Central visualiza apenas alertas da instituição autorizada.
+9. Recebimento, visualização e mudanças de status podem gerar registros de auditoria.
+10. O alerta é acompanhado até o encerramento.
 
 ---
 
@@ -55,88 +63,84 @@ Essa motivação parte de uma percepção e de experiências de circulação no 
 
 ### Protótipo web
 
-- Interface responsiva desenvolvida com React e TypeScript.
-- Alternância entre **App do Usuário** e **Painel de Segurança**.
-- Seleção demonstrativa dos campi da UFPB.
-- Cadastro e identificação do usuário.
-- Botão SOS e categorização de ocorrências.
-- Uso da geolocalização disponibilizada pelo navegador.
-- Registro da última localização disponível.
-- Captura de imagem mediante permissão do usuário.
-- Histórico e acompanhamento do status dos alertas.
-- Mapa interativo e representação de pontos seguros.
-- Inclusão de alertas simulados para demonstração do painel.
-- Funcionamento local demonstrativo quando o Firebase não está configurado.
+- React 19, TypeScript, Vite e Tailwind CSS;
+- alternância entre visão do usuário e Painel de Segurança;
+- geolocalização pelo navegador;
+- acionamento e categorização do SOS;
+- captura de imagem mediante permissão;
+- histórico e acompanhamento de alertas;
+- mapa interativo;
+- modo demonstrativo local quando o Firebase não está configurado.
 
 ### Aplicativo Android
 
-- Projeto Android nativo em Kotlin.
-- Tela integrada de SOS.
-- Permissões para localização, câmera, internet, SMS e vibração.
-- Uso do Google Play Services Location e Google Maps.
-- Estrutura preparada para Firebase Authentication, Firestore e Storage.
-- Execução em modo demonstrativo sem o arquivo de configuração do Firebase.
+- Kotlin e Android SDK;
+- tela integrada de SOS;
+- Google Maps e Google Play Services Location;
+- permissões para localização, câmera, internet, SMS e vibração;
+- estrutura integrada/preparada para Firebase Authentication, Firestore e Storage;
+- execução em modo demonstrativo sem configuração Firebase local.
+
+### Segurança e governança
+
+- autenticação por e-mail/senha;
+- e-mail verificado para operação institucional;
+- autorização por `memberships/{uid}`;
+- operadores por `operators/{uid}`;
+- isolamento por `institutionId`;
+- auditoria append-only para clientes;
+- evidências protegidas contra sobrescrita pelo cliente;
+- política de retenção documentada;
+- bloqueio de `medicalNotes` e de dados clínicos desnecessários;
+- controles locais contra abuso de alertas;
+- `SECURITY.md`, `CHANGELOG.md` e documentação específica de arquitetura.
 
 ### Dados e documentação
 
-- Regras demonstrativas do Firestore e Firebase Storage.
-- Orientações para configurar a comunicação entre Android e painel web.
-- Modelo relacional MySQL 8+ com tabelas, relacionamentos, índices, views, trigger e dados fictícios.
-- Base em Excel e arquivo CSV com dados simulados para análises.
-- Apresentação profissional do conceito em PDF.
+- regras do Firestore e Firebase Storage;
+- guia de configuração Firebase;
+- documentação de auditoria, retenção e abuso;
+- modelo relacional MySQL 8+;
+- base demonstrativa em Excel e CSV;
+- apresentação profissional em PDF e PowerPoint;
+- documentação de arquitetura com diagramas Mermaid.
 
 ---
 
-## 🚧 Funcionalidades planejadas
+## 🚧 O que ainda depende de validação ou evolução
 
-As funcionalidades abaixo representam possibilidades de evolução e não devem ser interpretadas como integrações operacionais disponíveis atualmente:
+Antes de qualquer piloto institucional, ainda são necessários, entre outros pontos:
 
-- autenticação com credenciais institucionais;
-- comunicação oficial com a central de segurança da universidade;
-- acompanhamento contínuo de localização em segundo plano;
-- envio real de mensagens aos contatos de confiança;
-- roteamento e despacho de equipes de segurança;
-- integração com serviços públicos de emergência;
-- implantação de uma API segura entre o aplicativo e um banco relacional;
-- relatórios institucionais, mapas de calor e indicadores com dados reais autorizados;
-- testes de segurança, privacidade, acessibilidade e desempenho em ambiente piloto.
-
----
-
-## 📝 Validação com a comunidade universitária
-
-Uma etapa futura prevê a aplicação de um questionário com estudantes e servidores para compreender a percepção de segurança no campus. A pesquisa poderá abordar condições de iluminação, circulação, horários, trajetos e locais considerados pontos de atenção.
-
-As respostas poderão orientar melhorias no aplicativo e ajudar a avaliar se a solução atende a uma necessidade percebida pela comunidade. Enquanto a pesquisa não for realizada, o projeto não apresenta seus pressupostos como resultados comprovados.
+- validação ponta a ponta Android → Firebase → Central;
+- testes negativos de isolamento entre instituições;
+- ativação e comprovação de TTL no Firestore;
+- configuração do ciclo de vida do Firebase Storage;
+- Firebase App Check;
+- rate limiting em backend confiável;
+- testes técnicos de segurança, privacidade, acessibilidade e desempenho;
+- formalização jurídica, operacional e institucional;
+- procedimentos administrativos para exclusão, incidentes e exceções legais.
 
 ---
 
 ## 🔀 Fluxograma conceitual
 
-O fluxo abaixo representa a visão planejada para uma versão ampliada do UniGuard. Algumas etapas ainda dependem de integrações, autorizações institucionais e desenvolvimento adicional.
-
 ```mermaid
 flowchart TD
-    A([Usuário no campus]) --> B[Identificação e seleção do campus]
-    B --> C[Autorização de localização e câmera]
-    C --> D[Monitoramento e última localização disponível]
-    D --> E{Situação de emergência?}
-    E -- Não --> D
-    E -- Sim --> F[Acionamento do SOS]
-    F --> G[Categoria, localização, horário e evidência autorizada]
-    G --> H[Painel da equipe de segurança]
-    H --> I[Triagem e atualização do atendimento]
-    I --> J{Ocorrência resolvida?}
-    J -- Não --> I
-    J -- Sim --> K[Encerramento e registro]
-    K --> L[Indicadores e análise preventiva]
-
-    classDef primary fill:#003d71,stroke:#002444,color:#fff;
-    classDef emergency fill:#dc2626,stroke:#991b1b,color:#fff;
-    classDef success fill:#059669,stroke:#047857,color:#fff;
-    class B,C,D,H,I primary;
-    class E,F,G emergency;
-    class J,K,L success;
+    A([Usuário]) --> B[Autenticação]
+    B --> C{E-mail verificado e vínculo ativo?}
+    C -- Não --> X[Acesso institucional bloqueado]
+    C -- Sim --> D[Identificação da institutionId]
+    D --> E[Permissões de localização e câmera]
+    E --> F{Situação de emergência?}
+    F -- Não --> E
+    F -- Sim --> G[Acionamento do SOS]
+    G --> H[Categoria + localização + horário + evidência autorizada]
+    H --> I[Central da mesma instituição]
+    I --> J[Recebimento / triagem / status]
+    J --> K{Ocorrência encerrada?}
+    K -- Não --> J
+    K -- Sim --> L[Encerramento + auditoria]
 ```
 
 ---
@@ -145,31 +149,35 @@ flowchart TD
 
 | Camada | Tecnologias e finalidade |
 |---|---|
-| Protótipo web | React 19, TypeScript, Vite e Tailwind CSS |
-| Mapas | Leaflet no protótipo web |
-| Aplicativo móvel | Kotlin, Android SDK, Material Components e Google Maps |
+| Web | React 19, TypeScript, Vite e Tailwind CSS |
+| Mapas Web | Leaflet |
+| Android | Kotlin, Android SDK, Material Components e Google Maps |
 | Geolocalização Android | Google Play Services Location |
-| Sincronização opcional | Firebase Authentication, Firestore e Storage |
-| Modelo relacional | MySQL 8+ para estudo e evolução futura |
-| Hospedagem | Vercel |
-| Dados demonstrativos | Excel e CSV com informações simuladas |
+| Autenticação | Firebase Authentication |
+| Sincronização | Cloud Firestore |
+| Evidências | Firebase Storage |
+| Isolamento | `institutionId` |
+| Modelo relacional | MySQL 8+ para estudo/evolução futura |
+| Hospedagem Web | Vercel |
+| Dados demonstrativos | Excel e CSV |
 
-O aplicativo Android e o painel web podem compartilhar alertas pelo Firebase quando o ambiente é configurado. O modelo MySQL é uma alternativa arquitetural para evolução futura e deve ser acessado por uma API/backend, nunca diretamente pelo aplicativo.
+📘 Para a visão detalhada, consulte [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md).
 
 ---
 
 ## 📊 Apresentação e dados demonstrativos
 
-Todos os dados disponibilizados nesta seção são fictícios e foram preparados exclusivamente para apresentação acadêmica do projeto.
+Todos os dados desta seção são fictícios e preparados exclusivamente para apresentação acadêmica.
 
-![Prévia dos indicadores demonstrativos](UniGuard_Preview_PowerBI.png)
+![Prévia dos indicadores demonstrativos](docs/imagens/UniGuard_Preview_PowerBI.png)
 
-- 📄 [Apresentação profissional — PDF](UniGuard_Apresentacao_Profissional.pdf)
-- 📊 [Base demonstrativa para análise — Excel](UniGuard_Base_Demonstrativa_PowerBI.xlsx)
-- 🗃️ [Dados simulados — CSV](UniGuard_Dados_Simulados_PowerBI.csv)
-- 🖼️ [Prévia dos indicadores — PNG](UniGuard_Preview_PowerBI.png)
+- 📄 [Apresentação profissional — PDF](docs/apresentacao/UniGuard_Apresentacao_Profissional.pdf)
+- 📊 [Apresentação profissional — PowerPoint](docs/apresentacao/UniGuard_Apresentacao_Profissional_Atualizada.pptx)
+- 📈 [Base demonstrativa para análise — Excel](docs/dados/UniGuard_Base_Demonstrativa_PowerBI.xlsx)
+- 🗃️ [Dados simulados — CSV](docs/dados/UniGuard_Dados_Simulados_PowerBI.csv)
+- 🖼️ [Prévia dos indicadores — PNG](docs/imagens/UniGuard_Preview_PowerBI.png)
 
-> Os arquivos Excel e CSV funcionam como base demonstrativa para construção e exploração de indicadores. O repositório não contém, neste momento, um arquivo `.pbix`.
+> O repositório não contém, neste momento, um arquivo `.pbix`.
 
 ---
 
@@ -177,7 +185,9 @@ Todos os dados disponibilizados nesta seção são fictícios e foram preparados
 
 O diretório [`UniGuard_Banco_MySQL`](UniGuard_Banco_MySQL/) contém um modelo relacional compatível com MySQL 8+, criado para representar usuários, dispositivos, campi, contatos de confiança, pontos seguros, alertas, localizações, evidências, equipes, despachos e auditoria.
 
-Consulte as [instruções específicas do banco](UniGuard_Banco_MySQL/README_BANCO.md) antes da execução.
+O modelo relacional representa uma possibilidade de evolução futura e não deve ser acessado diretamente pelo aplicativo ou navegador. Em uma arquitetura real, o acesso deve ocorrer por API/backend seguro.
+
+Consulte as [instruções específicas do banco](UniGuard_Banco_MySQL/README_BANCO.md).
 
 ---
 
@@ -185,35 +195,36 @@ Consulte as [instruções específicas do banco](UniGuard_Banco_MySQL/README_BAN
 
 ```text
 UniGuard/
-├── app/                        # Aplicativo Android em Kotlin
-├── docs/                       # Orientações, imagens e galeria do protótipo
-├── src/                        # Protótipo web em React/TypeScript
-│   ├── components/             # Telas, painéis e modais
-│   ├── data/                   # Dados simulados dos campi
-│   ├── services/               # Integração opcional com Firebase
-│   └── utils/                  # Geolocalização, câmera e recursos auxiliares
-├── UniGuard_Banco_MySQL/       # Modelo relacional e documentação do banco
-├── UniGuard_Apresentacao_Profissional.pdf
-├── UniGuard_Base_Demonstrativa_PowerBI.xlsx
-├── UniGuard_Dados_Simulados_PowerBI.csv
-├── UniGuard_Telas_Prototipo.png
-└── UniGuard_Preview_PowerBI.png
+├── app/                         # Aplicativo Android em Kotlin
+├── src/                         # Protótipo web React/TypeScript
+├── docs/
+│   ├── ARQUITETURA.md           # Arquitetura técnica e diagramas
+│   ├── apresentacao/            # PDF e PowerPoint profissionais
+│   ├── dados/                   # Excel e CSV demonstrativos
+│   ├── imagens/                 # Imagens e previews principais
+│   └── prototipo-figma/         # Galeria das telas
+├── UniGuard_Banco_MySQL/        # Modelo relacional e documentação
+├── README.md
+├── SECURITY.md
+├── CHANGELOG.md
+├── firestore.rules
+├── storage.rules
+└── .github/workflows/           # Integração contínua
 ```
 
-
+---
 
 ## 🔐 Privacidade, segurança e LGPD
 
-Uma solução de emergência lida com localização, imagem, identificação e outros dados potencialmente sensíveis. Uma implantação real exigiria, entre outras medidas:
+O projeto lida potencialmente com identificação, localização e imagem. Por isso, uma implantação real exige controle de acesso, minimização, retenção limitada, auditoria, resposta a incidentes e validações jurídicas e institucionais.
 
-- base legal e finalidade claramente definidas;
-- consentimento e transparência quando aplicáveis;
-- coleta mínima e retenção limitada dos dados;
-- criptografia e controle de acesso por perfil;
-- trilhas de auditoria e resposta a incidentes;
-- testes técnicos e validação jurídica/institucional;
-- regras específicas para acesso a imagens e localização;
-- canal para exercício dos direitos dos titulares.
+O UniGuard não deve armazenar prontuário médico. O campo legado `medicalNotes` é bloqueado pelas regras atuais.
+
+Consulte:
+
+- [`SECURITY.md`](SECURITY.md)
+- [`docs/CONTROLES_AUDITORIA_RETENCAO_ABUSO.md`](docs/CONTROLES_AUDITORIA_RETENCAO_ABUSO.md)
+- [`docs/FIREBASE_SETUP.md`](docs/FIREBASE_SETUP.md)
 
 Não utilize dados pessoais reais durante testes públicos deste protótipo.
 
@@ -221,23 +232,25 @@ Não utilize dados pessoais reais durante testes públicos deste protótipo.
 
 ## 📌 Status do projeto
 
-**Em desenvolvimento acadêmico.** O repositório apresenta uma prova de conceito com diferentes camadas da solução. Ele ainda não representa um serviço de emergência disponível para uso real.
+**Protótipo acadêmico avançado / MVP demonstrativo em desenvolvimento.** O repositório apresenta diferentes camadas da solução, controles de segurança e documentação técnica, mas ainda não representa um serviço de emergência disponível para uso real.
 
 ---
 
-## 👩‍💻 Autoria
+## 👩‍💻 Responsabilidade geral
 
 **Priscilla Cahino**  
-Idealização, concepção do produto e prototipação do UniGuard.
+**Responsável geral pelo projeto UniGuard.**
+
+Atuação abrangendo idealização, concepção do produto, definição da proposta de valor, estruturação dos fluxos, requisitos, regras de negócio, prototipação, documentação, organização dos artefatos e consolidação do projeto acadêmico.
 
 - [GitHub](https://github.com/Priscillacahino)
-- [Portfólio profissional](https://portifoliocpriscillacom.vercel.app/)
-- [LinkedIn](https://www.linkedin.com/in/priscilla-cahino-04a718aa/)
+- [Portfólio profissional](https://portfoliopriscilla.vercel.app/)
+- [LinkedIn](https://www.linkedin.com/in/priscilla-cahino)
 
 ---
 
 ### Direitos e uso
 
-O conteúdo autoral, a identidade visual e a documentação do UniGuard não estão autorizados para reprodução, comercialização ou uso institucional sem autorização prévia da autora. Bibliotecas, componentes e demais recursos de terceiros permanecem sujeitos às respectivas licenças.
+O conteúdo autoral, a identidade visual e a documentação do UniGuard não estão autorizados para reprodução, comercialização ou uso institucional sem autorização prévia da autora. Bibliotecas, componentes e recursos de terceiros permanecem sujeitos às respectivas licenças.
 
 Desenvolvido como projeto tecnológico e acadêmico em evolução, com finalidade demonstrativa. 🛡️
