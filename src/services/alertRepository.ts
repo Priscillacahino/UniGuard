@@ -27,6 +27,7 @@ import {
   type FirebaseAccount,
 } from './firebase';
 import { RETENTION_POLICY } from './retention';
+import { createAlertViaTrustedBackend, trustedBackendEnabled } from './trustedBackend';
 
 const COLLECTION = 'emergencyAlerts';
 const AUDIT_COLLECTION = 'auditLogs';
@@ -141,20 +142,24 @@ export async function publishAlert(alert: EmergencyAlert): Promise<void> {
       : {}),
   };
 
-  const batch = writeBatch(firestore);
-  batch.set(alertDocument, withoutUndefined(payload));
-  batch.set(
-    auditDocument,
-    createAuditEvent(
-      auditDocument.id,
-      account,
-      alert.id,
-      'alert_created',
-      now,
-      { source: account.role === 'operator' ? 'central_simulation' : 'user_app' },
-    ),
-  );
-  await batch.commit();
+  if (trustedBackendEnabled && account.role === 'user') {
+    await createAlertViaTrustedBackend(alert);
+  } else {
+    const batch = writeBatch(firestore);
+    batch.set(alertDocument, withoutUndefined(payload));
+    batch.set(
+      auditDocument,
+      createAuditEvent(
+        auditDocument.id,
+        account,
+        alert.id,
+        'alert_created',
+        now,
+        { source: account.role === 'operator' ? 'central_simulation' : 'user_app' },
+      ),
+    );
+    await batch.commit();
+  }
 
   const isRealPhoto = photoSnapshot
     && photoSnapshot.source !== 'simulacao_evidencia'
