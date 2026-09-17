@@ -50,6 +50,7 @@ try {
   await assertFails(getDoc(doc(inactiveOp, 'emergencyAlerts/a1')));
   await assertSucceeds(getDoc(doc(opA, 'emergencyAlerts/a1')));
   await assertFails(getDoc(doc(opA, 'emergencyAlerts/b1')));
+  await assertFails(updateDoc(doc(opA, 'emergencyAlerts/b1'), { updatedAt: now, status: 'em_deslocamento' }));
   await assertFails(updateDoc(doc(userA, 'emergencyAlerts/b1'), { updatedAt: now, status: 'cancelado_usuario' }));
   await assertSucceeds(updateDoc(doc(userA, 'emergencyAlerts/a1'), { updatedAt: now, status: 'cancelado_usuario' }));
   await assertFails(deleteDoc(doc(userA, 'emergencyAlerts/a1')));
