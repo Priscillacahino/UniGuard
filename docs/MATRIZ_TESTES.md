@@ -83,8 +83,8 @@
 | T42 | testes Android | CI | sucesso | coberto |
 | T43 | Android Lint | CI | sucesso | coberto |
 | T44 | build APK debug | CI | sucesso | coberto |
-| T45 | build APK release | CI | sucesso | integrado ao CI; validar rodada atual |
-| T46 | backend rate limiting | CI | política aprovada | integrado ao CI; validar rodada atual |
+| T45 | build APK release | CI | sucesso | coberto — CI #175 aprovado |
+| T46 | backend rate limiting | CI | política aprovada | coberto — CI #175 aprovado |
 | T47 | cutover trustedBackendRequired | Emulator | escrita direta bloqueada | coberto |
 
 ## 9. Critério de evidência
