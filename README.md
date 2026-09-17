@@ -14,6 +14,8 @@ O **UniGuard** é uma proposta de solução digital voltada ao apoio da seguran�
 
 🔐 **Segurança:** [Consultar SECURITY.md](SECURITY.md)
 
+⚠️ **Matriz de riscos:** [Consultar riscos e tratamentos](docs/MATRIZ_RISCOS.md)
+
 🧾 **Histórico de evolução:** [Consultar CHANGELOG.md](CHANGELOG.md)
 
 ---
@@ -93,6 +95,10 @@ A proposta busca facilitar o pedido de ajuda e permitir que a equipe responsáve
 - política de retenção documentada;
 - bloqueio de `medicalNotes` e de dados clínicos desnecessários;
 - controles locais contra abuso de alertas;
+- matriz de riscos com riscos prioritários e bloqueadores de piloto;
+- templates padronizados para bug, melhoria e pull request;
+- `CODEOWNERS` com Priscilla Cahino como responsável geral;
+- Dependabot para dependências web, Android e GitHub Actions;
 - `SECURITY.md`, `CHANGELOG.md` e documentação específica de arquitetura.
 
 ### Dados e documentação
@@ -103,7 +109,8 @@ A proposta busca facilitar o pedido de ajuda e permitir que a equipe responsáve
 - modelo relacional MySQL 8+;
 - base demonstrativa em Excel e CSV;
 - apresentação profissional em PDF e PowerPoint;
-- documentação de arquitetura com diagramas Mermaid.
+- documentação de arquitetura com diagramas Mermaid;
+- matriz de riscos em `docs/MATRIZ_RISCOS.md`.
 
 ---
 
@@ -165,6 +172,14 @@ flowchart TD
 
 ---
 
+## ⚠️ Gestão de riscos
+
+A matriz de riscos consolida riscos técnicos, de segurança, privacidade, operação e governança, além de indicar controles atuais, tratamento previsto e riscos bloqueadores de um futuro piloto institucional.
+
+📘 Consulte [`docs/MATRIZ_RISCOS.md`](docs/MATRIZ_RISCOS.md).
+
+---
+
 ## 📊 Apresentação e dados demonstrativos
 
 Todos os dados desta seção são fictícios e preparados exclusivamente para apresentação acadêmica.
@@ -199,17 +214,23 @@ UniGuard/
 ├── src/                         # Protótipo web React/TypeScript
 ├── docs/
 │   ├── ARQUITETURA.md           # Arquitetura técnica e diagramas
+│   ├── MATRIZ_RISCOS.md         # Gestão e tratamento de riscos
 │   ├── apresentacao/            # PDF e PowerPoint profissionais
 │   ├── dados/                   # Excel e CSV demonstrativos
 │   ├── imagens/                 # Imagens e previews principais
 │   └── prototipo-figma/         # Galeria das telas
 ├── UniGuard_Banco_MySQL/        # Modelo relacional e documentação
+├── .github/
+│   ├── ISSUE_TEMPLATE/          # Templates de bug e melhoria
+│   ├── CODEOWNERS               # Responsabilidade de revisão
+│   ├── dependabot.yml           # Atualização de dependências
+│   ├── pull_request_template.md # Checklist de revisão
+│   └── workflows/               # Integração contínua
 ├── README.md
 ├── SECURITY.md
 ├── CHANGELOG.md
 ├── firestore.rules
-├── storage.rules
-└── .github/workflows/           # Integração contínua
+└── storage.rules
 ```
 
 ---
@@ -223,6 +244,7 @@ O UniGuard não deve armazenar prontuário médico. O campo legado `medicalNotes
 Consulte:
 
 - [`SECURITY.md`](SECURITY.md)
+- [`docs/MATRIZ_RISCOS.md`](docs/MATRIZ_RISCOS.md)
 - [`docs/CONTROLES_AUDITORIA_RETENCAO_ABUSO.md`](docs/CONTROLES_AUDITORIA_RETENCAO_ABUSO.md)
 - [`docs/FIREBASE_SETUP.md`](docs/FIREBASE_SETUP.md)
 
