@@ -161,7 +161,7 @@ export async function publishAlert(alert: EmergencyAlert): Promise<void> {
     && photoSnapshot.dataUrl.startsWith('data:image/');
 
   if (isRealPhoto && firebaseStorage) {
-    const photoReference = ref(firebaseStorage, `emergency-evidence/${alert.id}.jpg`);
+    const photoReference = ref(firebaseStorage, `emergency-evidence/${alert.id}/evidence.jpg`);
     await uploadString(photoReference, photoSnapshot.dataUrl, 'data_url');
     const photoUrl = await getDownloadURL(photoReference);
     const photoAuditDocument = doc(collection(firestore, AUDIT_COLLECTION));
