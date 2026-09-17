@@ -1,0 +1,68 @@
+name: Relatar problema
+about: Registrar um erro ou comportamento inesperado no UniGuard
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigada por registrar o problema. Não inclua dados pessoais reais, credenciais, tokens, localização real de terceiros ou evidências sensíveis.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área afetada
+      options:
+        - Aplicativo Android
+        - Protótipo Web
+        - Firebase / Firestore / Storage
+        - Autenticação e autorização
+        - Painel da Central
+        - Documentação
+        - CI / GitHub Actions
+        - Outro
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Descrição do problema
+      description: Explique o que aconteceu e qual era o comportamento esperado.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Como reproduzir
+      description: Liste os passos mínimos usando somente dados fictícios.
+      placeholder: |
+        1. Acessar...
+        2. Selecionar...
+        3. Acionar...
+        4. Observar...
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidências técnicas
+      description: Informe mensagens de erro, logs sanitizados ou capturas sem dados pessoais.
+
+  - type: input
+    id: environment
+    attributes:
+      label: Ambiente
+      description: Ex.: Android 15 / Chrome / ambiente demonstrativo / Firebase de teste.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmações
+      options:
+        - label: Não incluí dados pessoais reais nem segredos neste relato.
+          required: true
+        - label: Verifiquei se já existe uma issue semelhante.
+          required: true
