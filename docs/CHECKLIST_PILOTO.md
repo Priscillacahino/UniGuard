@@ -22,19 +22,19 @@
 - [x] exigência de e-mail verificado nas regras institucionais.
 - [x] estrutura `memberships/{uid}` para vínculo institucional.
 - [x] estrutura `operators/{uid}` para operadores.
-- [ ] **BLOQUEADOR** — testar usuário sem e-mail verificado.
-- [ ] **BLOQUEADOR** — testar usuário sem membership.
-- [ ] **BLOQUEADOR** — testar membership inativo.
-- [ ] **BLOQUEADOR** — testar operador inativo.
+- [x] usuário sem e-mail verificado bloqueado no Firebase Emulator.
+- [x] usuário sem membership bloqueado no Firebase Emulator.
+- [x] membership inativo coberto por cenário negativo no Firebase Emulator.
+- [x] operador inativo coberto por cenário negativo no Firebase Emulator.
 
 ## 3. Isolamento entre instituições
 
 - [x] `institutionId` incorporado às regras e estruturas principais.
 - [x] operador limitado à própria instituição nas regras do Firestore.
-- [ ] **BLOQUEADOR** — conta da instituição A não pode ler alertas da instituição B.
-- [ ] **BLOQUEADOR** — conta da instituição A não pode criar/alterar dados em B.
-- [ ] **BLOQUEADOR** — operador A não pode visualizar, confirmar ou alterar alerta de B.
-- [ ] verificar evidências entre instituições distintas.
+- [x] conta da instituição A impedida de ler alertas da instituição B no Emulator.
+- [x] alteração cross-institution bloqueada no Emulator; criação permanece sujeita ao vínculo institucional.
+- [x] operador A impedido de ler alerta de B no Emulator; cenários de atualização seguem protegidos pelas regras.
+- [x] evidência de outra instituição bloqueada no Storage Emulator.
 
 ## 4. Auditoria
 
@@ -67,8 +67,8 @@
 
 - [x] cliente não deve sobrescrever evidência existente.
 - [x] campos de evidência são controlados pelas regras.
-- [ ] **BLOQUEADOR** — testar tentativa real de sobrescrita.
-- [ ] validar autorização de upload por usuário/instituição.
+- [x] tentativa de sobrescrita bloqueada no Storage Emulator.
+- [x] autorização de upload/leitura por usuário e operador validada no Storage Emulator.
 - [ ] revisar metadados armazenados junto às evidências.
 
 ## 7. Privacidade e LGPD
@@ -89,8 +89,10 @@
 - [x] máximo de 1 alerta ativo por usuário no controle local.
 - [x] máximo de 3 alertas em 30 minutos no controle local.
 - [x] cooldown de 60 segundos no controle local.
-- [ ] **BLOQUEADOR** — implementar rate limiting em camada confiável/backend.
-- [ ] **BLOQUEADOR** — habilitar Firebase App Check ou controle equivalente.
+- [x] backend confiável e rate limiting server-side versionados/testados em `functions/`.
+- [ ] **BLOQUEADOR** — implantar o backend confiável no projeto Firebase real.
+- [x] App Check preparado no web/Android e exigido pelo backend.
+- [ ] **BLOQUEADOR** — registrar apps e ativar enforcement no Firebase real.
 - [ ] testar rajada de alertas.
 - [ ] testar cliente adulterado/simulação de bypass quando houver backend.
 
@@ -113,7 +115,7 @@
 - [ ] **BLOQUEADOR** — executar e registrar suíte de testes completa antes do piloto.
 - [x] matriz formal de testes criada em `MATRIZ_TESTES.md`.
 - [x] suíte Firebase Emulator integrada ao CI para Firestore e Storage.
-- [ ] confirmar execução verde da suíte Emulator no commit atual.
+- [x] suíte Emulator teve execução verde após correção das regras de Storage; nova rodada continua obrigatória a cada mudança.
 - [ ] validar comportamento com perda de rede.
 - [ ] validar perda/negação de localização.
 - [ ] validar câmera negada ou indisponível.
@@ -123,8 +125,10 @@
 
 ## 11. Dados legados
 
-- [ ] **BLOQUEADOR** — identificar documentos legados sem `institutionId`.
-- [ ] **BLOQUEADOR** — identificar documentos sem `retentionExpiresAt`.
+- [x] auditor dry-run de legado criado para identificar ausência de `institutionId`.
+- [ ] **BLOQUEADOR** — executar auditor no Firebase real.
+- [x] auditor dry-run cobre ausência de `retentionExpiresAt` e `medicalNotes`.
+- [ ] **BLOQUEADOR** — executar auditor no Firebase real e tratar achados.
 - [ ] migrar, corrigir ou isolar esses registros sob procedimento documentado.
 - [ ] confirmar que nenhum dado legado fica indevidamente acessível.
 
@@ -174,5 +178,10 @@ Mesmo após os bloqueadores técnicos serem concluídos, a realização de um pi
 - [`AUDITORIA_PERMISSOES_ANDROID.md`](AUDITORIA_PERMISSOES_ANDROID.md)
 - [`POLITICA_LOGS_MASCARAMENTO.md`](POLITICA_LOGS_MASCARAMENTO.md)
 - [`CHECKLIST_RELEASE.md`](CHECKLIST_RELEASE.md)
+- [`APPCHECK_BACKEND.md`](APPCHECK_BACKEND.md)
+- [`RETENCAO_REMOTA.md`](RETENCAO_REMOTA.md)
+- [`MONITORAMENTO_OBSERVABILIDADE.md`](MONITORAMENTO_OBSERVABILIDADE.md)
+- [`ROLLBACK_RECUPERACAO.md`](ROLLBACK_RECUPERACAO.md)
+- [`ROADMAP_v0.9.md`](ROADMAP_v0.9.md)
 - [`FIREBASE_SETUP.md`](FIREBASE_SETUP.md)
 - [`../SECURITY.md`](../SECURITY.md)
