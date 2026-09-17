@@ -20,7 +20,14 @@ android {
         versionCode = 1
         versionName = "1.1.0"
 
+        val useTrustedBackend = (project.findProperty("UNIGUARD_USE_TRUSTED_BACKEND")?.toString() ?: "false").toBoolean()
+        buildConfigField("boolean", "USE_TRUSTED_BACKEND", useTrustedBackend.toString())
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
@@ -74,6 +81,7 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")
+    implementation("com.google.firebase:firebase-functions")
     implementation("com.google.firebase:firebase-appcheck-playintegrity")
     debugImplementation("com.google.firebase:firebase-appcheck-debug")
 }
