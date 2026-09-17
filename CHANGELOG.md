@@ -10,6 +10,9 @@ O formato segue, de maneira simplificada, a ideia do [Keep a Changelog](https://
 
 - matriz de riscos em `docs/MATRIZ_RISCOS.md`, com riscos técnicos, operacionais, de segurança, privacidade e governança;
 - identificação de riscos bloqueadores para um futuro piloto institucional;
+- requisitos formalizados em `docs/REQUISITOS.md`, com RF01–RF12, RNF01–RNF10 e RN01–RN12;
+- matriz de rastreabilidade em `docs/MATRIZ_RASTREABILIDADE.md`, conectando requisitos, regras, código, regras Firebase e evidências;
+- checklist de prontidão para piloto em `docs/CHECKLIST_PILOTO.md`, com itens bloqueadores e critérios mínimos;
 - templates padronizados de issue para bug e melhoria;
 - template de pull request com checklist de testes, requisitos, segurança e privacidade;
 - `CODEOWNERS` com Priscilla Cahino como responsável geral pela revisão do projeto;
@@ -19,7 +22,7 @@ O formato segue, de maneira simplificada, a ideia do [Keep a Changelog](https://
 
 ### Alterado
 
-- README atualizado para refletir a nova organização do repositório, arquitetura, gestão de riscos e governança;
+- README atualizado para refletir a nova organização do repositório, arquitetura, gestão de riscos, requisitos, rastreabilidade, prontidão para piloto e governança;
 - artefatos de apresentação movidos para `docs/apresentacao/`;
 - bases demonstrativas movidas para `docs/dados/`;
 - imagens principais movidas para `docs/imagens/`;
