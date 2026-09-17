@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase-admin/app';
 import { FieldValue, Timestamp, getFirestore } from 'firebase-admin/firestore';
-import { HttpsError, onCall } from 'firebase-functions/v2/https';
+import { HttpsError, onCall, onRequest } from 'firebase-functions/v2/https';
 import { evaluateRateLimit } from './rateLimiter.js';
 
 initializeApp();
@@ -88,4 +88,14 @@ export const createEmergencyAlert = onCall({ enforceAppCheck: true }, async (req
   });
 
   return { id: alertId, status: 'pendente', createdAt: nowIso };
+});
+
+export const health = onRequest((request, response) => {
+  response.set('Cache-Control', 'no-store');
+  response.status(200).json({
+    service: 'uniguard-backend',
+    status: 'ok',
+    version: '0.9-prep',
+    timestamp: new Date().toISOString(),
+  });
 });
