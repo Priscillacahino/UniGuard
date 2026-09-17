@@ -105,13 +105,15 @@
 - [ ] validar configuração Firebase ativa contra os arquivos versionados.
 - [x] permissões Android auditadas em `AUDITORIA_PERMISSOES_ANDROID.md`; `VIBRATE` removida por ausência de uso atual.
 - [x] headers de segurança web versionados em `vercel.json`, incluindo CSP, proteção contra framing, `nosniff`, política de referência e Permissions-Policy.
+- [x] política de logs e mascaramento documentada, com utilitário testado no web.
 
 ## 10. Qualidade e testes
 
 - [x] existe estrutura de testes automatizados para controles de segurança web.
 - [ ] **BLOQUEADOR** — executar e registrar suíte de testes completa antes do piloto.
 - [x] matriz formal de testes criada em `MATRIZ_TESTES.md`.
-- [ ] executar testes de integração Firebase/Emulator previstos na matriz.
+- [x] suíte Firebase Emulator integrada ao CI para Firestore e Storage.
+- [ ] confirmar execução verde da suíte Emulator no commit atual.
 - [ ] validar comportamento com perda de rede.
 - [ ] validar perda/negação de localização.
 - [ ] validar câmera negada ou indisponível.
@@ -170,5 +172,7 @@ Mesmo após os bloqueadores técnicos serem concluídos, a realização de um pi
 - [`MATRIZ_RACI.md`](MATRIZ_RACI.md)
 - [`MATRIZ_TESTES.md`](MATRIZ_TESTES.md)
 - [`AUDITORIA_PERMISSOES_ANDROID.md`](AUDITORIA_PERMISSOES_ANDROID.md)
+- [`POLITICA_LOGS_MASCARAMENTO.md`](POLITICA_LOGS_MASCARAMENTO.md)
+- [`CHECKLIST_RELEASE.md`](CHECKLIST_RELEASE.md)
 - [`FIREBASE_SETUP.md`](FIREBASE_SETUP.md)
 - [`../SECURITY.md`](../SECURITY.md)
