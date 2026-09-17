@@ -30,7 +30,7 @@ service firebase.storage {
           == alertDocument(alertId).data.institutionId;
     }
 
-    match /emergency-evidence/{alertId}.jpg {
+    match /emergency-evidence/{alertId}/evidence.jpg {
       // Evidência é criada uma única vez e não pode ser sobrescrita.
       // A atualização posterior do alerta deve registrar a URL e a auditoria.
       allow write: if (isActiveMemberForAlert(alertId) || isActiveOperatorForAlert(alertId))
