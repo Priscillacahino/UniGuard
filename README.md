@@ -12,6 +12,12 @@ O **UniGuard** é uma proposta de solução digital voltada ao apoio da seguran�
 
 🏗️ **Arquitetura:** [Consultar documentação técnica](docs/ARQUITETURA.md)
 
+📋 **Requisitos:** [Consultar requisitos e regras de negócio](docs/REQUISITOS.md)
+
+🔗 **Rastreabilidade:** [Consultar matriz de rastreabilidade](docs/MATRIZ_RASTREABILIDADE.md)
+
+🧪 **Prontidão para piloto:** [Consultar checklist](docs/CHECKLIST_PILOTO.md)
+
 🔐 **Segurança:** [Consultar SECURITY.md](SECURITY.md)
 
 ⚠️ **Matriz de riscos:** [Consultar riscos e tratamentos](docs/MATRIZ_RISCOS.md)
@@ -96,6 +102,9 @@ A proposta busca facilitar o pedido de ajuda e permitir que a equipe responsáve
 - bloqueio de `medicalNotes` e de dados clínicos desnecessários;
 - controles locais contra abuso de alertas;
 - matriz de riscos com riscos prioritários e bloqueadores de piloto;
+- requisitos formais com status de implementação;
+- matriz de rastreabilidade entre requisitos, regras, código e documentação;
+- checklist de prontidão para piloto com itens bloqueadores;
 - templates padronizados para bug, melhoria e pull request;
 - `CODEOWNERS` com Priscilla Cahino como responsável geral;
 - Dependabot para dependências web, Android e GitHub Actions;
@@ -106,6 +115,11 @@ A proposta busca facilitar o pedido de ajuda e permitir que a equipe responsáve
 - regras do Firestore e Firebase Storage;
 - guia de configuração Firebase;
 - documentação de auditoria, retenção e abuso;
+- requisitos funcionais RF01–RF12;
+- requisitos não funcionais RNF01–RNF10;
+- regras de negócio RN01–RN12;
+- matriz de rastreabilidade;
+- checklist de prontidão para piloto;
 - modelo relacional MySQL 8+;
 - base demonstrativa em Excel e CSV;
 - apresentação profissional em PDF e PowerPoint;
@@ -127,6 +141,8 @@ Antes de qualquer piloto institucional, ainda são necessários, entre outros po
 - testes técnicos de segurança, privacidade, acessibilidade e desempenho;
 - formalização jurídica, operacional e institucional;
 - procedimentos administrativos para exclusão, incidentes e exceções legais.
+
+📘 O acompanhamento estruturado desses itens está em [`docs/CHECKLIST_PILOTO.md`](docs/CHECKLIST_PILOTO.md).
 
 ---
 
@@ -172,6 +188,17 @@ flowchart TD
 
 ---
 
+## 📋 Engenharia de requisitos
+
+A especificação formal do UniGuard separa requisitos funcionais, não funcionais e regras de negócio, com prioridade e status coerentes com o estado atual do repositório.
+
+- [`docs/REQUISITOS.md`](docs/REQUISITOS.md)
+- [`docs/MATRIZ_RASTREABILIDADE.md`](docs/MATRIZ_RASTREABILIDADE.md)
+
+A rastreabilidade liga requisitos a regras de negócio, código, regras Firebase, documentação e validações ainda pendentes.
+
+---
+
 ## ⚠️ Gestão de riscos
 
 A matriz de riscos consolida riscos técnicos, de segurança, privacidade, operação e governança, além de indicar controles atuais, tratamento previsto e riscos bloqueadores de um futuro piloto institucional.
@@ -210,22 +237,25 @@ Consulte as [instruções específicas do banco](UniGuard_Banco_MySQL/README_BAN
 
 ```text
 UniGuard/
-├── app/                         # Aplicativo Android em Kotlin
-├── src/                         # Protótipo web React/TypeScript
+├── app/                              # Aplicativo Android em Kotlin
+├── src/                              # Protótipo web React/TypeScript
 ├── docs/
-│   ├── ARQUITETURA.md           # Arquitetura técnica e diagramas
-│   ├── MATRIZ_RISCOS.md         # Gestão e tratamento de riscos
-│   ├── apresentacao/            # PDF e PowerPoint profissionais
-│   ├── dados/                   # Excel e CSV demonstrativos
-│   ├── imagens/                 # Imagens e previews principais
-│   └── prototipo-figma/         # Galeria das telas
-├── UniGuard_Banco_MySQL/        # Modelo relacional e documentação
+│   ├── ARQUITETURA.md                # Arquitetura técnica e diagramas
+│   ├── REQUISITOS.md                 # RF, RNF e regras de negócio
+│   ├── MATRIZ_RASTREABILIDADE.md     # Requisito → código → evidência
+│   ├── MATRIZ_RISCOS.md              # Gestão e tratamento de riscos
+│   ├── CHECKLIST_PILOTO.md           # Prontidão e bloqueadores do piloto
+│   ├── apresentacao/                 # PDF e PowerPoint profissionais
+│   ├── dados/                        # Excel e CSV demonstrativos
+│   ├── imagens/                      # Imagens e previews principais
+│   └── prototipo-figma/              # Galeria das telas
+├── UniGuard_Banco_MySQL/             # Modelo relacional e documentação
 ├── .github/
-│   ├── ISSUE_TEMPLATE/          # Templates de bug e melhoria
-│   ├── CODEOWNERS               # Responsabilidade de revisão
-│   ├── dependabot.yml           # Atualização de dependências
-│   ├── pull_request_template.md # Checklist de revisão
-│   └── workflows/               # Integração contínua
+│   ├── ISSUE_TEMPLATE/               # Templates de bug e melhoria
+│   ├── CODEOWNERS                    # Responsabilidade de revisão
+│   ├── dependabot.yml                # Atualização de dependências
+│   ├── pull_request_template.md      # Checklist de revisão
+│   └── workflows/                    # Integração contínua
 ├── README.md
 ├── SECURITY.md
 ├── CHANGELOG.md
@@ -244,7 +274,10 @@ O UniGuard não deve armazenar prontuário médico. O campo legado `medicalNotes
 Consulte:
 
 - [`SECURITY.md`](SECURITY.md)
+- [`docs/REQUISITOS.md`](docs/REQUISITOS.md)
+- [`docs/MATRIZ_RASTREABILIDADE.md`](docs/MATRIZ_RASTREABILIDADE.md)
 - [`docs/MATRIZ_RISCOS.md`](docs/MATRIZ_RISCOS.md)
+- [`docs/CHECKLIST_PILOTO.md`](docs/CHECKLIST_PILOTO.md)
 - [`docs/CONTROLES_AUDITORIA_RETENCAO_ABUSO.md`](docs/CONTROLES_AUDITORIA_RETENCAO_ABUSO.md)
 - [`docs/FIREBASE_SETUP.md`](docs/FIREBASE_SETUP.md)
 
