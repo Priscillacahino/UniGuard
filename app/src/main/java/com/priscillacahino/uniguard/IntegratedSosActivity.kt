@@ -29,6 +29,9 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.appcheck.FirebaseAppCheck
+import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
+import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.storage.FirebaseStorage
@@ -90,11 +93,22 @@ class IntegratedSosActivity : AppCompatActivity() {
         numberInput.setText(preferences.getString(KEY_NUMBER, ""))
         findViewById<Button>(R.id.btnSalvarNumero).setOnClickListener { saveNumber() }
         purgeExpiredLocalEvidence()
+        configureAppCheck()
         configureAuthentication()
         configureSosButton()
     }
 
     private fun firebaseConfigured(): Boolean = FirebaseApp.getApps(this).isNotEmpty()
+
+    private fun configureAppCheck() {
+        if (!firebaseConfigured()) return
+        val appCheck = FirebaseAppCheck.getInstance()
+        if (BuildConfig.DEBUG) {
+            appCheck.installAppCheckProviderFactory(DebugAppCheckProviderFactory.getInstance())
+        } else {
+            appCheck.installAppCheckProviderFactory(PlayIntegrityAppCheckProviderFactory.getInstance())
+        }
+    }
 
     private fun configureAuthentication() {
         if (!firebaseConfigured()) {
