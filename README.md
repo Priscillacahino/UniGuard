@@ -93,7 +93,7 @@ A proposta busca facilitar o pedido de ajuda e permitir que a equipe responsáve
 - Kotlin e Android SDK;
 - tela integrada de SOS;
 - Google Maps e Google Play Services Location;
-- permissões para localização, câmera, internet, SMS e vibração;
+- permissões minimizadas para localização, câmera, internet e SMS;
 - estrutura integrada/preparada para Firebase Authentication, Firestore e Storage;
 - execução em modo demonstrativo sem configuração Firebase local.
 
@@ -118,6 +118,9 @@ A proposta busca facilitar o pedido de ajuda e permitir que a equipe responsáve
 - runbook de incidentes com severidade, contenção e recuperação;
 - pacote LGPD preparatório com inventário de dados, finalidades, retenção, Privacy by Design e fluxo de direitos;
 - matriz RACI preparatória para responsabilidades futuras;
+- matriz formal de testes com cenários positivos, negativos, contingência e Firebase;
+- auditoria de permissões Android com remoção de permissão não utilizada;
+- headers de segurança web versionados para a Vercel;
 - templates padronizados para bug, melhoria e pull request;
 - `CODEOWNERS` com Priscilla Cahino como responsável geral;
 - Dependabot para dependências web, Android e GitHub Actions;
@@ -139,7 +142,8 @@ A proposta busca facilitar o pedido de ajuda e permitir que a equipe responsáve
 - documentação de arquitetura com diagramas Mermaid;
 - matriz de riscos em `docs/MATRIZ_RISCOS.md`;
 - plano operacional, contingência e runbook de incidentes;
-- pacote LGPD preparatório e matriz RACI.
+- pacote LGPD preparatório e matriz RACI;
+- matriz formal de testes e auditoria de permissões Android.
 
 ---
 
@@ -265,6 +269,8 @@ UniGuard/
 │   ├── RUNBOOK_INCIDENTES.md         # Resposta a incidentes
 │   ├── PACOTE_LGPD_PREPARATORIO.md   # Privacidade e LGPD para futura validação
 │   ├── MATRIZ_RACI.md                # Responsabilidades propostas
+│   ├── MATRIZ_TESTES.md              # Casos de teste e evidências esperadas
+│   ├── AUDITORIA_PERMISSOES_ANDROID.md # Minimização de permissões
 │   ├── apresentacao/                 # PDF e PowerPoint profissionais
 │   ├── dados/                        # Excel e CSV demonstrativos
 │   ├── imagens/                      # Imagens e previews principais
@@ -280,7 +286,8 @@ UniGuard/
 ├── SECURITY.md
 ├── CHANGELOG.md
 ├── firestore.rules
-└── storage.rules
+├── storage.rules
+└── vercel.json                       # Headers de segurança web
 ```
 
 ---
@@ -303,6 +310,8 @@ Consulte:
 - [`docs/RUNBOOK_INCIDENTES.md`](docs/RUNBOOK_INCIDENTES.md)
 - [`docs/PACOTE_LGPD_PREPARATORIO.md`](docs/PACOTE_LGPD_PREPARATORIO.md)
 - [`docs/MATRIZ_RACI.md`](docs/MATRIZ_RACI.md)
+- [`docs/MATRIZ_TESTES.md`](docs/MATRIZ_TESTES.md)
+- [`docs/AUDITORIA_PERMISSOES_ANDROID.md`](docs/AUDITORIA_PERMISSOES_ANDROID.md)
 - [`docs/CONTROLES_AUDITORIA_RETENCAO_ABUSO.md`](docs/CONTROLES_AUDITORIA_RETENCAO_ABUSO.md)
 - [`docs/FIREBASE_SETUP.md`](docs/FIREBASE_SETUP.md)
 
