@@ -482,7 +482,7 @@ class IntegratedSosActivity : AppCompatActivity() {
         val photo = currentPhoto ?: return
         if (!firebaseConfigured()) return
         val user = FirebaseAuth.getInstance().currentUser ?: return
-        val reference = FirebaseStorage.getInstance().reference.child("emergency-evidence/$id.jpg")
+        val reference = FirebaseStorage.getInstance().reference.child("emergency-evidence/$id/evidence.jpg")
         reference.putFile(Uri.fromFile(photo)).continueWithTask { reference.downloadUrl }
             .addOnSuccessListener { url ->
                 val firestore = FirebaseFirestore.getInstance()
