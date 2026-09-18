@@ -1,5 +1,7 @@
 # Status de Prontidão — UniGuard
 
+> **Baseline v0.9.0 — 18/09/2026.**
+>
 > Documento-resumo do estado atual do **protótipo acadêmico UniGuard**. Ele diferencia implementação no repositório, validação automatizada, dependências de ambiente real e validações institucionais. Não representa autorização para uso como serviço real de emergência.
 
 ## Legenda
