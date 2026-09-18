@@ -12,24 +12,20 @@ import {
 import { doc, getDoc, getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import type { AccessRole } from '../types';
+import { runtimeConfig } from './runtimeConfig';
 
-const config = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-};
+const config = runtimeConfig.firebaseConfig;
 
-export const firebaseEnabled = Object.values(config).every(Boolean);
+export const firebaseConfigurationError = runtimeConfig.error;
+export const firebaseEnabled = runtimeConfig.firebaseEnabled && config != null;
 
-const app = firebaseEnabled ? (getApps().length ? getApp() : initializeApp(config)) : null;
+const app = firebaseEnabled && config
+  ? (getApps().length ? getApp() : initializeApp(config))
+  : null;
 
-const appCheckSiteKey = import.meta.env.VITE_FIREBASE_APPCHECK_SITE_KEY;
-if (app && appCheckSiteKey) {
+if (app && runtimeConfig.appCheckSiteKey) {
   initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider(appCheckSiteKey),
+    provider: new ReCaptchaV3Provider(runtimeConfig.appCheckSiteKey),
     isTokenAutoRefreshEnabled: true,
   });
 }
