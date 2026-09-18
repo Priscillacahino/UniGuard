@@ -21,7 +21,16 @@ android {
         versionName = "1.1.0"
 
         val useTrustedBackend = (project.findProperty("UNIGUARD_USE_TRUSTED_BACKEND")?.toString() ?: "false").toBoolean()
+        val institutionId = project.findProperty("UNIGUARD_INSTITUTION_ID")?.toString()?.takeIf { it.isNotBlank() } ?: "ufpb-demo"
+        val defaultCampusId = project.findProperty("UNIGUARD_DEFAULT_CAMPUS_ID")?.toString()?.takeIf { it.isNotBlank() } ?: "campus_1_joao_pessoa"
+        val defaultCampusName = project.findProperty("UNIGUARD_DEFAULT_CAMPUS_NAME")?.toString()?.takeIf { it.isNotBlank() } ?: "Campus I - João Pessoa"
+
+        fun quoted(value: String) = "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+
         buildConfigField("boolean", "USE_TRUSTED_BACKEND", useTrustedBackend.toString())
+        buildConfigField("String", "INSTITUTION_ID", quoted(institutionId))
+        buildConfigField("String", "DEFAULT_CAMPUS_ID", quoted(defaultCampusId))
+        buildConfigField("String", "DEFAULT_CAMPUS_NAME", quoted(defaultCampusName))
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
