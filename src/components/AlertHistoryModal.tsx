@@ -73,7 +73,7 @@ export const AlertHistoryModal: React.FC<AlertHistoryModalProps> = ({
       .map((a) => {
         const d = new Date(a.createdAt);
         const campus = getCampusById(a.campusId);
-        return `"${a.protocolNumber}","${campus.shortName}","${a.userProfile.name}","${a.userProfile.documentNumber || ''}","${a.category}","${d.toLocaleDateString('pt-BR')}","${d.toLocaleTimeString('pt-BR')}","${a.locationName.replace(/"/g, '""')}","${a.location.lat}","${a.location.lng}","${a.status}","${a.isInSafeZone ? 'Sim' : 'Não'}","${a.photoSnapshot ? 'Sim' : 'Não'}"`;
+        return `"${a.protocolNumber}","${campus.shortName}","${a.userProfile.name}","${a.userProfile.documentNumber || ''}","${a.category}","${d.toLocaleDateString('pt-BR')}","${d.toLocaleTimeString('pt-BR')}","${a.locationName.replace(/"/g, '""')}","${a.location.lat ?? ''}","${a.location.lng ?? ''}","${a.status}","${a.isInSafeZone ? 'Sim' : 'Não'}","${a.photoSnapshot ? 'Sim' : 'Não'}"`;
       })
       .join('\n');
 
@@ -272,7 +272,9 @@ export const AlertHistoryModal: React.FC<AlertHistoryModalProps> = ({
                         <MapPin className="w-3.5 h-3.5 text-red-600 shrink-0" />
                         <span>{alert.locationName}</span>
                         <span className="text-slate-400 font-mono">
-                          ({alert.location.lat.toFixed(5)}, {alert.location.lng.toFixed(5)})
+                          {typeof alert.location.lat === 'number' && typeof alert.location.lng === 'number'
+                            ? `(${alert.location.lat.toFixed(5)}, ${alert.location.lng.toFixed(5)})`
+                            : '(coordenadas indisponíveis)'}
                         </span>
                       </div>
 
