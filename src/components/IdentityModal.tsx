@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useDialogAccessibility } from '../utils/useDialogAccessibility';
 import { UserProfile, UserRole } from '../types';
 import {
   User,
@@ -32,6 +33,7 @@ export const IdentityModal: React.FC<IdentityModalProps> = ({
 }) => {
   const [formData, setFormData] = useState<UserProfile>(initialProfile);
   const [allowLocation, setAllowLocation] = useState(true);
+  const dialogRef = useDialogAccessibility(isOpen, isFirstTime ? undefined : onClose);
 
   if (!isOpen) return null;
 
@@ -71,6 +73,11 @@ export const IdentityModal: React.FC<IdentityModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div
         id="modal-identity-onboarding"
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-identity-title"
+        tabIndex={-1}
         className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white border border-slate-200 rounded-3xl shadow-2xl p-6 sm:p-8 text-slate-800"
       >
         {/* Cabeçalho */}
@@ -83,7 +90,7 @@ export const IdentityModal: React.FC<IdentityModalProps> = ({
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#003d71]">
                 {isFirstTime ? 'Primeira Utilização' : 'Perfil do Usuário'}
               </span>
-              <h2 className="text-xl font-extrabold text-slate-900">
+              <h2 id="modal-identity-title" className="text-xl font-extrabold text-slate-900">
                 {isFirstTime ? 'Identificação do Usuário UFPB' : 'Atualizar Dados de Identificação'}
               </h2>
               <p className="text-xs text-slate-500 mt-0.5 font-medium">
