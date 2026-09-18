@@ -2,6 +2,10 @@
 
 Objetivo: levar o UniGuard ao máximo de prontidão técnica antes de depender de validação institucional/jurídica.
 
+## Status do ciclo v0.9
+
+**Fechado em 18/09/2026 para o escopo executável somente no repositório.** A versão `v0.9.0` consolida hardening de código, segurança, privacidade, configuração, acessibilidade estática, dados públicos e governança. Os itens remanescentes dependem de execução em ambiente real, testes controlados ou validação institucional/jurídica.
+
 ## Concluído no repositório
 - Firebase Emulator para Firestore e Storage;
 - testes negativos de segregação institucional;
