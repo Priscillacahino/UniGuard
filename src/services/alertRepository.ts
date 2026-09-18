@@ -19,7 +19,6 @@ import type {
   EmergencyPhotoSnapshot,
 } from '../types';
 import {
-  currentFirebaseUserId,
   firebaseEnabled,
   firebaseStorage,
   firestore,
@@ -354,4 +353,4 @@ export async function subscribeToAlerts(
   );
 }
 
-export { currentFirebaseUserId, firebaseEnabled };
+export { firebaseEnabled };
