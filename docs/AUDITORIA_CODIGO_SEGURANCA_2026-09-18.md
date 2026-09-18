@@ -1,0 +1,77 @@
+# Auditoria de Código e Segurança — 18/09/2026
+
+> Revisão estática do repositório UniGuard voltada a melhorias que não dependem de teste de campo, validação institucional ou operação real.
+
+## Escopo revisado
+
+- regras Firestore e Storage;
+- autenticação/autorização web;
+- backend confiável em Cloud Functions;
+- CI;
+- `.gitignore` e arquivos de configuração;
+- documentação de integração;
+- documentação de segurança, riscos e prontidão;
+- organização de artefatos legados.
+
+## Achados corrigidos nesta rodada
+
+| Achado | Risco | Correção aplicada | Estado |
+| --- | --- | --- | --- |
+| Storage aceitava qualquer `image/*` | possibilidade de conteúdo ativo como SVG | allowlist JPEG/PNG/WebP | corrigido |
+| Não havia teste explícito para SVG | regressão futura poderia passar despercebida | cenário negativo no Storage Emulator | corrigido |
+| Perfil embutido no alerta tinha validação estrutural incompleta | campos malformados ou excessivos | tipos, limites e campos obrigatórios nas regras | corrigido |
+| Testes não cobriam perfil malformado | regressão das validações | novos cenários negativos no Firestore Emulator | corrigido |
+| Checkout do CI persistia credencial padrão | superfície desnecessária no runner | `persist-credentials: false` | corrigido |
+| CI não verificava nomes comuns de arquivos sensíveis | commit acidental de chave/credencial | verificação automática no job web | corrigido |
+| `.gitignore` não cobria vários formatos de chaves | risco de versionamento acidental | JKS/keystore/PEM/P12/PFX e JSON administrativos bloqueados | corrigido |
+| Havia `bun.lock` e `package-lock.json` | divergência de gerenciador/lockfile | padronização em npm | corrigido |
+| Documentação legada ainda citava Anonymous Auth | contradição com autenticação atual | documento substituído e cópia legada removida | corrigido |
+| README ainda citava dados demonstrativos Excel/CSV | informação obsoleta | descrição atualizada para base pública CSV/SVG | corrigido |
+| Segurança e checklist estavam desatualizados | percepção incorreta de maturidade | documentos sincronizados | corrigido |
+| Não havia matriz consolidada de prontidão | dificuldade de separar implementado de validado | `STATUS_DE_PRONTIDAO.md` | corrigido |
+| Modelo de ameaças era muito resumido | cobertura insuficiente de riscos residuais | matriz de ameaças ampliada | corrigido |
+
+## Pontos revisados e mantidos
+
+Os seguintes controles já estavam adequadamente estruturados e foram mantidos:
+
+- e-mail verificado;
+- membership/operator separado;
+- segregação por `institutionId`;
+- bloqueio de exclusão de alertas pelo cliente;
+- auditoria append-only;
+- backend confiável com App Check;
+- rate limiting server-side;
+- retenção modelada;
+- proteção contra sobrescrita de evidência;
+- minimização de dados médicos;
+- headers de segurança web;
+- testes Firebase Emulator;
+- CI web/Android/backend.
+
+## Itens que não podem ser encerrados somente por revisão estática
+
+Permanecem pendentes porque exigem ambiente real, dispositivo, operação ou validação externa:
+
+- E2E Android → Firebase → Central;
+- deploy e cutover do backend confiável;
+- enforcement do App Check;
+- TTL Firestore;
+- lifecycle do Storage;
+- comportamento com perda de rede/GPS;
+- testes de acessibilidade e desempenho em execução;
+- validação jurídica/LGPD institucional;
+- definição de operação e resposta ao SOS;
+- autorização para piloto.
+
+## Conclusão
+
+A rodada reduziu inconsistências, superfícies de entrada e ambiguidades de documentação sem declarar como validado aquilo que ainda depende de ambiente real.
+
+O status oficial deve ser lido em conjunto com:
+
+- [STATUS_DE_PRONTIDAO.md](STATUS_DE_PRONTIDAO.md)
+- [CHECKLIST_PILOTO.md](CHECKLIST_PILOTO.md)
+- [MATRIZ_RISCOS.md](MATRIZ_RISCOS.md)
+- [MODELO_DE_AMENCA_CONTROLES.md](MODELO_DE_AMENCA_CONTROLES.md)
+- [SECURITY.md](../SECURITY.md)
