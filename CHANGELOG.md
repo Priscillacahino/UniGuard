@@ -39,6 +39,9 @@ O formato segue, de maneira simplificada, a ideia do [Keep a Changelog](https://
 - auditor dry-run de dados legados;
 - lifecycle de Storage preparado em `infra/storage-lifecycle.json`;
 - documentação de retenção remota, App Check/backend, monitoramento, rollback e roadmap v0.9.
+- matriz consolidada de prontidão em `docs/STATUS_DE_PRONTIDAO.md`, separando implementação, validação automatizada e dependências externas;
+- auditoria estática de código e segurança em `docs/AUDITORIA_CODIGO_SEGURANCA_2026-09-18.md`;
+- cenários negativos no Firebase Emulator para SVG, perfil malformado e campos inválidos de geolocalização;
 
 ### Alterado
 
@@ -57,6 +60,18 @@ O formato segue, de maneira simplificada, a ideia do [Keep a Changelog](https://
 - rodada CI #175 concluída com sucesso em Web, Backend, Firebase Emulator e Android debug/release;
 - fluxo Android legado removido, mantendo somente `IntegratedSosActivity`;
 - regras Firestore simplificadas para reduzir custo de avaliação em updates.
+- regras do Storage restritas a evidências JPEG, PNG e WebP, com rejeição explícita de SVG;
+- regras do Firestore reforçadas com tipos, limites de tamanho e allowlists para perfil e geolocalização;
+- interface preparada para perfis minimizados do backend confiável, sem exibir valores indefinidos;
+- painel, histórico e mapa preparados para alertas sem coordenadas quando o GPS estiver indisponível;
+- upload Android passa a declarar explicitamente `image/jpeg` para evidências fotográficas;
+- exportação CSV do histórico minimizada, sem nome, matrícula, telefone ou coordenadas exatas;
+- CI endurecido com checkout sem persistência de credenciais e bloqueio de nomes comuns de arquivos sensíveis;
+- `.gitignore` ampliado para chaves, keystores e credenciais administrativas comuns;
+- dependências web padronizadas em npm com remoção do `bun.lock` redundante;
+- documentação legada de integração anônima removida e documentação canônica atualizada para e-mail verificado, vínculo institucional e `institutionId`;
+- documentação do modelo MySQL esclarecida como referência conceitual, sem substituir a arquitetura Firebase atual;
+- README, SECURITY, matriz de riscos e checklist de piloto sincronizados com o estado atual dos controles.
 
 ### Planejado
 
