@@ -71,6 +71,29 @@ export interface UserProfile {
   preferredCampusId?: UfpbCampusId;
 }
 
+/**
+ * Perfil mínimo persistido junto ao alerta.
+ * Campos de contato/identificação são opcionais porque o backend confiável
+ * aplica minimização de dados e pode gravar apenas o necessário à operação.
+ */
+export interface AlertUserProfile {
+  id: string;
+  institutionId?: string;
+  name: string;
+  role: UserRole;
+  registeredAt: string;
+  documentNumber?: string;
+  phone?: string;
+  email?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  emergencyContactRelation?: string;
+  emergencyContacts?: EmergencyContact[];
+  department?: string;
+  avatarSeed?: string;
+  preferredCampusId?: UfpbCampusId;
+}
+
 export interface GeoCoordinate {
   lat: number;
   lng: number;
@@ -144,7 +167,7 @@ export interface EmergencyAlert {
   institutionId: string;
   protocolNumber: string;
   userId: string;
-  userProfile: UserProfile;
+  userProfile: AlertUserProfile;
   category: EmergencyCategory;
   customNote?: string;
   status: AlertStatus;
