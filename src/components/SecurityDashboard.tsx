@@ -214,6 +214,12 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
   // Calcular distância das unidades até o alerta selecionado
   const unitsWithDistance = securityUnits.map((u) => {
     if (!currentAlert) return { ...u, dist: 0 };
+    if (
+      typeof currentAlert.location.lat !== 'number'
+      || typeof currentAlert.location.lng !== 'number'
+    ) {
+      return { ...u, dist: Number.POSITIVE_INFINITY };
+    }
     const d = calculateDistance(u.coordinate, currentAlert.location);
     return { ...u, dist: d };
   }).sort((a, b) => a.dist - b.dist);
