@@ -73,7 +73,7 @@ export const AlertHistoryModal: React.FC<AlertHistoryModalProps> = ({
       .map((a) => {
         const d = new Date(a.createdAt);
         const campus = getCampusById(a.campusId);
-        return `"${a.protocolNumber}","${campus.shortName}","${a.userProfile.name}","${a.userProfile.documentNumber}","${a.category}","${d.toLocaleDateString('pt-BR')}","${d.toLocaleTimeString('pt-BR')}","${a.locationName.replace(/"/g, '""')}","${a.location.lat}","${a.location.lng}","${a.status}","${a.isInSafeZone ? 'Sim' : 'Não'}","${a.photoSnapshot ? 'Sim' : 'Não'}"`;
+        return `"${a.protocolNumber}","${campus.shortName}","${a.userProfile.name}","${a.userProfile.documentNumber || ''}","${a.category}","${d.toLocaleDateString('pt-BR')}","${d.toLocaleTimeString('pt-BR')}","${a.locationName.replace(/"/g, '""')}","${a.location.lat}","${a.location.lng}","${a.status}","${a.isInSafeZone ? 'Sim' : 'Não'}","${a.photoSnapshot ? 'Sim' : 'Não'}"`;
       })
       .join('\n');
 
@@ -264,7 +264,7 @@ export const AlertHistoryModal: React.FC<AlertHistoryModalProps> = ({
                       <div className="font-bold text-slate-800 text-sm flex items-center gap-2">
                         <span>{alert.userProfile.name}</span>
                         <span className="text-slate-400 text-xs font-normal">
-                          (Matrícula: {alert.userProfile.documentNumber})
+                          (Matrícula: {alert.userProfile.documentNumber || 'Não informada'})
                         </span>
                       </div>
 
