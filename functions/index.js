@@ -102,7 +102,7 @@ export const health = onRequest((request, response) => {
   response.status(200).json({
     service: 'uniguard-backend',
     status: 'ok',
-    version: '0.9-prep',
+    version: '0.9.0',
     timestamp: new Date().toISOString(),
   });
 });
