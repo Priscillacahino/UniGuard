@@ -225,8 +225,8 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
   }).sort((a, b) => a.dist - b.dist);
 
   // Rastro a ser exibido no mapa
-  const routeToShow = currentAlert?.userRouteHistory && currentAlert.userRouteHistory.length > 0
-    ? currentAlert.userRouteHistory
+  const routeToShow = currentAlert
+    ? (currentAlert.userRouteHistory || [])
     : breadcrumbs;
 
   // Mapa a focar: o campus do alerta selecionado ou o campus do filtro
