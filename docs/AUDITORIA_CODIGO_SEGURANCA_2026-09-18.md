@@ -30,6 +30,12 @@
 | Segurança e checklist estavam desatualizados | percepção incorreta de maturidade | documentos sincronizados | corrigido |
 | Não havia matriz consolidada de prontidão | dificuldade de separar implementado de validado | `STATUS_DE_PRONTIDAO.md` | corrigido |
 | Modelo de ameaças era muito resumido | cobertura insuficiente de riscos residuais | matriz de ameaças ampliada | corrigido |
+| Coordenadas aceitavam campos arbitrários | payload malformado ou excessivo | allowlist e limites para `lat/lng/accuracy/altitude/heading/speed` | corrigido |
+| Painel assumia que o perfil do alerta sempre continha PII completa | incompatibilidade com backend minimizado | tipo `AlertUserProfile` e estados `Não informado` | corrigido |
+| Telas/mapa assumiam GPS sempre disponível | risco de erro justamente em contingência | tratamento explícito de coordenadas ausentes | corrigido |
+| Android não fixava MIME da evidência | incompatibilidade potencial com allowlist do Storage | upload Android define `image/jpeg` | corrigido |
+| Exportação CSV continha nome, matrícula e coordenadas exatas | exposição desnecessária em arquivo exportado | exportação minimizada sem PII direta nem coordenadas exatas | corrigido |
+| Modelo MySQL podia parecer equivalente à arquitetura atual | risco de uso conceitual inadequado | limites e requisitos de futura migração documentados | corrigido |
 
 ## Pontos revisados e mantidos
 
