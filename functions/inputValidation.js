@@ -16,3 +16,8 @@ export function normalizeProfileRole(value) {
   if (!normalized) return 'estudante';
   return allowedProfileRoles.has(normalized) ? normalized : null;
 }
+
+
+export function normalizeRequiredBoolean(value) {
+  return typeof value === 'boolean' ? value : null;
+}
