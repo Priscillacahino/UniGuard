@@ -50,10 +50,23 @@ service cloud.firestore {
     function isValidCoordinate(coordinate) {
       return coordinate is map
         && coordinate.keys().hasAll(['lat', 'lng'])
+        && coordinate.keys().hasOnly(['lat', 'lng', 'accuracy', 'altitude', 'heading', 'speed'])
         && (coordinate.lat == null || coordinate.lat is number)
         && (coordinate.lng == null || coordinate.lng is number)
         && (coordinate.lat == null || (coordinate.lat >= -90 && coordinate.lat <= 90))
-        && (coordinate.lng == null || (coordinate.lng >= -180 && coordinate.lng <= 180));
+        && (coordinate.lng == null || (coordinate.lng >= -180 && coordinate.lng <= 180))
+        && (!coordinate.keys().hasAny(['accuracy'])
+          || coordinate.accuracy == null
+          || (coordinate.accuracy is number && coordinate.accuracy >= 0 && coordinate.accuracy <= 100000))
+        && (!coordinate.keys().hasAny(['altitude'])
+          || coordinate.altitude == null
+          || (coordinate.altitude is number && coordinate.altitude >= -1000 && coordinate.altitude <= 100000))
+        && (!coordinate.keys().hasAny(['heading'])
+          || coordinate.heading == null
+          || (coordinate.heading is number && coordinate.heading >= 0 && coordinate.heading <= 360))
+        && (!coordinate.keys().hasAny(['speed'])
+          || coordinate.speed == null
+          || (coordinate.speed is number && coordinate.speed >= 0 && coordinate.speed <= 500));
     }
 
     function isValidAlertStatus(status) {
