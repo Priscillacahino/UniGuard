@@ -42,6 +42,7 @@ O formato segue, de maneira simplificada, a ideia do [Keep a Changelog](https://
 - matriz consolidada de prontidão em `docs/STATUS_DE_PRONTIDAO.md`, separando implementação, validação automatizada e dependências externas;
 - auditoria estática de código e segurança em `docs/AUDITORIA_CODIGO_SEGURANCA_2026-09-18.md`;
 - cenários negativos no Firebase Emulator para SVG, perfil malformado e campos inválidos de geolocalização;
+- validação reutilizável de perfis no backend confiável, com testes unitários;
 
 ### Alterado
 
@@ -71,7 +72,11 @@ O formato segue, de maneira simplificada, a ideia do [Keep a Changelog](https://
 - dependências web padronizadas em npm com remoção do `bun.lock` redundante;
 - documentação legada de integração anônima removida e documentação canônica atualizada para e-mail verificado, vínculo institucional e `institutionId`;
 - documentação do modelo MySQL esclarecida como referência conceitual, sem substituir a arquitetura Firebase atual;
-- README, SECURITY, matriz de riscos e checklist de piloto sincronizados com o estado atual dos controles.
+- README, SECURITY, matriz de riscos e checklist de piloto sincronizados com o estado atual dos controles;
+- backend confiável passa a rejeitar perfis fora da allowlist funcional;
+- Android passa a bloquear tráfego HTTP em texto claro;
+- headers web reforçados com HSTS e `X-Permitted-Cross-Domain-Policies: none`;
+- CI passa a validar também a sintaxe do módulo de entrada do backend.
 
 ### Planejado
 
