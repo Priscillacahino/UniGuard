@@ -37,6 +37,7 @@ service firebase.storage {
         && request.resource != null
         && resource == null
         && request.resource.size < 5 * 1024 * 1024
+        && request.resource.metadata.size() == 0
         && request.resource.contentType in [
           'image/jpeg',
           'image/png',
