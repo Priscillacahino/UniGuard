@@ -60,6 +60,19 @@ try {
   await assertFails(setDoc(doc(userA, 'emergencyAlerts/a2'), injected));
   await assertSucceeds(setDoc(doc(userA, 'emergencyAlerts/a3'), alert('a3', 'userA', 'instA')));
 
+  const invalidLocationExtra = alert('a-location-extra', 'userA', 'instA');
+  invalidLocationExtra.location = { lat: -7.1, lng: -34.8, unexpected: { nested: true } };
+  await assertFails(setDoc(doc(userA, 'emergencyAlerts/a-location-extra'), invalidLocationExtra));
+
+  const invalidAccuracy = alert('a-location-accuracy', 'userA', 'instA');
+  invalidAccuracy.location = { lat: -7.1, lng: -34.8, accuracy: -1 };
+  await assertFails(setDoc(doc(userA, 'emergencyAlerts/a-location-accuracy'), invalidAccuracy));
+
+  const nullableAccuracy = alert('a-location-null', 'userA', 'instA');
+  nullableAccuracy.location = { lat: null, lng: null, accuracy: null };
+  await assertSucceeds(setDoc(doc(userA, 'emergencyAlerts/a-location-null'), nullableAccuracy));
+
+
   const malformedProfile = alert('a-profile-invalid', 'userA', 'instA');
   malformedProfile.userProfile.name = { unexpected: true };
   await assertFails(setDoc(doc(userA, 'emergencyAlerts/a-profile-invalid'), malformedProfile));
