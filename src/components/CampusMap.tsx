@@ -347,6 +347,7 @@ export const CampusMap: React.FC<CampusMapProps> = ({
         iconAnchor: [24, 24],
       });
 
+      if (typeof alert.location.lat !== 'number' || typeof alert.location.lng !== 'number') return;
       const alertMarker = L.marker([alert.location.lat, alert.location.lng], { icon: alertIcon, zIndexOffset: 900 });
       alertMarker.on('click', () => {
         if (onSelectAlert) onSelectAlert(alert);
@@ -461,7 +462,12 @@ export const CampusMap: React.FC<CampusMapProps> = ({
   useEffect(() => {
     if (!selectedAlertId) return;
     const alert = activeAlerts.find((a) => a.id === selectedAlertId);
-    if (alert && mapInstanceRef.current) {
+    if (
+      alert
+      && mapInstanceRef.current
+      && typeof alert.location.lat === 'number'
+      && typeof alert.location.lng === 'number'
+    ) {
       mapInstanceRef.current.flyTo([alert.location.lat, alert.location.lng], 17, {
         duration: 1.0,
       });
