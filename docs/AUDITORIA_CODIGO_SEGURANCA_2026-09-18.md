@@ -40,6 +40,7 @@
 | Android não bloqueava explicitamente cleartext HTTP | risco de integração futura usar transporte sem TLS | `android:usesCleartextTraffic="false"` | corrigido |
 | Headers web não incluíam HSTS | endurecimento HTTPS incompleto | HSTS por 2 anos + bloqueio de políticas cross-domain legadas | corrigido |
 | CI não validava sintaxe do novo módulo de entrada do backend | regressão sintática poderia passar até execução do teste/import | `node --check inputValidation.js` adicionado | corrigido |
+| `auditLogs.metadata` aceitava mapas arbitrários | dados excessivos/indevidos poderiam entrar na trilha append-only | allowlist de chaves, tipos e fontes + teste no Emulator | corrigido |
 
 ## Pontos revisados e mantidos
 
