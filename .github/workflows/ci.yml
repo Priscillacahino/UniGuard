@@ -186,7 +186,7 @@ jobs:
 
       - name: Validar sintaxe das funções
         working-directory: functions
-        run: node --check index.js && node --check auditLegacyData.js
+        run: node --check index.js && node --check auditLegacyData.js && node --check inputValidation.js
 
       - name: Auditar dependências críticas do backend
         working-directory: functions
