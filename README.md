@@ -14,6 +14,8 @@ O **UniGuard** é uma proposta de solução digital voltada ao apoio da seguran�
 
 🧪 **Prontidão para piloto:** [Consultar checklist](docs/CHECKLIST_PILOTO.md)
 
+📌 **Status de prontidão:** [Ver matriz consolidada](docs/STATUS_DE_PRONTIDAO.md)
+
 🛠️ **Plano operacional:** [Consultar plano operacional](docs/PLANO_OPERACIONAL.md)
 
 🧯 **Contingência:** [Consultar plano de contingência](docs/PLANO_CONTINGENCIA.md)
@@ -116,6 +118,7 @@ A proposta busca facilitar o pedido de ajuda e permitir que a equipe responsáve
 - isolamento por `institutionId`;
 - auditoria append-only para clientes;
 - evidências protegidas contra sobrescrita pelo cliente;
+- tipos de evidência restritos a JPEG, PNG e WebP nas regras do Storage;
 - política de retenção documentada;
 - bloqueio de `medicalNotes` e de dados clínicos desnecessários;
 - controles locais contra abuso de alertas;
@@ -221,7 +224,7 @@ flowchart TD
 | Isolamento | `institutionId` |
 | Modelo relacional | MySQL 8+ para estudo/evolução futura |
 | Hospedagem Web | Vercel |
-| Dados demonstrativos | Excel e CSV |
+| Dados públicos de contexto | CSV documentado + visualização SVG |
 
 📘 Para a visão detalhada, consulte [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md).
 
@@ -248,7 +251,7 @@ A matriz de riscos consolida riscos técnicos, de segurança, privacidade, opera
 
 ## 📊 Dados públicos, evidências e visualizações
 
-A camada estatística de contexto do UniGuard está sendo reconstruída para utilizar **dados públicos verificáveis**, eliminando números fictícios dos gráficos que representam a realidade da UFPB.
+A camada estatística de contexto do UniGuard foi reconstruída para utilizar **dados públicos verificáveis**, sem apresentar números fictícios como se representassem a realidade da UFPB.
 
 ### Indicadores de contexto
 
