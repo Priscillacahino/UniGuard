@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+<title id="title">UniGuard — Indicadores públicos de contexto UFPB</title>
+<desc id="desc">Visualização de indicadores públicos da CoMu UFPB, com nota de que os períodos não devem ser somados.</desc>
+<rect width="1200" height="675" fill="#f8fafc"/>
+<rect x="0" y="0" width="1200" height="92" fill="#16324f"/>
+<text x="60" y="55" font-family="Arial,sans-serif" font-size="30" font-weight="700" fill="#fff">UniGuard — Dados públicos de contexto UFPB</text>
+<text x="60" y="125" font-family="Arial,sans-serif" font-size="17" fill="#475569">Indicadores institucionais publicados pela CoMu/UFPB</text>
+<g font-family="Arial,sans-serif">
+<rect x="60" y="165" width="250" height="145" rx="18" fill="#fff" stroke="#cbd5e1"/><text x="85" y="205" font-size="16" fill="#475569">Mulheres acompanhadas</text><text x="85" y="260" font-size="48" font-weight="700" fill="#16324f">45</text><text x="85" y="290" font-size="14" fill="#64748b">2021–2022</text>
+<rect x="330" y="165" width="250" height="145" rx="18" fill="#fff" stroke="#cbd5e1"/><text x="355" y="205" font-size="16" fill="#475569">Novos acolhimentos</text><text x="355" y="260" font-size="48" font-weight="700" fill="#16324f">42</text><text x="355" y="290" font-size="14" fill="#64748b">2021–2022</text>
+<rect x="600" y="165" width="250" height="145" rx="18" fill="#fff" stroke="#cbd5e1"/><text x="625" y="205" font-size="16" fill="#475569">Atendimentos realizados</text><text x="625" y="260" font-size="48" font-weight="700" fill="#16324f">485</text><text x="625" y="290" font-size="14" fill="#64748b">consolidado institucional</text>
+<rect x="870" y="165" width="270" height="145" rx="18" fill="#fff" stroke="#cbd5e1"/><text x="895" y="205" font-size="16" fill="#475569">Violências sexuais</text><text x="895" y="260" font-size="48" font-weight="700" fill="#16324f">26,5%</text><text x="895" y="290" font-size="14" fill="#64748b">das violências relatadas</text>
+<text x="60" y="365" font-size="20" font-weight="700" fill="#0f172a">Outros indicadores publicados</text>
+<text x="60" y="405" font-size="17" fill="#334155">• 174 ocorrências/tipificações de violência registradas (2021–2022)</text>
+<text x="60" y="438" font-size="17" fill="#334155">• 66% das atendidas eram estudantes (2021–2022)</text>
+<text x="60" y="471" font-size="17" fill="#334155">• 41 novos atendimentos em 2023</text>
+<text x="60" y="504" font-size="17" fill="#334155">• 70 novos atendimentos e 84 mulheres acompanhadas no consolidado institucional posterior</text>
+<rect x="60" y="545" width="1080" height="85" rx="14" fill="#eef2f7"/>
+<text x="85" y="578" font-size="15" font-weight="700" fill="#334155">Nota metodológica</text>
+<text x="85" y="605" font-size="14" fill="#475569">Períodos e universos podem se sobrepor. Atendimento, relato, denúncia e ocorrência policial não são equivalentes.</text>
+<text x="85" y="625" font-size="14" fill="#475569">Os valores não devem ser somados como número de vítimas ou estimativa do total de crimes nos campi.</text>
+<text x="60" y="658" font-size="12" fill="#64748b">Fonte: CoMu/UFPB. Metodologia e URLs: docs/DADOS_EVIDENCIAS_UFPB.md</text>
+</g></svg>
