@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useDialogAccessibility } from '../utils/useDialogAccessibility';
 import { EmergencyAlert, EmergencyPhotoSnapshot, UfpbCampusId } from '../types';
 import { UFPB_CAMPI } from '../data/ufpbData';
 import { getCampusById } from '../utils/geo';
@@ -39,6 +40,7 @@ export const AlertHistoryModal: React.FC<AlertHistoryModalProps> = ({
     protocol: string;
     location: string;
   } | null>(null);
+  const dialogRef = useDialogAccessibility(isOpen && photoToView === null, onClose);
 
   if (!isOpen) return null;
 
@@ -91,6 +93,11 @@ export const AlertHistoryModal: React.FC<AlertHistoryModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div 
         id="modal-alert-history"
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-alert-history-title"
+        tabIndex={-1}
         className="relative w-full max-w-5xl max-h-[90vh] flex flex-col bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden text-slate-800"
       >
         {/* Cabeçalho */}
@@ -104,7 +111,7 @@ export const AlertHistoryModal: React.FC<AlertHistoryModalProps> = ({
                 <span className="text-[10px] font-extrabold uppercase tracking-wider bg-[#003d71] text-white px-2 py-0.5 rounded-full">
                   Auditoria & Padrões
                 </span>
-                <h2 className="text-base font-extrabold text-slate-900">Histórico de Acionamentos SOS</h2>
+                <h2 id="modal-alert-history-title" className="text-base font-extrabold text-slate-900">Histórico de Acionamentos SOS</h2>
               </div>
               <p className="text-xs text-slate-500 font-medium mt-0.5">
                 Registro de ocorrências em todos os campi com fotos e telemetria de localização.
@@ -348,6 +355,7 @@ export const AlertHistoryModal: React.FC<AlertHistoryModalProps> = ({
           </span>
           <button
             onClick={onClose}
+            aria-label="Fechar histórico de alertas"
             className="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold transition-all cursor-pointer"
           >
             Fechar
