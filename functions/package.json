@@ -6,7 +6,7 @@
     "node": "22"
   },
   "scripts": {
-    "test": "node --test rateLimiter.node.mjs"
+    "test": "node --test rateLimiter.node.mjs inputValidation.node.mjs"
   },
   "dependencies": {
     "firebase-admin": "^13.0.0",
