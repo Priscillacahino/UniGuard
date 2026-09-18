@@ -91,6 +91,20 @@ try {
   await assertFails(setDoc(doc(userA, 'emergencyAlerts/a-profile-phone'), oversizedPhone));
 
 
+
+  const validAudit = {
+    id: 'log-valid', institutionId: 'instA', alertId: 'a1', actorUid: 'userA', actorType: 'user',
+    eventType: 'alert_created', createdAt: now, retentionExpiresAt: expiry, metadata: { source: 'user_app' },
+  };
+  await assertSucceeds(setDoc(doc(userA, 'auditLogs/log-valid'), validAudit));
+
+  const invalidAuditMetadata = {
+    ...validAudit,
+    id: 'log-invalid-metadata',
+    metadata: { source: 'user_app', unexpected: { nested: true } },
+  };
+  await assertFails(setDoc(doc(userA, 'auditLogs/log-invalid-metadata'), invalidAuditMetadata));
+
   await env.withSecurityRulesDisabled(async (ctx) => {
     await setDoc(doc(ctx.firestore(), 'settings/security'), { trustedBackendRequired: true });
   });
