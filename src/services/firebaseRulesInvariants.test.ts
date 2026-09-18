@@ -61,8 +61,12 @@ describe('invariantes críticas do Firebase Storage', () => {
     expect(storageRules).toContain('resource == null');
   });
 
-  it('limita evidência a imagem e menos de 5 MB', () => {
+  it('limita evidência a formatos permitidos, sem metadados customizados e menos de 5 MB', () => {
     expect(storageRules).toContain('request.resource.size < 5 * 1024 * 1024');
-    expect(storageRules).toContain("request.resource.contentType.matches('image/.*')");
+    expect(storageRules).toContain('request.resource.metadata.size() == 0');
+    expect(storageRules).toContain("'image/jpeg'");
+    expect(storageRules).toContain("'image/png'");
+    expect(storageRules).toContain("'image/webp'");
+    expect(storageRules).not.toContain("request.resource.contentType.matches('image/.*')");
   });
 });
