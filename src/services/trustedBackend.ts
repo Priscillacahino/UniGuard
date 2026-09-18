@@ -1,8 +1,9 @@
 import { getApp } from 'firebase/app';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import type { EmergencyAlert } from '../types';
+import { runtimeConfig } from './runtimeConfig';
 
-export const trustedBackendEnabled = import.meta.env.VITE_USE_TRUSTED_BACKEND === 'true';
+export const trustedBackendEnabled = runtimeConfig.trustedBackendEnabled;
 
 export async function createAlertViaTrustedBackend(alert: EmergencyAlert): Promise<void> {
   if (!trustedBackendEnabled) throw new Error('TRUSTED_BACKEND_DISABLED');
