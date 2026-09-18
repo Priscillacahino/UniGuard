@@ -100,6 +100,8 @@ As evidências associadas aos alertas seguem regras específicas:
 - vínculo com o alerta correspondente;
 - associação com a mesma instituição;
 - **proibição de sobrescrita pelo cliente**;
+- formatos aceitos limitados a JPEG, PNG e WebP;
+- tipos como SVG são bloqueados pelas regras e cobertos no Firebase Emulator;
 - retenção prevista de 30 dias;
 - exclusão remota dependente de política de ciclo de vida do bucket.
 
@@ -140,27 +142,26 @@ O projeto atual:
 
 ## 9. Controle contra abuso
 
-O cliente atualmente aplica os seguintes limites:
+O cliente aplica controles de UX contra repetição de alertas, mas esses controles não são tratados como fronteira de segurança.
 
-- máximo de **1 alerta ativo por usuário**;
-- máximo de **3 alertas em 30 minutos**;
-- intervalo mínimo de **60 segundos** entre novos alertas.
+O repositório já contém:
 
-Esses limites reduzem abuso acidental e repetição indevida, mas **não são uma fronteira de segurança suficiente contra clientes modificados**.
+- máximo local de **1 alerta ativo por usuário**;
+- máximo local de **3 alertas em 30 minutos**;
+- intervalo mínimo local de **60 segundos**;
+- Cloud Function `createEmergencyAlert`;
+- rate limiting server-side;
+- App Check exigido pela função confiável;
+- chave de cutover `trustedBackendRequired` para bloquear escrita direta após a migração.
 
-Antes de um ambiente produtivo, devem ser adicionados:
-
-- Firebase App Check;
-- criação de alertas por função/API confiável;
-- rate limit por UID;
-- rate limit por instituição;
-- análise de IP/dispositivo quando juridicamente e tecnicamente aplicável;
-- detecção de alertas duplicados ou padrões anômalos.
+Esses mecanismos estão **implementados/preparados no repositório**, porém o backend confiável e o enforcement do App Check ainda precisam ser implantados e comprovados no ambiente Firebase real antes de qualquer uso operacional.
 
 ## 10. Segredos e configuração
 
 - `google-services.json` não deve ser versionado;
 - chaves privadas, credenciais administrativas e segredos não devem ser incluídos no GitHub;
+- o `.gitignore` bloqueia formatos comuns de chaves/credenciais locais;
+- o CI verifica nomes comuns de arquivos sensíveis rastreados e usa checkout sem persistência de credenciais;
 - variáveis da aplicação web devem ser configuradas por ambiente;
 - regras do Firebase devem ser publicadas a partir das versões oficiais presentes no repositório;
 - credenciais de administração devem ser usadas somente em backend ou processos administrativos controlados.
@@ -189,21 +190,29 @@ Nesse cenário:
 - política de retenção documentada;
 - bloqueio de dados médicos;
 - proteção contra sobrescrita de evidências;
+- evidências restritas a JPEG, PNG e WebP;
 - limites locais contra abuso;
+- backend confiável e rate limiting server-side versionados;
+- App Check preparado no web/Android e exigido pelo backend;
+- testes de regras no Firebase Emulator;
+- proteção de CI contra arquivos sensíveis comuns;
 - documentação de configuração Firebase;
 - regras do Firestore e Storage versionadas.
 
 ### Ainda precisam de comprovação/configuração operacional
 
+- deploy do backend confiável;
+- ativação do cutover para impedir escrita direta;
+- enforcement do App Check no projeto real;
 - ativação dos TTLs no ambiente remoto;
 - política de ciclo de vida do Storage;
-- Firebase App Check;
-- rate limit em backend confiável;
-- testes negativos de isolamento institucional;
 - validação ponta a ponta Android → Firebase → Central;
+- revogação de sessão/vínculo em ambiente real;
 - processo administrativo de exclusão e incidentes;
 - revisão jurídica/LGPD;
 - autorização institucional para piloto.
+
+A matriz consolidada de estado está em `docs/STATUS_DE_PRONTIDAO.md`.
 
 ## 13. Relato de vulnerabilidades
 
