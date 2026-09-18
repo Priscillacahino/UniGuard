@@ -21,6 +21,7 @@
 | SOS web | Implementado | componentes e `alertRepository.ts` | teste ponta a ponta real |
 | SOS Android | Implementado em protótipo | app Android | teste ponta a ponta real |
 | Backend confiável | Implementado no repositório | `functions/` | deploy e cutover no Firebase real |
+| Validação de entrada do backend | Implementada e coberta por teste unitário | `functions/inputValidation.js` | manter allowlists alinhadas ao domínio |
 | Rate limiting server-side | Implementado e testado localmente | `functions/rateLimiter.js` e testes | validar após deploy |
 | App Check | Preparado | web, Android e backend | registrar apps e ativar enforcement |
 | Auditoria | Implementada no modelo/regras | `auditLogs` | comprovar eventos no fluxo E2E |
@@ -33,6 +34,7 @@
 | Contingência sem GPS | Tratada na interface | painel, histórico e mapa aceitam coordenadas ausentes | validar em dispositivo/rede real |
 | Exportação de histórico | Minimizada | CSV sem nome, matrícula, telefone ou coordenadas exatas | revisar se novos campos forem adicionados |
 | Headers web | Implementados | `vercel.json` | validar continuamente após mudanças de hospedagem |
+| Bloqueio de cleartext no Android | Implementado | `AndroidManifest.xml` | manter em futuras integrações de rede |
 | CI web | Implementado | testes, TypeScript, audit e build | manter verde |
 | CI Android | Implementado | testes, lint, debug/release | manter verde |
 | CI Firebase | Implementado | Firestore/Storage Emulator | manter cenários atualizados |
