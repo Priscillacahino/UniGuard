@@ -42,6 +42,11 @@ try {
   await assertFails(getBytes(ref(userAUnverified.storage(), path)));
   await assertFails(uploadBytes(ref(userA.storage(), path), jpg, { contentType: 'image/jpeg' }));
   await assertFails(uploadBytes(ref(userA.storage(), 'emergency-evidence/other/evidence.jpg'), new TextEncoder().encode('texto'), { contentType: 'text/plain' }));
+  await assertFails(uploadBytes(
+    ref(userA.storage(), 'emergency-evidence/svg/evidence.jpg'),
+    new TextEncoder().encode('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'),
+    { contentType: 'image/svg+xml' },
+  ));
   const oversized = new Uint8Array(5 * 1024 * 1024 + 1);
   await assertFails(uploadBytes(ref(userA.storage(), 'emergency-evidence/large/evidence.jpg'), oversized, { contentType: 'image/jpeg' }));
 
