@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useDialogAccessibility } from '../utils/useDialogAccessibility';
 import {
   GitMerge,
   Smartphone,
@@ -26,6 +27,7 @@ interface FlowchartModalProps {
 
 export const FlowchartModal: React.FC<FlowchartModalProps> = ({ isOpen, onClose }) => {
   const [activeStep, setActiveStep] = useState<number | null>(null);
+  const dialogRef = useDialogAccessibility(isOpen, onClose);
 
   if (!isOpen) return null;
 
@@ -141,6 +143,11 @@ export const FlowchartModal: React.FC<FlowchartModalProps> = ({ isOpen, onClose 
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
       <div 
         id="modal-flowchart"
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-flowchart-title"
+        tabIndex={-1}
         className="relative w-full max-w-5xl max-h-[90vh] flex flex-col bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden text-slate-800"
       >
         {/* Topo do Modal */}
@@ -154,7 +161,7 @@ export const FlowchartModal: React.FC<FlowchartModalProps> = ({ isOpen, onClose 
                 <span className="text-[10px] font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">
                   Arquitetura de Processos
                 </span>
-                <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
+                <h2 id="modal-flowchart-title" className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
                   Fluxograma Geral do Projeto UniGuard
                 </h2>
               </div>
@@ -166,6 +173,7 @@ export const FlowchartModal: React.FC<FlowchartModalProps> = ({ isOpen, onClose 
 
           <button
             onClick={onClose}
+            aria-label="Fechar fluxograma"
             className="p-2 rounded-xl hover:bg-slate-200 text-slate-400 hover:text-slate-700 transition-all cursor-pointer"
           >
             <X className="w-5 h-5" />
