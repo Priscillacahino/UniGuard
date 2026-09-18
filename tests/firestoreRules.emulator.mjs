@@ -60,6 +60,15 @@ try {
   await assertFails(setDoc(doc(userA, 'emergencyAlerts/a2'), injected));
   await assertSucceeds(setDoc(doc(userA, 'emergencyAlerts/a3'), alert('a3', 'userA', 'instA')));
 
+  const routeHistoryInjection = alert('a-route-history', 'userA', 'instA');
+  routeHistoryInjection.userRouteHistory = [{ coordinate: { lat: -7.1, lng: -34.8 }, timestamp: now }];
+  await assertFails(setDoc(doc(userA, 'emergencyAlerts/a-route-history'), routeHistoryInjection));
+
+  const smsDetailsInjection = alert('a-sms-details', 'userA', 'instA');
+  smsDetailsInjection.smsNotificationsSent = [{ contactName: 'Contato', contactPhone: '+5583999999999' }];
+  await assertFails(setDoc(doc(userA, 'emergencyAlerts/a-sms-details'), smsDetailsInjection));
+
+
   const invalidLocationExtra = alert('a-location-extra', 'userA', 'instA');
   invalidLocationExtra.location = { lat: -7.1, lng: -34.8, unexpected: { nested: true } };
   await assertFails(setDoc(doc(userA, 'emergencyAlerts/a-location-extra'), invalidLocationExtra));
