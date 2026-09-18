@@ -6,10 +6,6 @@ O **UniGuard** é uma proposta de solução digital voltada ao apoio da seguran�
 
 🔗 **Protótipo web:** [Acessar o UniGuard](https://uniguardvercelapp.vercel.app/)
 
-📄 **Apresentação profissional:** [Visualizar o PDF](docs/apresentacao/UniGuard_Apresentacao_Profissional.pdf)
-
-📊 **PowerPoint:** [Abrir apresentação editável](docs/apresentacao/UniGuard_Apresentacao_Profissional_Atualizada.pptx)
-
 🏗️ **Arquitetura:** [Consultar documentação técnica](docs/ARQUITETURA.md)
 
 📋 **Requisitos:** [Consultar requisitos e regras de negócio](docs/REQUISITOS.md)
@@ -163,7 +159,6 @@ A proposta busca facilitar o pedido de ajuda e permitir que a equipe responsáve
 - modelo relacional MySQL 8+;
 - base pública estruturada em CSV para visualizações de contexto;
 - documentação metodológica com fontes institucionais e jornalísticas;
-- apresentação profissional em PDF e PowerPoint;
 - documentação de arquitetura com diagramas Mermaid;
 - matriz de riscos em `docs/MATRIZ_RISCOS.md`;
 - plano operacional, contingência e runbook de incidentes;
@@ -273,8 +268,11 @@ O projeto também documenta ocorrências publicamente noticiadas para contextual
 
 ### Fontes e base para gráficos
 
+![Indicadores públicos de contexto UFPB](docs/imagens/UniGuard_Dados_Publicos_UFPB.svg)
+
 - 📚 [Metodologia, fontes e evidências públicas](docs/DADOS_EVIDENCIAS_UFPB.md)
 - 🗃️ [Base pública estruturada — CSV](docs/dados/UniGuard_Dados_Publicos_UFPB.csv)
+- 📊 [Visualização pública — SVG](docs/imagens/UniGuard_Dados_Publicos_UFPB.svg)
 - 📄 [CoMu/UFPB — Relatório de Gestão 2021–2022](https://www.ccsa.ufpb.br/comu/contents/documentos/2021-2022_relatorio-gestao-comu.pdf)
 - 📄 [CoMu/UFPB — Relatório Anual 2023](https://www.ufpb.br/comu/contents/relatorio-anual-2023.pdf)
 - 📄 [CoMu/UFPB — Relatório de Gestão publicado em 2024/2025](https://www.ufpb.br/comu/wp-content/uploads/sites/79/sites/269/2025/03/relatorio-final-1-2024.pdf)
@@ -284,8 +282,6 @@ O projeto também documenta ocorrências publicamente noticiadas para contextual
 
 **Contexto UFPB:** somente dados públicos e citados.  
 **Operação UniGuard:** enquanto não houver piloto real autorizado, deve aparecer como **“Sem dados operacionais reais — protótipo acadêmico”**. Alertas simulados podem continuar existindo apenas para testes funcionais, claramente identificados como DEMO.
-
-> A imagem Power BI, a planilha e as apresentações antigas que continham indicadores demonstrativos devem ser consideradas **artefatos legados até sua regeneração com a nova base pública**. Não devem ser usadas como evidência estatística.
 
 > O repositório não contém, neste momento, um arquivo `.pbix`.
 
@@ -324,7 +320,6 @@ UniGuard/
 │   ├── AUDITORIA_PERMISSOES_ANDROID.md # Minimização de permissões
 │   ├── POLITICA_LOGS_MASCARAMENTO.md    # Logging seguro e mascaramento
 │   ├── CHECKLIST_RELEASE.md             # Critérios mínimos de release
-│   ├── apresentacao/                 # PDF e PowerPoint profissionais
 │   ├── dados/                        # Base pública UFPB e artefatos legados de demonstração
 │   ├── imagens/                      # Imagens e previews principais
 │   └── prototipo-figma/              # Galeria das telas
