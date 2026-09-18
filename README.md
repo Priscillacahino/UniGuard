@@ -16,6 +16,8 @@ O **UniGuard** é uma proposta de solução digital voltada ao apoio da seguran�
 
 📌 **Status de prontidão:** [Ver matriz consolidada](docs/STATUS_DE_PRONTIDAO.md)
 
+🔎 **Auditoria de código e segurança:** [Consultar revisão de 18/09/2026](docs/AUDITORIA_CODIGO_SEGURANCA_2026-09-18.md)
+
 🛠️ **Plano operacional:** [Consultar plano operacional](docs/PLANO_OPERACIONAL.md)
 
 🧯 **Contingência:** [Consultar plano de contingência](docs/PLANO_CONTINGENCIA.md)
