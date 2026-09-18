@@ -255,6 +255,28 @@ service cloud.firestore {
             && data.responseTimeMinutes >= 0));
     }
 
+    function hasValidAuditMetadata(data) {
+      return !data.keys().hasAny(['metadata'])
+        || (
+          data.metadata is map
+          && data.metadata.keys().hasOnly(['source', 'status', 'unitId', 'hasNote'])
+          && (!data.metadata.keys().hasAny(['source'])
+            || data.metadata.source in [
+              'user_app',
+              'central_simulation',
+              'web_camera',
+              'android',
+              'android_camera'
+            ])
+          && (!data.metadata.keys().hasAny(['status'])
+            || isValidAlertStatus(data.metadata.status))
+          && (!data.metadata.keys().hasAny(['unitId'])
+            || (data.metadata.unitId is string && data.metadata.unitId.size() <= 160))
+          && (!data.metadata.keys().hasAny(['hasNote'])
+            || data.metadata.hasNote is bool)
+        );
+    }
+
     match /emergencyAlerts/{alertId} {
       // O usuário só cria um alerta próprio, dentro da instituição de seu vínculo.
       // Campos operacionais, médicos e de auditoria não podem ser injetados.
@@ -432,8 +454,7 @@ service cloud.firestore {
         && request.resource.data.createdAt is string
         && request.resource.data.createdAt.size() <= 80
         && request.resource.data.retentionExpiresAt is timestamp
-        && (!request.resource.data.keys().hasAny(['metadata'])
-          || request.resource.data.metadata is map)
+        && hasValidAuditMetadata(request.resource.data)
         && (
           (
             request.resource.data.actorType == 'user'
