@@ -30,6 +30,8 @@
 | Retenção Storage | Preparada | `infra/storage-lifecycle.json` | aplicar lifecycle no bucket real |
 | Minimização de dados | Implementada parcialmente | bloqueio de `medicalNotes`, documentação LGPD | revisão formal antes de piloto |
 | Logs seguros | Implementados no web | `safeLogger.ts` e testes | ampliar uso conforme novos módulos |
+| Contingência sem GPS | Tratada na interface | painel, histórico e mapa aceitam coordenadas ausentes | validar em dispositivo/rede real |
+| Exportação de histórico | Minimizada | CSV sem nome, matrícula, telefone ou coordenadas exatas | revisar se novos campos forem adicionados |
 | Headers web | Implementados | `vercel.json` | validar continuamente após mudanças de hospedagem |
 | CI web | Implementado | testes, TypeScript, audit e build | manter verde |
 | CI Android | Implementado | testes, lint, debug/release | manter verde |
