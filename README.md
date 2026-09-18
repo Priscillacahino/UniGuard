@@ -1,6 +1,6 @@
 # 🛡️ UniGuard — Segurança Universitária Georreferenciada
 
-> **Protótipo acadêmico em desenvolvimento.** O UniGuard não possui integração oficial com a Universidade Federal da Paraíba (UFPB), seus sistemas institucionais, a Superintendência de Segurança, o SAMU ou a Polícia Militar. Os dados, usuários, mapas, alertas e indicadores apresentados são fictícios e utilizados exclusivamente para demonstração.
+> **Protótipo acadêmico em desenvolvimento.** O UniGuard não possui integração oficial com a Universidade Federal da Paraíba (UFPB), seus sistemas institucionais, a Superintendência de Segurança, o SAMU ou a Polícia Militar. Usuários, alertas operacionais e fluxos de teste continuam demonstrativos. Já os **indicadores de contexto institucional** apresentados na documentação passam a utilizar dados públicos da CoMu/UFPB, sempre acompanhados de fonte e nota metodológica.
 
 O **UniGuard** é uma proposta de solução digital voltada ao apoio da segurança de estudantes, docentes e servidores em ambientes universitários. O projeto combina aplicativo Android, aplicação web, geolocalização, acionamento de SOS, painel de acompanhamento, integração opcional com Firebase, documentação de segurança, modelagem de dados e artefatos demonstrativos.
 
@@ -161,7 +161,8 @@ A proposta busca facilitar o pedido de ajuda e permitir que a equipe responsáve
 - matriz de rastreabilidade;
 - checklist de prontidão para piloto;
 - modelo relacional MySQL 8+;
-- base demonstrativa em Excel e CSV;
+- base pública estruturada em CSV para visualizações de contexto;
+- documentação metodológica com fontes institucionais e jornalísticas;
 - apresentação profissional em PDF e PowerPoint;
 - documentação de arquitetura com diagramas Mermaid;
 - matriz de riscos em `docs/MATRIZ_RISCOS.md`;
@@ -250,17 +251,41 @@ A matriz de riscos consolida riscos técnicos, de segurança, privacidade, opera
 
 ---
 
-## 📊 Apresentação e dados demonstrativos
+## 📊 Dados públicos, evidências e visualizações
 
-Todos os dados desta seção são fictícios e preparados exclusivamente para apresentação acadêmica.
+A camada estatística de contexto do UniGuard está sendo reconstruída para utilizar **dados públicos verificáveis**, eliminando números fictícios dos gráficos que representam a realidade da UFPB.
 
-![Prévia dos indicadores demonstrativos](docs/imagens/UniGuard_Preview_PowerBI.png)
+### Indicadores de contexto
 
-- 📄 [Apresentação profissional — PDF](docs/apresentacao/UniGuard_Apresentacao_Profissional.pdf)
-- 📊 [Apresentação profissional — PowerPoint](docs/apresentacao/UniGuard_Apresentacao_Profissional_Atualizada.pptx)
-- 📈 [Base demonstrativa para análise — Excel](docs/dados/UniGuard_Base_Demonstrativa_PowerBI.xlsx)
-- 🗃️ [Dados simulados — CSV](docs/dados/UniGuard_Dados_Simulados_PowerBI.csv)
-- 🖼️ [Prévia dos indicadores — PNG](docs/imagens/UniGuard_Preview_PowerBI.png)
+- **45** mulheres atendidas/acompanhadas pela CoMu entre jan/2021 e nov/2022;
+- **42** novos acolhimentos no mesmo período;
+- **174** ocorrências/tipificações de violência registradas, considerando que uma mesma pessoa pode relatar múltiplas violências;
+- **66%** das atendidas no período 2021–2022 eram estudantes;
+- **41** novos atendimentos em 2023;
+- no consolidado institucional publicado posteriormente: **485 atendimentos**, **70 novos atendimentos** e **84 mulheres acompanhadas**;
+- **26,5%** das violências relatadas no relatório institucional foram classificadas como violências sexuais — estupro, importunação sexual e assédio sexual.
+
+> **Importante:** os períodos e universos dos relatórios não são necessariamente equivalentes e alguns se sobrepõem. Esses valores não devem ser somados para estimar vítimas ou crimes no Campus I.
+
+### Evidência e contexto jornalístico
+
+O projeto também documenta ocorrências publicamente noticiadas para contextualização qualitativa. O relato de violência sexual ocorrido no CCS em fevereiro de 2025 é tratado como **relato/denúncia documentado**, acompanhado do desfecho posteriormente noticiado: a investigação foi arquivada por insuficiência de provas para identificação do autor.
+
+### Fontes e base para gráficos
+
+- 📚 [Metodologia, fontes e evidências públicas](docs/DADOS_EVIDENCIAS_UFPB.md)
+- 🗃️ [Base pública estruturada — CSV](docs/dados/UniGuard_Dados_Publicos_UFPB.csv)
+- 📄 [CoMu/UFPB — Relatório de Gestão 2021–2022](https://www.ccsa.ufpb.br/comu/contents/documentos/2021-2022_relatorio-gestao-comu.pdf)
+- 📄 [CoMu/UFPB — Relatório Anual 2023](https://www.ufpb.br/comu/contents/relatorio-anual-2023.pdf)
+- 📄 [CoMu/UFPB — Relatório de Gestão publicado em 2024/2025](https://www.ufpb.br/comu/wp-content/uploads/sites/79/sites/269/2025/03/relatorio-final-1-2024.pdf)
+- 📰 [TV Cabo Branco/Globo — atualização sobre o caso do CCS](https://globoplay.globo.com/v/13780593/)
+
+### Separação obrigatória dos dados
+
+**Contexto UFPB:** somente dados públicos e citados.  
+**Operação UniGuard:** enquanto não houver piloto real autorizado, deve aparecer como **“Sem dados operacionais reais — protótipo acadêmico”**. Alertas simulados podem continuar existindo apenas para testes funcionais, claramente identificados como DEMO.
+
+> A imagem Power BI, a planilha e as apresentações antigas que continham indicadores demonstrativos devem ser consideradas **artefatos legados até sua regeneração com a nova base pública**. Não devem ser usadas como evidência estatística.
 
 > O repositório não contém, neste momento, um arquivo `.pbix`.
 
@@ -300,7 +325,7 @@ UniGuard/
 │   ├── POLITICA_LOGS_MASCARAMENTO.md    # Logging seguro e mascaramento
 │   ├── CHECKLIST_RELEASE.md             # Critérios mínimos de release
 │   ├── apresentacao/                 # PDF e PowerPoint profissionais
-│   ├── dados/                        # Excel e CSV demonstrativos
+│   ├── dados/                        # Base pública UFPB e artefatos legados de demonstração
 │   ├── imagens/                      # Imagens e previews principais
 │   └── prototipo-figma/              # Galeria das telas
 ├── UniGuard_Banco_MySQL/             # Modelo relacional e documentação
