@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { UserProfile, UserRole, AccessRole } from '../types';
 import { SoundEffects } from '../utils/sound';
+import { useDialogAccessibility } from '../utils/useDialogAccessibility';
 import {
   Shield,
   Lock,
@@ -86,6 +87,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   useEffect(() => {
     setStatusMessage(null);
   }, [mode]);
+
+  const dialogRef = useDialogAccessibility(isOpen, onClose);
 
   if (!isOpen) return null;
 
@@ -263,9 +266,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-sm animate-in fade-in duration-200">
       <div
         id="modal-auth-flow"
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="auth-modal-title"
+        tabIndex={-1}
         className="relative w-full max-w-lg bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden text-slate-800 flex flex-col max-h-[92vh]"
       >
         {authenticate ? (
