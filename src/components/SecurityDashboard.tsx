@@ -754,22 +754,28 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
                 <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-700">
                   <div>
                     <span className="text-slate-400 block font-semibold">Matrícula:</span>
-                    <span className="font-mono font-medium">{currentAlert.userProfile.documentNumber}</span>
+                    <span className="font-mono font-medium">{currentAlert.userProfile.documentNumber || 'Não informado'}</span>
                   </div>
                   <div>
                     <span className="text-slate-400 block font-semibold">Telefone:</span>
-                    <a href={`tel:${currentAlert.userProfile.phone}`} className="text-[#003d71] underline font-medium">
-                      {currentAlert.userProfile.phone}
-                    </a>
+                    {currentAlert.userProfile.phone ? (
+                      <a href={`tel:${currentAlert.userProfile.phone}`} className="text-[#003d71] underline font-medium">
+                        {currentAlert.userProfile.phone}
+                      </a>
+                    ) : (
+                      <span className="font-medium">Não informado</span>
+                    )}
                   </div>
                   <div>
                     <span className="text-slate-400 block font-semibold">Centro / Unidade:</span>
-                    <span className="font-medium">{currentAlert.userProfile.department}</span>
+                    <span className="font-medium">{currentAlert.userProfile.department || 'Não informado'}</span>
                   </div>
                   <div>
                     <span className="text-slate-400 block font-semibold">Contato Emergência:</span>
                     <span className="text-amber-800 font-semibold">
-                      {currentAlert.userProfile.emergencyContactName} ({currentAlert.userProfile.emergencyContactPhone})
+                      {currentAlert.userProfile.emergencyContactName && currentAlert.userProfile.emergencyContactPhone
+                        ? `${currentAlert.userProfile.emergencyContactName} (${currentAlert.userProfile.emergencyContactPhone})`
+                        : 'Não informado'}
                     </span>
                   </div>
                 </div>
