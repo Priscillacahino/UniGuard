@@ -18,6 +18,7 @@ import { formatDistance, calculateDistance, getCampusById } from '../utils/geo';
 import { generateEmergencyEvidenceCanvas } from '../utils/camera';
 import { recordAlertViewed } from '../services/alertRepository';
 import { safeLog } from '../services/safeLogger';
+import { runtimeConfig } from '../services/runtimeConfig';
 import {
   ShieldAlert,
   Radio,
@@ -47,7 +48,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 
-const demoModeEnabled = import.meta.env.VITE_ENABLE_DEMO_MODE === 'true';
+const demoModeEnabled = runtimeConfig.demoModeEnabled;
 
 interface SecurityDashboardProps {
   alerts: EmergencyAlert[];
