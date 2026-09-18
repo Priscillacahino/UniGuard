@@ -66,14 +66,14 @@ export const AlertHistoryModal: React.FC<AlertHistoryModalProps> = ({
   // Estatísticas do Histórico
   const totalWithPhoto = alerts.filter((a) => !!a.photoSnapshot).length;
 
-  // Exportar relatório em CSV com suporte a Campus e Foto
+  // Exportação minimizada: não inclui nome, matrícula, telefone ou coordenadas exatas.
   const handleExportCsv = () => {
-    const headers = 'Protocolo,Campus,Nome,Matrícula,Categoria,Data,Hora,Localização,Latitude,Longitude,Status,Zona Segura,Foto Registrada\n';
+    const headers = 'Protocolo,Campus,Categoria,Data,Hora,Localização,Status,Zona Segura,Foto Registrada,Sinal Perdido\n';
     const rows = filteredAlerts
       .map((a) => {
         const d = new Date(a.createdAt);
         const campus = getCampusById(a.campusId);
-        return `"${a.protocolNumber}","${campus.shortName}","${a.userProfile.name}","${a.userProfile.documentNumber || ''}","${a.category}","${d.toLocaleDateString('pt-BR')}","${d.toLocaleTimeString('pt-BR')}","${a.locationName.replace(/"/g, '""')}","${a.location.lat ?? ''}","${a.location.lng ?? ''}","${a.status}","${a.isInSafeZone ? 'Sim' : 'Não'}","${a.photoSnapshot ? 'Sim' : 'Não'}"`;
+        return `"${a.protocolNumber}","${campus.shortName}","${a.category}","${d.toLocaleDateString('pt-BR')}","${d.toLocaleTimeString('pt-BR')}","${a.locationName.replace(/"/g, '""')}","${a.status}","${a.isInSafeZone ? 'Sim' : 'Não'}","${a.photoSnapshot ? 'Sim' : 'Não'}","${a.signalLost ? 'Sim' : 'Não'}"`;
       })
       .join('\n');
 
