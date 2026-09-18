@@ -6,6 +6,12 @@ O formato segue, de maneira simplificada, a ideia do [Keep a Changelog](https://
 
 ## [Não publicado]
 
+Nenhuma alteração registrada após o fechamento da v0.9.0.
+
+---
+
+## [0.9.0] — 2026-09-18
+
 ### Adicionado
 
 - matriz de riscos em `docs/MATRIZ_RISCOS.md`, com riscos técnicos, operacionais, de segurança, privacidade e governança;
