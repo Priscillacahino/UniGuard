@@ -1,4 +1,5 @@
 import React from 'react';
+import { useDialogAccessibility } from '../utils/useDialogAccessibility';
 import { EmergencyPhotoSnapshot } from '../types';
 import { Camera, Download, ExternalLink, ShieldAlert, X } from 'lucide-react';
 
@@ -19,6 +20,7 @@ export const PhotoEvidenceModal: React.FC<PhotoEvidenceModalProps> = ({
   protocolNumber,
   locationName,
 }) => {
+  const dialogRef = useDialogAccessibility(isOpen && Boolean(photoSnapshot), onClose);
   if (!isOpen || !photoSnapshot) return null;
   const isSimulated = photoSnapshot.source === 'simulacao_evidencia';
 
@@ -40,6 +42,11 @@ export const PhotoEvidenceModal: React.FC<PhotoEvidenceModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
       <div 
         id="modal-photo-evidence"
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-photo-evidence-title"
+        tabIndex={-1}
         className="relative w-full max-w-2xl bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden text-slate-100 flex flex-col max-h-[92vh]"
       >
         {/* Cabeçalho */}
@@ -57,7 +64,7 @@ export const PhotoEvidenceModal: React.FC<PhotoEvidenceModalProps> = ({
                   {protocolNumber || photoSnapshot.protocolNumber || 'SOS-UFPB'}
                 </span>
               </div>
-              <h3 className="text-base font-bold text-white mt-0.5">
+              <h3 id="modal-photo-evidence-title" className="text-base font-bold text-white mt-0.5">
                 {isSimulated ? 'Representação visual sem foto real' : 'Foto registrada no acionamento do SOS'}
               </h3>
             </div>
@@ -65,6 +72,7 @@ export const PhotoEvidenceModal: React.FC<PhotoEvidenceModalProps> = ({
 
           <button
             onClick={onClose}
+            aria-label="Fechar evidência fotográfica"
             className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
