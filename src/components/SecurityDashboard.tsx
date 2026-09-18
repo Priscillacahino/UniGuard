@@ -47,6 +47,8 @@ import {
   ChevronDown,
 } from 'lucide-react';
 
+const demoModeEnabled = import.meta.env.VITE_ENABLE_DEMO_MODE === 'true';
+
 interface SecurityDashboardProps {
   alerts: EmergencyAlert[];
   securityUnits: SecurityPatrolUnit[];
@@ -188,6 +190,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
 
   // Simular Alerta em campus específico para teste tático
   const handleCreateDemoAlert = (targetCampusId: UfpbCampusId = 'campus_1_joao_pessoa') => {
+    if (!demoModeEnabled) return;
     SoundEffects.playClick();
     const campus = getCampusById(targetCampusId);
     const coord = {
@@ -307,31 +310,33 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
               <span>{isSirenActive ? 'Sirene Ativa' : 'Alarme Sonoro'}</span>
             </button>
 
-            {/* Simulação Rápida para Teste */}
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
-              <span className="text-[10px] text-slate-500 px-2 font-semibold">Simular SOS:</span>
-              <button
-                onClick={() => handleCreateDemoAlert('campus_1_joao_pessoa')}
-                className="px-2 py-1 rounded-lg bg-white hover:bg-slate-50 text-[10px] font-semibold text-slate-700 border border-slate-200 shadow-xs cursor-pointer"
-                title="Simular SOS no Campus I"
-              >
-                Campus I
-              </button>
-              <button
-                onClick={() => handleCreateDemoAlert('campus_2_areia')}
-                className="px-2 py-1 rounded-lg bg-white hover:bg-slate-50 text-[10px] font-semibold text-slate-700 border border-slate-200 shadow-xs cursor-pointer"
-                title="Simular SOS no Campus II (Areia)"
-              >
-                Areia
-              </button>
-              <button
-                onClick={() => handleCreateDemoAlert('campus_3_bananeiras')}
-                className="px-2 py-1 rounded-lg bg-white hover:bg-slate-50 text-[10px] font-semibold text-slate-700 border border-slate-200 shadow-xs cursor-pointer"
-                title="Simular SOS no Campus III (Bananeiras)"
-              >
-                Bananeiras
-              </button>
-            </div>
+            {/* Simulação Rápida para Teste — disponível somente com flag explícita */}
+            {demoModeEnabled && (
+              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                <span className="text-[10px] text-slate-500 px-2 font-semibold">Simular SOS:</span>
+                <button
+                  onClick={() => handleCreateDemoAlert('campus_1_joao_pessoa')}
+                  className="px-2 py-1 rounded-lg bg-white hover:bg-slate-50 text-[10px] font-semibold text-slate-700 border border-slate-200 shadow-xs cursor-pointer"
+                  title="Simular SOS no Campus I"
+                >
+                  Campus I
+                </button>
+                <button
+                  onClick={() => handleCreateDemoAlert('campus_2_areia')}
+                  className="px-2 py-1 rounded-lg bg-white hover:bg-slate-50 text-[10px] font-semibold text-slate-700 border border-slate-200 shadow-xs cursor-pointer"
+                  title="Simular SOS no Campus II (Areia)"
+                >
+                  Areia
+                </button>
+                <button
+                  onClick={() => handleCreateDemoAlert('campus_3_bananeiras')}
+                  className="px-2 py-1 rounded-lg bg-white hover:bg-slate-50 text-[10px] font-semibold text-slate-700 border border-slate-200 shadow-xs cursor-pointer"
+                  title="Simular SOS no Campus III (Bananeiras)"
+                >
+                  Bananeiras
+                </button>
+              </div>
+            )}
           </div>
 
         </div>
