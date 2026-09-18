@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase-admin/app';
 import { FieldValue, Timestamp, getFirestore } from 'firebase-admin/firestore';
 import { HttpsError, onCall, onRequest } from 'firebase-functions/v2/https';
 import { evaluateRateLimit } from './rateLimiter.js';
+import { normalizeProfileRole } from './inputValidation.js';
 
 initializeApp();
 const db = getFirestore();
@@ -39,6 +40,9 @@ export const createEmergencyAlert = onCall({ enforceAppCheck: true }, async (req
   const category = string(input.category, 80);
   if (!ALLOWED_CATEGORIES.has(category)) throw new HttpsError('invalid-argument', 'INVALID_CATEGORY');
 
+  const profileRole = normalizeProfileRole(input.role);
+  if (!profileRole) throw new HttpsError('invalid-argument', 'INVALID_PROFILE_ROLE');
+
   const alertRef = db.doc(`emergencyAlerts/${alertId}`);
   const auditRef = db.collection('auditLogs').doc();
   const nowMs = Date.now();
@@ -68,7 +72,7 @@ export const createEmergencyAlert = onCall({ enforceAppCheck: true }, async (req
     const alert = {
       id: alertId, institutionId, authUid: uid, userId: uid,
       protocolNumber: `SOS-${alertId.slice(0, 8).toUpperCase()}`,
-      userProfile: { id: uid, institutionId, name: string(input.userName, 160) || 'Usuário', role: string(input.role, 60) || 'estudante', registeredAt: nowIso },
+      userProfile: { id: uid, institutionId, name: string(input.userName, 160) || 'Usuário', role: profileRole, registeredAt: nowIso },
       category, status: 'pendente', receiptStatus: 'aguardando_central',
       retentionExpiresAt, createdAt: nowIso, updatedAt: nowIso,
       location: { lat, lng }, locationName: string(input.locationName, 255) || 'Localização informada pelo dispositivo',
