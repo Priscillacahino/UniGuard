@@ -17,6 +17,7 @@ import { SoundEffects } from '../utils/sound';
 import { formatDistance, calculateDistance, getCampusById } from '../utils/geo';
 import { generateEmergencyEvidenceCanvas } from '../utils/camera';
 import { recordAlertViewed } from '../services/alertRepository';
+import { safeLog } from '../services/safeLogger';
 import {
   ShieldAlert,
   Radio,
@@ -114,7 +115,9 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
     if (!currentAlert || viewedAlertIds.current.has(currentAlert.id)) return;
     viewedAlertIds.current.add(currentAlert.id);
     void recordAlertViewed(currentAlert.id).catch((error) => {
-      console.error('Falha ao registrar acesso ao alerta', error);
+      safeLog('error', 'alert_view_audit_failed', {
+        message: error instanceof Error ? error.message : 'unknown_error',
+      });
     });
   }, [currentAlert?.id]);
 
