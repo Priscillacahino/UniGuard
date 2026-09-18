@@ -50,8 +50,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [mode, setMode] = useState<AuthMode>('login');
   
   // Campos de Login
-  const [loginEmail, setLoginEmail] = useState(currentProfile.email || 'usuario@exemplo.com');
-  const [loginPassword, setLoginPassword] = useState('ufpb2026');
+  const [loginEmail, setLoginEmail] = useState(currentProfile.email || '');
+  const [loginPassword, setLoginPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   
   // Campos de Recuperação de Senha
@@ -263,6 +263,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-sm animate-in fade-in duration-200">
       <div
         id="modal-auth-flow"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="auth-modal-title"
         className="relative w-full max-w-lg bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden text-slate-800 flex flex-col max-h-[92vh]"
       >
         {authenticate ? (
@@ -282,7 +285,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                <h2 id="auth-modal-title" className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
                   Uni<span className="text-[#003d71]">Guard</span>
                 </h2>
                 <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-blue-100/70 text-[#003d71]">
@@ -303,6 +306,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 onClose();
               }}
               title="Voltar / Fechar"
+              aria-label="Fechar janela de autenticação"
               className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -313,6 +317,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         {/* MENSAGEM DE STATUS GERAL */}
         {statusMessage && (
           <div
+            role={statusMessage.type === 'error' ? 'alert' : 'status'}
+            aria-live="polite"
             className={`mx-5 sm:mx-6 mt-4 p-3.5 rounded-2xl text-xs flex items-center gap-2.5 ${
               statusMessage.type === 'error'
                 ? 'bg-rose-50 border border-rose-200 text-rose-800'
@@ -420,6 +426,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                    aria-pressed={showPassword}
                     className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -430,7 +438,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 {loginPassword.length > 0 && !isLoginPassValid && (
                   <p className="text-[11px] text-rose-600 flex items-center gap-1 font-medium mt-1">
                     <AlertCircle className="w-3 h-3 shrink-0" />
-                    A senha deve ter no mínimo 6 caracteres.
+                    A senha deve ter no mínimo 8 caracteres.
                   </p>
                 )}
 
