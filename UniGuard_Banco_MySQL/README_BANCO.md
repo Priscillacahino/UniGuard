@@ -29,3 +29,30 @@ O app Android atual usa Firebase/Firestore para sincronização do SOS. O MySQL 
 
 ## Compatibilidade com o fluxo atual
 Os campos do alerta atual como `protocolNumber`, `userId`, `category`, `status`, `location`, `campusId`, `signalLost` e `source` foram mapeados para entidades relacionais do MySQL.
+
+
+## Limites deste modelo de referência
+
+Este esquema é **conceitual e educacional**. Ele não é a fonte de verdade da autenticação nem representa, sozinho, a arquitetura de segurança atual do UniGuard.
+
+Na implementação atual:
+
+- a identidade é gerenciada pelo Firebase Authentication;
+- autorização e segregação são baseadas em `memberships/{uid}`, `operators/{uid}` e `institutionId`;
+- alertas/evidências seguem regras do Firestore e Storage;
+- retenção é modelada por `retentionExpiresAt` e políticas remotas;
+- o backend confiável é a camada prevista para decisões server-side.
+
+Por isso, a coluna `password_hash` presente no esquema deve ser tratada somente como referência de uma arquitetura relacional alternativa e **não deve ser usada em paralelo ao Firebase Authentication**.
+
+Antes de qualquer migração futura para MySQL, o modelo precisa ser revisado para incluir explicitamente:
+
+1. isolamento multi-instituição em todas as entidades aplicáveis;
+2. autorização baseada em papéis e vínculo institucional;
+3. retenção e eliminação equivalentes às políticas do projeto;
+4. trilha de auditoria protegida;
+5. minimização de dados pessoais;
+6. acesso exclusivamente por API/backend, nunca diretamente pelo app;
+7. migração de dados com validação de `institutionId`.
+
+A arquitetura vigente e seus controles estão documentados em `docs/ARQUITETURA.md`, `SECURITY.md` e `docs/STATUS_DE_PRONTIDAO.md`.
