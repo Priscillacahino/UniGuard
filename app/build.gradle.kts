@@ -17,8 +17,8 @@ android {
         applicationId = "com.priscillacahino.uniguard"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.1.0"
+        versionCode = 9
+        versionName = "0.9.0"
 
         val useTrustedBackend = (project.findProperty("UNIGUARD_USE_TRUSTED_BACKEND")?.toString() ?: "false").toBoolean()
         val institutionId = project.findProperty("UNIGUARD_INSTITUTION_ID")?.toString()?.takeIf { it.isNotBlank() } ?: "ufpb-demo"
