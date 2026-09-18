@@ -35,6 +35,11 @@ try {
   const path = 'emergency-evidence/a1/evidence.jpg';
   const jpg = new Uint8Array([0xff,0xd8,0xff,0xd9]);
 
+  await assertFails(uploadBytes(
+    ref(userA.storage(), path),
+    jpg,
+    { contentType: 'image/jpeg', customMetadata: { victimName: 'Não deve persistir' } },
+  ));
   await assertSucceeds(uploadBytes(ref(userA.storage(), path), jpg, { contentType: 'image/jpeg' }));
   await assertSucceeds(getBytes(ref(userA.storage(), path)));
   await assertSucceeds(getBytes(ref(opA.storage(), path)));
