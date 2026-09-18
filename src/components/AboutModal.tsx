@@ -1,4 +1,5 @@
 import React from 'react';
+import { useDialogAccessibility } from '../utils/useDialogAccessibility';
 import { Shield, MapPin, Radio, WifiOff, Users, AlertTriangle, CheckCircle2, X, FileText } from 'lucide-react';
 
 interface AboutModalProps {
@@ -7,12 +8,18 @@ interface AboutModalProps {
 }
 
 export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
+  const dialogRef = useDialogAccessibility(isOpen, onClose);
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div 
         id="modal-about-uniguard"
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-about-title"
+        tabIndex={-1}
         className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white border border-slate-200 rounded-2xl shadow-2xl p-6 sm:p-8 text-slate-800"
       >
         {/* Botão Fechar */}
@@ -30,7 +37,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
             <Shield className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+            <h2 id="modal-about-title" className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
               UniGuard
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 font-medium">
