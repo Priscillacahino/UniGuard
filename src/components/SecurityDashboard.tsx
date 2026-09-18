@@ -800,16 +800,22 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
                 </div>
 
                 <div className="text-[11px] text-slate-500 font-mono flex items-center justify-between">
-                  <span>Lat: {currentAlert.location.lat.toFixed(5)}, Lng: {currentAlert.location.lng.toFixed(5)}</span>
-                  <a
-                    href={`https://www.google.com/maps?q=${currentAlert.location.lat},${currentAlert.location.lng}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-[#003d71] hover:underline font-bold inline-flex items-center gap-1"
-                  >
-                    <span>Abrir no Maps</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
+                  {typeof currentAlert.location.lat === 'number' && typeof currentAlert.location.lng === 'number' ? (
+                    <>
+                      <span>Lat: {currentAlert.location.lat.toFixed(5)}, Lng: {currentAlert.location.lng.toFixed(5)}</span>
+                      <a
+                        href={`https://www.google.com/maps?q=${currentAlert.location.lat},${currentAlert.location.lng}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[#003d71] hover:underline font-bold inline-flex items-center gap-1"
+                      >
+                        <span>Abrir no Maps</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </>
+                  ) : (
+                    <span>Coordenadas indisponíveis — último sinal não recebido</span>
+                  )}
                 </div>
 
                 {currentAlert.isInSafeZone && (
