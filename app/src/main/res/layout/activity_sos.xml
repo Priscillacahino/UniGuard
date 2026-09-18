@@ -40,6 +40,7 @@
         android:layout_marginTop="12dp"
         android:hint="E-mail institucional"
         android:inputType="textEmailAddress"
+        android:autofillHints="emailAddress"
         android:maxLines="1"
         android:minHeight="48dp"
         android:padding="12dp"
@@ -56,6 +57,7 @@
         android:layout_marginTop="8dp"
         android:hint="Senha (mínimo 8 caracteres)"
         android:inputType="textPassword"
+        android:autofillHints="password"
         android:maxLines="1"
         android:minHeight="48dp"
         android:padding="12dp"
@@ -89,6 +91,7 @@
 
     <TextView
         android:id="@+id/txtAuthStatus"
+        android:accessibilityLiveRegion="polite"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
@@ -107,6 +110,7 @@
         android:layout_marginTop="12dp"
         android:hint="Número de emergência"
         android:inputType="phone"
+        android:autofillHints="phone"
         android:maxLines="1"
         android:minHeight="48dp"
         android:padding="12dp"
@@ -129,6 +133,7 @@
 
     <Button
         android:id="@+id/btnSOS"
+        android:contentDescription="Botão SOS. Mantenha pressionado por 2 segundos para acionar o alerta."
         android:layout_width="160dp"
         android:layout_height="160dp"
         android:layout_marginTop="20dp"
@@ -141,6 +146,7 @@
 
     <TextView
         android:id="@+id/txtAviso"
+        android:accessibilityLiveRegion="polite"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
