@@ -36,6 +36,7 @@ import {
   publishAlert,
   subscribeToAlerts,
 } from './services/alertRepository';
+import { safeLog } from './services/safeLogger';
 import {
   authenticateAccount,
   getCurrentAuthorization,
@@ -184,7 +185,7 @@ export default function App() {
         }));
         setIsLoggedIn(true);
       })
-      .catch((error) => console.error('Falha ao reidratar autorização Firebase', error));
+      .catch((error) => safeLog('error', 'firebase_authorization_rehydrate_failed', { message: error instanceof Error ? error.message : 'unknown_error' }));
     return () => {
       cancelled = true;
     };
@@ -254,10 +255,10 @@ export default function App() {
       userProfile.institutionId,
       accountRole,
       setAlerts,
-      (error) => console.error('Falha ao acompanhar alertas em tempo real', error),
+      (error) => safeLog('error', 'alerts_subscription_failed', { message: error instanceof Error ? error.message : 'unknown_error' }),
     )
       .then((stop) => { unsubscribe = stop; })
-      .catch((error) => console.error('Sessão sem autorização para acompanhar alertas', error));
+      .catch((error) => safeLog('warn', 'alerts_subscription_unauthorized', { message: error instanceof Error ? error.message : 'unknown_error' }));
     return () => unsubscribe();
   }, [accountRole, isLoggedIn, userProfile.institutionId]);
 
@@ -379,7 +380,7 @@ export default function App() {
     };
     setAlerts((prev) => [safeAlert, ...prev]);
     void publishAlert(safeAlert).catch((error) => {
-      console.error('O alerta ficou somente neste dispositivo', error);
+      safeLog('error', 'alert_remote_publish_failed', { message: error instanceof Error ? error.message : 'unknown_error' });
     });
   };
 
@@ -390,7 +391,9 @@ export default function App() {
         ? { ...a, status: 'cancelado_usuario', updatedAt: new Date().toISOString() }
         : a))
     );
-    void cancelAlert(alertId).catch(console.error);
+    void cancelAlert(alertId).catch((error) => {
+      safeLog('error', 'alert_cancel_failed', { message: error instanceof Error ? error.message : 'unknown_error' });
+    });
   };
 
   const canTriggerAlert = () => checkAlertAllowance(alerts, userProfile.id);
@@ -435,7 +438,9 @@ export default function App() {
       unitId,
       selectedUnit ? `${selectedUnit.name} (${selectedUnit.code})` : undefined,
       note,
-    ).catch(console.error);
+    ).catch((error) => {
+      safeLog('error', 'alert_status_update_failed', { message: error instanceof Error ? error.message : 'unknown_error' });
+    });
   };
 
   // Handler para Inserir Alerta Simulado via Central
@@ -489,7 +494,9 @@ export default function App() {
     };
 
     setAlerts((prev) => [simAlert, ...prev]);
-    void publishAlert(simAlert).catch(console.error);
+    void publishAlert(simAlert).catch((error) => {
+      safeLog('error', 'simulated_alert_publish_failed', { message: error instanceof Error ? error.message : 'unknown_error' });
+    });
   };
 
   return (
