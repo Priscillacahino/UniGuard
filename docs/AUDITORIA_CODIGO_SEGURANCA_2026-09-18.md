@@ -36,6 +36,10 @@
 | Android não fixava MIME da evidência | incompatibilidade potencial com allowlist do Storage | upload Android define `image/jpeg` | corrigido |
 | Exportação CSV continha nome, matrícula e coordenadas exatas | exposição desnecessária em arquivo exportado | exportação minimizada sem PII direta nem coordenadas exatas | corrigido |
 | Modelo MySQL podia parecer equivalente à arquitetura atual | risco de uso conceitual inadequado | limites e requisitos de futura migração documentados | corrigido |
+| Backend confiável aceitava `role` de perfil sem allowlist própria | cliente adulterado poderia gravar perfil fora do domínio esperado via Admin SDK | allowlist fechada + normalização + testes unitários | corrigido |
+| Android não bloqueava explicitamente cleartext HTTP | risco de integração futura usar transporte sem TLS | `android:usesCleartextTraffic="false"` | corrigido |
+| Headers web não incluíam HSTS | endurecimento HTTPS incompleto | HSTS por 2 anos + bloqueio de políticas cross-domain legadas | corrigido |
+| CI não validava sintaxe do novo módulo de entrada do backend | regressão sintática poderia passar até execução do teste/import | `node --check inputValidation.js` adicionado | corrigido |
 
 ## Pontos revisados e mantidos
 
