@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useDialogAccessibility } from '../utils/useDialogAccessibility';
 import { EmergencyContact } from '../types';
 import { Plus, Trash2, Phone, User, MessageSquare, Check, AlertCircle } from 'lucide-react';
 
@@ -22,6 +23,7 @@ export const EmergencyContactsModal: React.FC<EmergencyContactsModalProps> = ({
   const [newPhone, setNewPhone] = useState('');
   const [newRelation, setNewRelation] = useState('Familiar');
   const [newNotifySms, setNewNotifySms] = useState(true);
+  const dialogRef = useDialogAccessibility(isOpen, onClose);
   const [errorMsg, setErrorMsg] = useState('');
   const [testSentMsg, setTestSentMsg] = useState<string | null>(null);
 
@@ -76,6 +78,11 @@ export const EmergencyContactsModal: React.FC<EmergencyContactsModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div 
         id="modal-emergency-contacts"
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-emergency-contacts-title"
+        tabIndex={-1}
         className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white border border-slate-200 rounded-2xl shadow-2xl p-6 text-slate-800"
       >
         {/* Top Header */}
@@ -85,7 +92,7 @@ export const EmergencyContactsModal: React.FC<EmergencyContactsModalProps> = ({
               <Phone className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-extrabold text-slate-900">Contatos de Emergência</h2>
+              <h2 id="modal-emergency-contacts-title" className="text-base font-extrabold text-slate-900">Contatos de Emergência</h2>
               <p className="text-xs text-slate-500 font-medium">
                 Pessoas de confiança que receberão SMS com sua localização exata ao acionar o SOS.
               </p>
@@ -93,6 +100,7 @@ export const EmergencyContactsModal: React.FC<EmergencyContactsModalProps> = ({
           </div>
           <button
             onClick={onClose}
+            aria-label="Fechar contatos de emergência"
             className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-all cursor-pointer"
           >
             ✕
