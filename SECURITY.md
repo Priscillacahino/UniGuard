@@ -140,6 +140,13 @@ O projeto atual:
 - permite apenas a classificação operacional necessária ao atendimento, como categoria de ocorrência;
 - orienta que descrições de alerta contenham somente o necessário para o contexto da ocorrência.
 
+### Minimização adicional na interface
+
+- o backend confiável persiste no alerta apenas o perfil mínimo necessário quando esse caminho está ativo;
+- campos de contato/identificação ausentes são tratados pela interface sem falha;
+- a exportação CSV do histórico não inclui nome, matrícula, telefone nem coordenadas exatas;
+- alertas sem coordenadas válidas permanecem visíveis no painel sem provocar erro no mapa.
+
 ## 9. Controle contra abuso
 
 O cliente aplica controles de UX contra repetição de alertas, mas esses controles não são tratados como fronteira de segurança.
