@@ -123,7 +123,13 @@ export async function publishAlert(alert: EmergencyAlert): Promise<void> {
 
   const account = await requireAccount();
   const now = new Date().toISOString();
-  const { photoSnapshot, securityNotes: _securityNotes, ...alertWithoutEmbeddedPhoto } = alert;
+  const {
+    photoSnapshot,
+    securityNotes: _securityNotes,
+    userRouteHistory: _userRouteHistory,
+    smsNotificationsSent: _smsNotificationsSent,
+    ...alertWithoutEmbeddedPhoto
+  } = alert;
   const alertDocument = doc(firestore, COLLECTION, alert.id);
   const auditDocument = doc(collection(firestore, AUDIT_COLLECTION));
 
