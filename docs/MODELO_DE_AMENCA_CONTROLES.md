@@ -27,6 +27,8 @@ O modo demonstrativo não é fronteira de segurança e não deve receber dados p
 | T13 | Localização falsa ou imprecisa | GPS spoofing/baixa precisão | validação de intervalo e indicação de sinal/localização | anti-spoofing real não implementado |
 | T14 | Conta válida permanecer ativa após perda de vínculo | sessão existente | consulta de membership/operator nas regras | testar revogação em sessão ativa |
 | T15 | Dependência vulnerável | cadeia de suprimentos | Dependabot + `npm audit` + CI | vulnerabilidades futuras continuam possíveis |
+| T16 | Manipulação de perfil via backend confiável | cliente envia `role` arbitrário e o Admin SDK ignora regras Firestore | allowlist fechada no backend + teste unitário | novos campos de domínio devem seguir a mesma regra |
+| T17 | Transporte HTTP acidental no Android | integração futura aponta para endpoint sem TLS | `usesCleartextTraffic=false` | bibliotecas e endpoints futuros devem continuar em HTTPS |
 
 ## 3. Evidência e privacidade
 
