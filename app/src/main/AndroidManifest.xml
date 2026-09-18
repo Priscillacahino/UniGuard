@@ -18,7 +18,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.UniGuard">
+        android:theme="@style/Theme.UniGuard"
+        android:usesCleartextTraffic="false">
 
         <provider
             android:name="androidx.core.content.FileProvider"
