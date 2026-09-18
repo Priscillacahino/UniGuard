@@ -60,6 +60,15 @@ try {
   await assertFails(setDoc(doc(userA, 'emergencyAlerts/a2'), injected));
   await assertSucceeds(setDoc(doc(userA, 'emergencyAlerts/a3'), alert('a3', 'userA', 'instA')));
 
+  const malformedProfile = alert('a-profile-invalid', 'userA', 'instA');
+  malformedProfile.userProfile.name = { unexpected: true };
+  await assertFails(setDoc(doc(userA, 'emergencyAlerts/a-profile-invalid'), malformedProfile));
+
+  const oversizedPhone = alert('a-profile-phone', 'userA', 'instA');
+  oversizedPhone.userProfile.phone = '9'.repeat(80);
+  await assertFails(setDoc(doc(userA, 'emergencyAlerts/a-profile-phone'), oversizedPhone));
+
+
   await env.withSecurityRulesDisabled(async (ctx) => {
     await setDoc(doc(ctx.firestore(), 'settings/security'), { trustedBackendRequired: true });
   });
