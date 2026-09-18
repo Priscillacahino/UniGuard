@@ -150,7 +150,7 @@ class IntegratedSosActivity : AppCompatActivity() {
             .addOnSuccessListener { membership ->
                 val active = membership.exists()
                     && membership.getBoolean("active") == true
-                    && membership.getString("institutionId") == INSTITUTION_ID
+                    && membership.getString("institutionId") == BuildConfig.INSTITUTION_ID
                 institutionAuthorized = active
                 if (active) {
                     authStatusText.text = "Conta verificada e vinculada à UFPB."
@@ -358,12 +358,12 @@ class IntegratedSosActivity : AppCompatActivity() {
         val userId = authenticatedUid ?: deviceUserId()
         val alert = hashMapOf<String, Any?>(
             "id" to id,
-            "institutionId" to INSTITUTION_ID,
+            "institutionId" to BuildConfig.INSTITUTION_ID,
             "protocolNumber" to "SOS-${id.take(8).uppercase(Locale.ROOT)}",
             "userId" to userId,
             "userProfile" to mapOf(
                 "id" to userId,
-                "institutionId" to INSTITUTION_ID,
+                "institutionId" to BuildConfig.INSTITUTION_ID,
                 "name" to "Usuário do aplicativo Android",
                 "documentNumber" to "Não informado",
                 "role" to "estudante",
@@ -388,8 +388,8 @@ class IntegratedSosActivity : AppCompatActivity() {
             "location" to mapOf("lat" to latitude, "lng" to longitude, "accuracy" to accuracy),
             "locationName" to "Localização enviada pelo Android",
             "isInsideCampus" to false,
-            "campusId" to "campus_1_joao_pessoa",
-            "campusName" to "Campus I - João Pessoa",
+            "campusId" to BuildConfig.DEFAULT_CAMPUS_ID,
+            "campusName" to BuildConfig.DEFAULT_CAMPUS_NAME,
             "signalLost" to (latitude == null),
             "lastSignalTimestamp" to now,
             "source" to "android",
@@ -416,7 +416,7 @@ class IntegratedSosActivity : AppCompatActivity() {
         val id = activeAlertId ?: return
         val authenticatedAlert = alert.toMutableMap().apply {
             put("authUid", currentUser.uid)
-            put("institutionId", INSTITUTION_ID)
+            put("institutionId", BuildConfig.INSTITUTION_ID)
         }
         if (BuildConfig.USE_TRUSTED_BACKEND) {
             val location = authenticatedAlert["location"] as? Map<*, *>
@@ -451,7 +451,7 @@ class IntegratedSosActivity : AppCompatActivity() {
         val now = isoDate(System.currentTimeMillis())
         val audit = mapOf(
             "id" to auditReference.id,
-            "institutionId" to INSTITUTION_ID,
+            "institutionId" to BuildConfig.INSTITUTION_ID,
             "alertId" to id,
             "actorUid" to currentUser.uid,
             "actorType" to "user",
@@ -531,7 +531,7 @@ class IntegratedSosActivity : AppCompatActivity() {
                 val now = isoDate(System.currentTimeMillis())
                 val audit = mapOf(
                     "id" to auditReference.id,
-                    "institutionId" to INSTITUTION_ID,
+                    "institutionId" to BuildConfig.INSTITUTION_ID,
                     "alertId" to id,
                     "actorUid" to user.uid,
                     "actorType" to "user",
@@ -609,7 +609,6 @@ class IntegratedSosActivity : AppCompatActivity() {
         private const val KEY_NUMBER = "numero_emergencia"
         private const val KEY_USER_ID = "device_user_id"
         private const val KEY_ALERT_TIMESTAMPS = "alert_timestamps"
-        private const val INSTITUTION_ID = "ufpb-demo"
         private const val MEMBERSHIPS = "memberships"
         private const val ALERTS = "emergencyAlerts"
         private const val AUDIT_LOGS = "auditLogs"
