@@ -1,111 +1,115 @@
-﻿# UniGuard â€” IntegraÃ§Ã£o final Android â†” Firebase â†” Central Web
+# Integração atual — Android ↔ Firebase ↔ Central Web
 
-## O que a auditoria confirmou
+> Documento operacional do **protótipo acadêmico UniGuard**. A integração é considerada preparada no repositório, mas só pode ser classificada como validada após teste ponta a ponta em um único ambiente Firebase real.
 
-O repositÃ³rio jÃ¡ possui:
-- Android/Kotlin com botÃ£o SOS por pressÃ£o de 2 segundos;
-- GPS via FusedLocationProviderClient;
-- SMS com link do Google Maps;
-- Firebase Authentication anÃ´nimo no Android;
-- Firestore na coleÃ§Ã£o `emergencyAlerts`;
-- Firebase Storage para fotografias/evidÃªncias;
-- painel Web React/Vite;
-- atualizaÃ§Ã£o de status pela Central;
-- listener no Android para receber `pendente`, `em_deslocamento`, `no_local`, `resolvido` e `cancelado_usuario`.
+## Arquitetura de identidade atual
 
-Portanto, o foco agora nÃ£o Ã© reconstruir o projeto. Ã‰ CONFIGURAR e VALIDAR o mesmo Firebase nas duas pontas.
+O UniGuard **não usa autenticação anônima como identidade institucional válida**.
 
-## Bloqueadores encontrados
+Para acesso institucional são exigidos:
 
-### 1. Android sem google-services.json
-O arquivo `app/google-services.json` nÃ£o estÃ¡ no repositÃ³rio.
-O prÃ³prio `app/build.gradle.kts` sÃ³ ativa `com.google.gms.google-services` quando esse arquivo existe.
+1. Firebase Authentication por e-mail/senha;
+2. e-mail verificado;
+3. vínculo ativo em `memberships/{uid}` para usuário;
+4. registro ativo em `operators/{uid}` para operador;
+5. `institutionId` compatível com o recurso acessado.
 
-AÃ§Ã£o:
-1. Firebase Console > ConfiguraÃ§Ãµes do projeto.
-2. Adicionar/selecionar aplicativo Android.
-3. Package name: `com.priscillacahino.uniguard`.
-4. Baixar `google-services.json`.
-5. Colocar em `app/google-services.json`.
+Criar uma credencial não cria automaticamente vínculo institucional.
 
-> NÃ£o gere esse arquivo manualmente. Ele deve vir do projeto Firebase correto.
+## Componentes integrados no repositório
 
-### 2. Vercel precisa apontar para o MESMO projeto Firebase
-Configurar em Vercel > Project > Settings > Environment Variables:
-- VITE_FIREBASE_API_KEY
-- VITE_FIREBASE_AUTH_DOMAIN
-- VITE_FIREBASE_PROJECT_ID
-- VITE_FIREBASE_STORAGE_BUCKET
-- VITE_FIREBASE_MESSAGING_SENDER_ID
-- VITE_FIREBASE_APP_ID
+- Android/Kotlin;
+- aplicação web React/Vite;
+- Firebase Authentication;
+- Cloud Firestore;
+- Firebase Storage;
+- regras de segregação por `institutionId`;
+- auditoria;
+- App Check preparado;
+- Cloud Functions em `functions/`;
+- rate limiting server-side;
+- chave de cutover `trustedBackendRequired`;
+- CI com testes web, Android, backend e Firebase Emulator.
 
-Os valores devem corresponder ao mesmo projeto usado pelo `google-services.json`.
+## Configuração que permanece externa ao repositório
 
-### 3. MÃ©todos de autenticaÃ§Ã£o
-No Firebase Authentication habilitar:
-- Anonymous (necessÃ¡rio para o Android);
-- Email/Password (necessÃ¡rio para o operador da Central).
+### Android
 
-### 4. Operador da Central
-As regras procuram:
-`operators/{UID_DO_OPERADOR}`
+O arquivo `app/google-services.json` não deve ser versionado. Ele deve vir do projeto Firebase correto e permanecer local/seguro.
 
-Depois de criar o usuÃ¡rio de Email/Password no Firebase Authentication:
-1. copie o UID;
-2. no Firestore crie a coleÃ§Ã£o `operators`;
-3. crie um documento com ID exatamente igual ao UID;
-4. campos sugeridos:
-   - name: "Operador DemonstraÃ§Ã£o"
-   - role: "security_operator"
-   - active: true
+Package Android:
 
-### 5. Regras
+`com.priscillacahino.uniguard`
 
-> **Fonte oficial das regras:** use somente o arquivo `firestore.rules` da raiz do repositório. A cópia desta pasta foi removida para evitar divergência entre documentação e implantação.
+### Web/Vercel
 
-Usar o arquivo `firestore.rules` da raiz do repositório como fonte única da implantação.
-Essa versÃ£o mantÃ©m o operador como responsÃ¡vel pelas mudanÃ§as operacionais e permite ao dono apenas cancelar seu prÃ³prio alerta.
+As variáveis abaixo devem apontar para o mesmo projeto Firebase utilizado pelo Android:
 
-Implantar:
-`firebase deploy --only firestore:rules,storage`
+- `VITE_FIREBASE_API_KEY`;
+- `VITE_FIREBASE_AUTH_DOMAIN`;
+- `VITE_FIREBASE_PROJECT_ID`;
+- `VITE_FIREBASE_STORAGE_BUCKET`;
+- `VITE_FIREBASE_MESSAGING_SENDER_ID`;
+- `VITE_FIREBASE_APP_ID`;
+- `VITE_FIREBASE_APPCHECK_SITE_KEY`;
+- `VITE_USE_TRUSTED_BACKEND`.
 
-### 6. Storage
-Manter as regras atuais de `storage.rules`.
-O Android envia a foto para:
-`emergency-evidence/{alertId}.jpg`
+Valores reais não devem ser publicados no GitHub.
 
-## Teste de ponta a ponta
+## Backend confiável e cutover
 
-1. Executar o Android em aparelho/emulador com GPS.
-2. Cadastrar telefone de emergÃªncia.
-3. Pressionar SOS por 2 segundos.
-4. Confirmar no Firestore a criaÃ§Ã£o em `emergencyAlerts`.
-5. Abrir a Central no Vercel e entrar com o usuÃ¡rio operador.
-6. Confirmar que o alerta aparece.
-7. Alterar para `em_deslocamento`.
-8. Confirmar no Android: â€œCentral confirmou: equipe em deslocamentoâ€.
-9. Alterar para `no_local`.
-10. Confirmar no Android: â€œEquipe chegou ao localâ€.
-11. Alterar para `resolvido`.
-12. Confirmar no Android: â€œOcorrÃªncia encerradaâ€.
-13. Confirmar foto no Firebase Storage e URL no documento do alerta.
+O backend confiável já está versionado em `functions/`.
 
-## CritÃ©rio para considerar a versÃ£o acadÃªmica integrada
+A transição para operação via backend deve ocorrer somente depois de:
 
-O MVP estÃ¡ integrado quando:
-Android SOS â†’ Firestore â†’ Central Web â†’ atualizaÃ§Ã£o de status â†’ Android
+1. deploy das Functions;
+2. registro dos apps no App Check;
+3. validação do fluxo real;
+4. ativação de enforcement;
+5. ativação controlada de `VITE_USE_TRUSTED_BACKEND`;
+6. configuração de `settings/security.trustedBackendRequired = true` somente quando todos os clientes autorizados estiverem migrados.
 
-funcionar com um Ãºnico projeto Firebase e sem dados simulados no caminho principal.
+Enquanto o cutover não ocorrer, o modo direto continua restrito pelas regras do Firestore/Storage e não deve ser interpretado como configuração final de produção.
 
-## O que pode ficar como evoluÃ§Ã£o futura
+## Regras
 
-- MySQL/API prÃ³pria;
-- geofencing contÃ­nuo em background;
-- FCM/push notifications;
-- mapa de calor real;
-- despacho automÃ¡tico de viatura;
-- integraÃ§Ã£o oficial UFPB/SAMU/PM;
-- login institucional real via SIGAA/SSO.
+Fontes oficiais únicas:
 
-Esses itens nÃ£o precisam impedir a entrega acadÃªmica da versÃ£o integrada.
+- `firestore.rules`;
+- `storage.rules`.
 
+Não mantenha cópias paralelas dessas regras em outras pastas.
+
+As evidências do Storage aceitam somente JPEG, PNG e WebP, com bloqueio de sobrescrita pelo cliente.
+
+## Critério de validação ponta a ponta
+
+Antes de classificar a integração como validada, comprovar e registrar evidências de:
+
+1. autenticação com e-mail verificado;
+2. vínculo institucional ativo;
+3. criação do SOS;
+4. criação do alerta na instituição correta;
+5. recepção pela Central autorizada;
+6. mudança de status por operador;
+7. atualização percebida pelo cliente;
+8. upload/leitura de evidência autorizada;
+9. bloqueio cross-institution;
+10. trilha de auditoria;
+11. perda de rede/localização e recuperação;
+12. bloqueio de conta/vínculo revogado.
+
+## Itens que não devem bloquear a evolução acadêmica, mas continuam fora do escopo validado
+
+- integração oficial com UFPB/SAMU/PM;
+- SSO/SIGAA;
+- geofencing contínuo em background;
+- despacho automático;
+- mapa de calor operacional real;
+- infraestrutura institucional de alta disponibilidade.
+
+## Status
+
+**Implementado/preparado no repositório não significa validado em produção.**
+
+A referência consolidada de estado é [STATUS_DE_PRONTIDAO.md](STATUS_DE_PRONTIDAO.md).
