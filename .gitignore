@@ -16,3 +16,12 @@ local.properties
 *.iml
 .externalNativeBuild/
 .cxx/
+
+# Credenciais e chaves locais
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+service-account*.json
+firebase-adminsdk*.json
