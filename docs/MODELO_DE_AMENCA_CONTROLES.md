@@ -29,6 +29,7 @@ O modo demonstrativo não é fronteira de segurança e não deve receber dados p
 | T15 | Dependência vulnerável | cadeia de suprimentos | Dependabot + `npm audit` + CI | vulnerabilidades futuras continuam possíveis |
 | T16 | Manipulação de perfil via backend confiável | cliente envia `role` arbitrário e o Admin SDK ignora regras Firestore | allowlist fechada no backend + teste unitário | novos campos de domínio devem seguir a mesma regra |
 | T17 | Transporte HTTP acidental no Android | integração futura aponta para endpoint sem TLS | `usesCleartextTraffic=false` | bibliotecas e endpoints futuros devem continuar em HTTPS |
+| T18 | Poluição da auditoria com metadados arbitrários | cliente autorizado envia mapas excessivos ou campos fora da finalidade | allowlist de chaves/tipos/fontes em `auditLogs.metadata` + teste no Emulator | novos eventos devem atualizar a allowlist conscientemente |
 
 ## 3. Evidência e privacidade
 
