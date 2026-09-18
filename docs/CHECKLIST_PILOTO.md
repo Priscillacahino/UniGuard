@@ -68,6 +68,7 @@
 - [x] cliente não deve sobrescrever evidência existente.
 - [x] campos de evidência são controlados pelas regras.
 - [x] tentativa de sobrescrita bloqueada no Storage Emulator.
+- [x] tipos de arquivo de evidência restritos a JPEG, PNG e WebP; SVG e tipos não permitidos bloqueados no Storage Emulator.
 - [x] autorização de upload/leitura por usuário e operador validada no Storage Emulator.
 - [ ] revisar metadados armazenados junto às evidências.
 
@@ -75,7 +76,7 @@
 
 - [x] `medicalNotes` removido/bloqueado.
 - [x] ausência de prontuário médico como regra do projeto.
-- [x] dados públicos/demonstrativos devem ser fictícios.
+- [x] dados operacionais demonstrativos permanecem fictícios; dados públicos de contexto usam somente fontes documentadas e ficam separados dos indicadores gerados pelo UniGuard.
 - [ ] **BLOQUEADOR** — validar juridicamente base legal, finalidade e papéis dos agentes de tratamento.
 - [x] conteúdo mínimo de aviso de privacidade preparado em `PACOTE_LGPD_PREPARATORIO.md`.
 - [x] fluxo preparatório para direitos dos titulares documentado.
@@ -109,6 +110,7 @@
 - [x] headers de segurança web versionados em `vercel.json`, incluindo CSP, proteção contra framing, `nosniff`, política de referência e Permissions-Policy.
 - [x] política de logs e mascaramento documentada, com utilitário testado no web.
 - [x] backend versionado passa por testes, sintaxe e auditoria crítica no CI.
+- [x] CI bloqueia nomes comuns de arquivos sensíveis versionados e checkout não persiste credenciais.
 - [x] build Android release com Play Integrity validado no CI #175.
 
 ## 10. Qualidade e testes
