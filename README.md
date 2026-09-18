@@ -1,5 +1,7 @@
 # 🛡️ UniGuard — Segurança Universitária Georreferenciada
 
+> **Versão acadêmica atual: v0.9.0 — pré-validação institucional.**
+>
 > **Protótipo acadêmico em desenvolvimento.** O UniGuard não possui integração oficial com a Universidade Federal da Paraíba (UFPB), seus sistemas institucionais, a Superintendência de Segurança, o SAMU ou a Polícia Militar. Usuários, alertas operacionais e fluxos de teste continuam demonstrativos. Já os **indicadores de contexto institucional** apresentados na documentação passam a utilizar dados públicos da CoMu/UFPB, sempre acompanhados de fonte e nota metodológica.
 
 O **UniGuard** é uma proposta de solução digital voltada ao apoio da segurança de estudantes, docentes e servidores em ambientes universitários. O projeto combina aplicativo Android, aplicação web, geolocalização, acionamento de SOS, painel de acompanhamento, integração opcional com Firebase, documentação de segurança, modelagem de dados e artefatos demonstrativos.
