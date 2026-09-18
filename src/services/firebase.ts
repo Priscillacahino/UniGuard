@@ -137,10 +137,6 @@ export async function requestPasswordReset(email: string): Promise<void> {
   await sendPasswordResetEmail(getAuth(app), email.trim().toLowerCase());
 }
 
-export function currentFirebaseUserId(): string | null {
-  return app ? getAuth(app).currentUser?.uid || null : null;
-}
-
 export async function signOutFirebase(): Promise<void> {
   if (app) await signOut(getAuth(app));
 }
