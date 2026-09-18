@@ -73,17 +73,10 @@ dependencies {
     // Módulo oficial de GPS para o botão SOS do UniGuard
     implementation("com.google.android.gms:play-services-location:21.0.1")
 
-    // 🗺️ Biblioteca Oficial do Google Maps para carregar os mapas na tela
-    implementation("com.google.android.gms:play-services-maps:19.0.0")
-
     // Testes unitários básicos
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-
-    // Provedores do Ktor Client para requisições HTTP
-    implementation("io.ktor:ktor-client-android:2.3.11")
-    implementation("io.ktor:ktor-client-core:2.3.11")
 
     // Backend compartilhado com o painel web
     implementation(platform("com.google.firebase:firebase-bom:34.2.0"))
