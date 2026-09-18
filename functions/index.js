@@ -2,7 +2,7 @@ import { initializeApp } from 'firebase-admin/app';
 import { FieldValue, Timestamp, getFirestore } from 'firebase-admin/firestore';
 import { HttpsError, onCall, onRequest } from 'firebase-functions/v2/https';
 import { evaluateRateLimit } from './rateLimiter.js';
-import { normalizeProfileRole } from './inputValidation.js';
+import { normalizeProfileRole, normalizeRequiredBoolean } from './inputValidation.js';
 
 initializeApp();
 const db = getFirestore();
@@ -43,6 +43,9 @@ export const createEmergencyAlert = onCall({ enforceAppCheck: true }, async (req
   const profileRole = normalizeProfileRole(input.role);
   if (!profileRole) throw new HttpsError('invalid-argument', 'INVALID_PROFILE_ROLE');
 
+  const isInsideCampus = normalizeRequiredBoolean(input.isInsideCampus);
+  if (isInsideCampus == null) throw new HttpsError('invalid-argument', 'INVALID_IS_INSIDE_CAMPUS');
+
   const alertRef = db.doc(`emergencyAlerts/${alertId}`);
   const auditRef = db.collection('auditLogs').doc();
   const nowMs = Date.now();
@@ -76,7 +79,7 @@ export const createEmergencyAlert = onCall({ enforceAppCheck: true }, async (req
       category, status: 'pendente', receiptStatus: 'aguardando_central',
       retentionExpiresAt, createdAt: nowIso, updatedAt: nowIso,
       location: { lat, lng }, locationName: string(input.locationName, 255) || 'Localização informada pelo dispositivo',
-      isInsideCampus: Boolean(input.isInsideCampus), signalLost: lat == null || lng == null,
+      isInsideCampus, signalLost: lat == null || lng == null,
       lastSignalTimestamp: nowIso, source: string(input.source, 20) === 'android' ? 'android' : 'web',
     };
 
