@@ -76,7 +76,8 @@ O formato segue, de maneira simplificada, a ideia do [Keep a Changelog](https://
 - backend confiável passa a rejeitar perfis fora da allowlist funcional;
 - Android passa a bloquear tráfego HTTP em texto claro;
 - headers web reforçados com HSTS e `X-Permitted-Cross-Domain-Policies: none`;
-- CI passa a validar também a sintaxe do módulo de entrada do backend.
+- CI passa a validar também a sintaxe do módulo de entrada do backend;
+- metadados de `auditLogs` passam a usar allowlist de campos, tipos e fontes, com cenário negativo no Firebase Emulator.
 
 ### Planejado
 
