@@ -34,6 +34,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.functions.FirebaseFunctions
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageMetadata
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -519,7 +520,10 @@ class IntegratedSosActivity : AppCompatActivity() {
         if (!firebaseConfigured()) return
         val user = FirebaseAuth.getInstance().currentUser ?: return
         val reference = FirebaseStorage.getInstance().reference.child("emergency-evidence/$id/evidence.jpg")
-        reference.putFile(Uri.fromFile(photo)).continueWithTask { reference.downloadUrl }
+        val metadata = StorageMetadata.Builder()
+            .setContentType("image/jpeg")
+            .build()
+        reference.putFile(Uri.fromFile(photo), metadata).continueWithTask { reference.downloadUrl }
             .addOnSuccessListener { url ->
                 val firestore = FirebaseFirestore.getInstance()
                 val alertReference = firestore.collection(ALERTS).document(id)
