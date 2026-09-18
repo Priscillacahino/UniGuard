@@ -25,6 +25,7 @@
 | Rate limiting server-side | Implementado e testado localmente | `functions/rateLimiter.js` e testes | validar após deploy |
 | App Check | Preparado | web, Android e backend | registrar apps e ativar enforcement |
 | Auditoria | Implementada no modelo/regras | `auditLogs` | comprovar eventos no fluxo E2E |
+| Metadados de auditoria | Restringidos e cobertos no Emulator | `firestore.rules`, testes Firebase | atualizar allowlist apenas quando novos eventos exigirem |
 | Evidências fotográficas | Implementadas com controle de acesso | `storage.rules` | validar fluxo real e lifecycle |
 | Tipos de evidência | Restringidos | JPEG, PNG e WebP permitidos; outros bloqueados | acompanhar compatibilidade de dispositivos |
 | Retenção Firestore | Modelada | `retentionExpiresAt` | ativar e comprovar TTL remoto |
