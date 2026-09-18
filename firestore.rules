@@ -88,7 +88,45 @@ service cloud.firestore {
           'registeredAt',
           'avatarSeed',
           'preferredCampusId'
-        ]);
+        ])
+        && profile.keys().hasAll(['id', 'name', 'role', 'registeredAt'])
+        && profile.id is string
+        && profile.id.size() > 0
+        && profile.id.size() <= 160
+        && profile.name is string
+        && profile.name.size() > 0
+        && profile.name.size() <= 160
+        && profile.role in ['estudante', 'docente', 'tecnico', 'terceirizado', 'visitante']
+        && profile.registeredAt is string
+        && profile.registeredAt.size() <= 80
+        && (!profile.keys().hasAny(['institutionId'])
+          || (profile.institutionId is string && profile.institutionId.size() > 0 && profile.institutionId.size() <= 100))
+        && (!profile.keys().hasAny(['documentNumber'])
+          || (profile.documentNumber is string && profile.documentNumber.size() <= 80))
+        && (!profile.keys().hasAny(['phone'])
+          || (profile.phone is string && profile.phone.size() <= 40))
+        && (!profile.keys().hasAny(['email'])
+          || (profile.email is string && profile.email.size() <= 254))
+        && (!profile.keys().hasAny(['emergencyContactName'])
+          || (profile.emergencyContactName is string && profile.emergencyContactName.size() <= 160))
+        && (!profile.keys().hasAny(['emergencyContactPhone'])
+          || (profile.emergencyContactPhone is string && profile.emergencyContactPhone.size() <= 40))
+        && (!profile.keys().hasAny(['emergencyContactRelation'])
+          || (profile.emergencyContactRelation is string && profile.emergencyContactRelation.size() <= 80))
+        && (!profile.keys().hasAny(['emergencyContacts'])
+          || (profile.emergencyContacts is list && profile.emergencyContacts.size() <= 5))
+        && (!profile.keys().hasAny(['department'])
+          || (profile.department is string && profile.department.size() <= 160))
+        && (!profile.keys().hasAny(['avatarSeed'])
+          || (profile.avatarSeed is string && profile.avatarSeed.size() <= 160))
+        && (!profile.keys().hasAny(['preferredCampusId'])
+          || profile.preferredCampusId in [
+            'campus_1_joao_pessoa',
+            'campus_2_areia',
+            'campus_3_bananeiras',
+            'campus_4_litoral_norte',
+            'campus_5_mangabeira'
+          ]);
     }
 
     function hasValidAlertIdentity(data) {
