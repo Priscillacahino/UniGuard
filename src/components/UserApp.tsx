@@ -581,7 +581,7 @@ export const UserApp: React.FC<UserAppProps> = ({
               </span>
             </div>
             <p className="text-amber-100 leading-relaxed font-medium">
-              Sua telemetria GPS e registros de emergência serão retidos no armazenamento seguro local. Caso precise de auxílio imediato, utilize o botão de ligação direta abaixo para contatar a Segurança UFPB (153) ou Polícia Militar (190) via linha telefônica.
+              Enquanto a internet estiver indisponível, recursos que dependem da central podem não funcionar. Em uma emergência real, use os meios de contato disponíveis no dispositivo e os canais oficiais adequados à situação.
             </p>
           </div>
         </div>
@@ -590,7 +590,13 @@ export const UserApp: React.FC<UserAppProps> = ({
       {/* Overlay com Indicador de Carregamento Explícito para Envio do SOS */}
       {isTransmittingSos && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-100 flex flex-col items-center text-center space-y-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="sos-progress-title"
+            aria-live="polite"
+            className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-100 flex flex-col items-center text-center space-y-4"
+          >
             <div className="w-16 h-16 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center shadow-inner relative">
               <Loader2 className="w-8 h-8 animate-spin text-red-600" />
               <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
@@ -600,7 +606,7 @@ export const UserApp: React.FC<UserAppProps> = ({
             </div>
 
             <div className="space-y-1">
-              <h3 className="text-lg font-extrabold text-slate-900">Transmitindo SOS de Emergência</h3>
+              <h3 id="sos-progress-title" className="text-lg font-extrabold text-slate-900">Transmitindo SOS de Emergência</h3>
               <p className="text-xs text-slate-500 font-medium">
                 Por favor, não feche o aplicativo enquanto conectamos a equipe.
               </p>
@@ -612,7 +618,14 @@ export const UserApp: React.FC<UserAppProps> = ({
                 <span>{sosProgressPercent}% Concluído</span>
                 <span className="text-red-600 font-semibold uppercase tracking-wider text-[10px]">Urgência Máxima</span>
               </div>
-              <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden border border-slate-200">
+              <div
+                role="progressbar"
+                aria-label="Progresso do envio do SOS"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={sosProgressPercent}
+                className="w-full bg-slate-100 rounded-full h-3 overflow-hidden border border-slate-200"
+              >
                 <div
                   className="bg-gradient-to-r from-red-600 to-amber-500 h-3 rounded-full transition-all duration-300"
                   style={{ width: `${sosProgressPercent}%` }}
