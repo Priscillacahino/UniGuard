@@ -223,10 +223,6 @@ service cloud.firestore {
           || data.isInSafeZone is bool)
         && (!data.keys().hasAny(['safeZoneName'])
           || (data.safeZoneName is string && data.safeZoneName.size() <= 160))
-        && (!data.keys().hasAny(['userRouteHistory'])
-          || (data.userRouteHistory is list && data.userRouteHistory.size() <= 500))
-        && (!data.keys().hasAny(['smsNotificationsSent'])
-          || (data.smsNotificationsSent is list && data.smsNotificationsSent.size() <= 20))
         && (!data.keys().hasAny(['photoUrl'])
           || (data.photoUrl is string && data.photoUrl.size() <= 4096))
         && (!data.keys().hasAny(['photoCapturedAt'])
@@ -288,8 +284,6 @@ service cloud.firestore {
           'signalLost',
           'lastSignalTimestamp',
           'batteryLevel',
-          'userRouteHistory',
-          'smsNotificationsSent',
           'source'
         ])
         && request.resource.data.id == alertId
@@ -323,8 +317,6 @@ service cloud.firestore {
           'signalLost',
           'lastSignalTimestamp',
           'batteryLevel',
-          'userRouteHistory',
-          'smsNotificationsSent',
           'assignedUnitId',
           'assignedUnitName',
           'securityNotes',
