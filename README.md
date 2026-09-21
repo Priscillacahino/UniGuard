@@ -1,8 +1,8 @@
 # 🛡️ UniGuard — Segurança Universitária Georreferenciada
 
-> **Versão acadêmica atual: v0.9.0 — pré-validação institucional.**
+> **Versão atual: v0.9.0 — pré-validação institucional.**
 >
-> **Protótipo acadêmico em desenvolvimento.** O UniGuard não possui integração oficial com a Universidade Federal da Paraíba (UFPB), seus sistemas institucionais, a Superintendência de Segurança, o SAMU ou a Polícia Militar. Usuários, alertas operacionais e fluxos de teste continuam demonstrativos. Já os **indicadores de contexto institucional** apresentados na documentação passam a utilizar dados públicos da CoMu/UFPB, sempre acompanhados de fonte e nota metodológica.
+> **Estágio do projeto: intermediário, em evolução para avançado.** O UniGuard não possui integração oficial com a Universidade Federal da Paraíba (UFPB), seus sistemas institucionais, a Superintendência de Segurança, o SAMU ou a Polícia Militar. Usuários, alertas operacionais e fluxos de teste continuam demonstrativos. Já os **indicadores de contexto institucional** apresentados na documentação passam a utilizar dados públicos da CoMu/UFPB, sempre acompanhados de fonte e nota metodológica.
 
 O **UniGuard** é uma proposta de solução digital voltada ao apoio da segurança de estudantes, docentes e servidores em ambientes universitários. O projeto combina aplicativo Android, aplicação web, geolocalização, acionamento de SOS, painel de acompanhamento, integração opcional com Firebase, documentação de segurança, modelagem de dados e artefatos demonstrativos.
 
@@ -176,7 +176,7 @@ A proposta busca facilitar o pedido de ajuda e permitir que a equipe responsáve
 
 ## 🚧 O que ainda depende de validação ou evolução
 
-Antes de qualquer piloto institucional, ainda são necessários, entre outros pontos:
+No estágio atual, as principais pendências estão concentradas na **validação integrada e operacional** dos componentes já desenvolvidos. Antes de qualquer piloto institucional, ainda são necessários, entre outros pontos:
 
 - validação ponta a ponta Android → Firebase → Central;
 - validação E2E no projeto Firebase real;
@@ -379,7 +379,9 @@ Não utilize dados pessoais reais durante testes públicos deste protótipo.
 
 ## 📌 Status do projeto
 
-**Protótipo acadêmico avançado / MVP demonstrativo em desenvolvimento.** O repositório apresenta diferentes camadas da solução, controles de segurança e documentação técnica, mas ainda não representa um serviço de emergência disponível para uso real.
+**Estágio intermediário, em evolução para avançado — v0.9.0, pré-validação institucional.** O repositório apresenta diferentes camadas da solução, funcionalidades implementadas, controles de segurança, testes automatizados e documentação técnica. As principais pendências atuais concentram-se na validação integrada e operacional. O projeto ainda não representa um serviço de emergência disponível para uso real.
+
+> **Importante:** neste repositório, uma funcionalidade marcada como implementada indica que há suporte correspondente no projeto. Isso não equivale automaticamente a validação ponta a ponta, homologação institucional ou prontidão para produção.
 
 ---
 
