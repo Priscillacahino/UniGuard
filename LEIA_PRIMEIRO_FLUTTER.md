@@ -40,18 +40,20 @@ Compilação Kotlin padrão: `gradlew.bat :app:assembleDebug` (Windows).
 Para comparar tamanho, copie o APK padrão antes de compilar a POC: ambos usam o mesmo caminho de saída.
 Para manter o build Android somente Kotlin, não use `-PUNIGUARD_FLUTTER_POC=true`. A `main` permanece inalterada até revisão e aprovação do PR.
 
-## Validação ainda necessária
-1. Aguardar e confirmar no CI a compilação do build Kotlin padrão e do opt-in.
-2. Confirmar no CI a aprovação de flutter analyze e dos cinco testes preparados; baixar os logs publicados como artefato.
-3. Abrir "Histórico demonstrativo", conferir os três registros e o aviso de simulação.
-4. Atualizar, voltar pela seta e pelo botão Android, reabrir, girar a tela e retomar do segundo plano.
-5. Testar tela estreita, fonte ampliada, TalkBack e ausência de rede.
-6. Comparar APKs, tempo de primeira abertura e memória; não há medições nesta entrega.
-7. Validar ausência de regressão do fluxo Kotlin em ambiente controlado, sem enviar pedidos reais.
-8. Antes de dados reais: projetar leitura autenticada por usuário/instituição, revalidar sessão,
-   tratar revogação e offline, testar regras Firebase e impedir exposição cruzada.
-9. Antes de distribuição: compilar release com shrinking e validar instalação/retorno em dispositivo.
+## Validação automatizada concluída
 
+A execução [38623377657](https://github.com/Priscillacahino/UniGuard/actions/runs/38623377657) passou em todos os jobs do CI: backend, web, Android + Flutter add-to-app, Firebase Emulator e Android. No job Android + Flutter foram aprovados o flutter analyze, os cinco testes Flutter, a geração dos AARs e os builds Kotlin padrão e Flutter (debug/release).
+
+Artefatos da execução, incluindo APKs e logs comparativos: [uniguard-flutter-poc-validation](https://github.com/Priscillacahino/UniGuard/actions/runs/38623377657).
+
+## Validação manual e evolução ainda necessárias
+1. Abrir "Histórico demonstrativo", conferir os três registros e o aviso de simulação.
+2. Atualizar, voltar pela seta e pelo botão Android, reabrir, girar a tela e retomar do segundo plano.
+3. Testar tela estreita, fonte ampliada, TalkBack e ausência de rede.
+4. Comparar APKs, tempo de primeira abertura e memória; não há medições nesta entrega.
+5. Validar ausência de regressão do fluxo Kotlin em ambiente controlado, sem enviar pedidos reais.
+6. Antes de dados reais: projetar leitura autenticada por usuário/instituição, revalidar sessão, tratar revogação e offline, testar regras Firebase e impedir exposição cruzada.
+7. Antes de distribuição: compilar release com shrinking e validar instalação/retorno em dispositivo.
 ## Estado correto para apresentação
 "UniGuard utiliza Kotlin no Android e React/TypeScript na web. Uma prova de conceito Flutter e Dart, integrada ao Android pelo modelo add-to-app para demonstrar o histórico, está em revisão.
 Os testes automatizados são executados no CI do PR; a validação em dispositivo e qualquer uso com dados reais seguem pendentes."
