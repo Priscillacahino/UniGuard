@@ -70,13 +70,18 @@ expected = repo / 'com/priscillacahino/uniguardpoc/uniguard_history/flutter_debu
 if not expected.exists():
     sys.exit('Coordenadas AAR inesperadas. Consulte a saída de build-aar.')
 gradle = [str(ROOT / 'gradlew.bat')] if os.name == 'nt' else ['bash', str(ROOT / 'gradlew')]
+poc_gradle = gradle + [
+    '-PUNIGUARD_FLUTTER_POC=true',
+    '-Pandroid.enableJetifier=false',
+    '-Dorg.gradle.jvmargs=-Xmx4g -Dfile.encoding=UTF-8',
+]
 if args.compare:
     run(gradle + ['-PUNIGUARD_FLUTTER_POC=false', ':app:assembleDebug'], ROOT, 'android-native')
     shutil.copy2(ROOT / 'app/build/outputs/apk/debug/app-debug.apk', OUTPUT / 'uniguard-native-debug.apk')
-run(gradle + ['-PUNIGUARD_FLUTTER_POC=true', ':app:assembleDebug'], ROOT, 'android-poc')
+run(poc_gradle + [':app:assembleDebug'], ROOT, 'android-poc')
 shutil.copy2(ROOT / 'app/build/outputs/apk/debug/app-debug.apk', OUTPUT / 'uniguard-flutter-poc-debug.apk')
 if args.compare:
-    run(gradle + ['-PUNIGUARD_FLUTTER_POC=true', ':app:assembleRelease'], ROOT, 'android-poc-release')
+    run(poc_gradle + [':app:assembleRelease'], ROOT, 'android-poc-release')
     sizes = {p.name: p.stat().st_size for p in OUTPUT.glob('*.apk')}
     (OUTPUT / 'apk-sizes.json').write_text(json.dumps(sizes, indent=2), encoding='utf-8')
 print('APK de teste: .poc_build/results/uniguard-flutter-poc-debug.apk')
