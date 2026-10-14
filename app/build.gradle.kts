@@ -5,6 +5,8 @@ plugins {
 
 // O projeto continua compilando em modo demonstração antes da inclusão do
 // google-services.json. Ao adicionar o arquivo do Firebase, a integração é ativada.
+val flutterPocEnabled = providers.gradleProperty("UNIGUARD_FLUTTER_POC").orNull == "true"
+
 if (file("google-services.json").exists() &&
     providers.gradleProperty("UNIGUARD_FLUTTER_POC").orNull != "true") {
     apply(plugin = "com.google.gms.google-services")
@@ -12,7 +14,7 @@ if (file("google-services.json").exists() &&
 
 android {
     namespace = "com.priscillacahino.uniguard"
-    compileSdk = 35
+    compileSdk = if (flutterPocEnabled) 36 else 35
 
     defaultConfig {
         applicationId = "com.priscillacahino.uniguard"
@@ -90,7 +92,6 @@ dependencies {
 }
 
 // Prova de conceito opt-in; o build padrão permanece Kotlin.
-val flutterPocEnabled = providers.gradleProperty("UNIGUARD_FLUTTER_POC").orNull == "true"
 android {
     buildFeatures { buildConfig = true }
     defaultConfig {

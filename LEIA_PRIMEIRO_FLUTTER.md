@@ -2,7 +2,7 @@
 
 **Prova de conceito para revisão por pull request. Ainda não integrada à branch principal nem validada em dispositivo.**
 Base: main, commit 2fae8a064846e3baec6f0163da61c90e1b4bfde3, consultado em 14/10/2026.
-O build opt-in usa identificador Android próprio (`.flutterpoc`) e nome `UniGuard POC`.
+O build opt-in usa identificador Android próprio (`.flutterpoc`) e nome `UniGuard POC`. Para atender ao AAR do Flutter, somente essa variante compila contra API 36; o build Kotlin padrão continua em API 35 e o `minSdk` permanece 24.
 O código está nesta branch de revisão; o fluxo de CI executa a análise, os testes Flutter e builds Kotlin/Flutter comparativos.
 
 ## O que foi preparado
