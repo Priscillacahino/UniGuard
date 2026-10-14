@@ -22,12 +22,12 @@ Pré-requisitos: Flutter 3.47.7 estável no PATH, Android SDK e JDK 21. Execute 
 
 ```powershell
 # Validação completa e comparação dos APKs:
-.\\scripts\\build_flutter_poc.ps1 -Compare
+.\scripts\build_flutter_poc.ps1 -Compare
 ```
 
-Para executar apenas a análise e os testes Flutter, sem Android SDK, use `.\\scripts\\build_flutter_poc.ps1 -CheckOnly`. No Linux/macOS, use o script Python indicado abaixo.
+Para executar apenas a análise e os testes Flutter, sem Android SDK, use `.\scripts\build_flutter_poc.ps1 -CheckOnly`. No Linux/macOS, use o script Python indicado abaixo.
 O script cria o invólucro Android do módulo pelo próprio Flutter, executa análise e testes, gera AARs e compila APKs de debug e release.
-Interrompe em caso de erro. Não instala APKs automaticamente e não executa Git. Os APKs e logs ficam em `.poc_build\\results`.
+Interrompe em caso de erro. Não instala APKs automaticamente e não executa Git. Os APKs e logs ficam em `.poc_build\results`.
 O SDK e as dependências exigem internet. Versões efetivas aparecem na saída de flutter --version e flutter doctor.
 O build opt-in acrescenta o sufixo `.flutterpoc` ao `applicationId`, para instalar em paralelo com o UniGuard.
 Instale o APK somente em emulador ou aparelho de teste.
@@ -43,7 +43,7 @@ Para manter o build Android somente Kotlin, não use `-PUNIGUARD_FLUTTER_POC=tru
 
 ## Validação automatizada concluída
 
-A execução mais recente aprovada pode ser consultada na [página de execuções do CI desta branch](https://github.com/Priscillacahino/UniGuard/actions/workflows/ci.yml?query=branch%3Afeat%2Fflutter-add-to-app-history-poc). Na execução registrada para o commit atual, passaram os cinco jobs: backend, web, Android + Flutter add-to-app, Firebase Emulator e Android. No job Android + Flutter foram aprovados o flutter analyze, os cinco testes Flutter, a geração dos AARs e os builds Kotlin padrão e Flutter (debug/release).
+A execução mais recente aprovada pode ser consultada na [página de execuções do CI desta branch](https://github.com/Priscillacahino/UniGuard/actions/workflows/ci.yml?query=branch%3Afeat%2Fflutter-add-to-app-history-poc). Na execução registrada para o commit atual, passaram os seis jobs: backend, web, Android + Flutter add-to-app, Firebase Emulator e Android. Nos jobs Android + Flutter e Windows PowerShell foram aprovados o flutter analyze, os cinco testes Flutter, a geração dos AARs e os builds Kotlin padrão e Flutter (debug/release).
 
 Os APKs e logs comparativos estão nos artefatos da execução correspondente, disponível nessa mesma página do CI.
 
