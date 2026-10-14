@@ -18,21 +18,22 @@ O módulo NÃO consulta Firebase, não recebe credenciais e não cria alertas. A
 A POC não deve enviar SMS nem alertas: o acionamento SOS é bloqueado explicitamente nesse build.
 
 ## Como executar no Windows
-Pré-requisitos: Flutter 3.47.7 estável no PATH, Android SDK, JDK 21 e Python 3. Execute na raiz do checkout desta branch.
+Pré-requisitos: Flutter 3.47.7 estável no PATH, Android SDK e JDK 21. Execute na raiz do checkout desta branch. No Windows, use o script PowerShell, que não exige Python:
 
 ```powershell
-# Na raiz do repositório:
-python scripts/build_flutter_poc.py
+# Validação completa e comparação dos APKs:
+.\\scripts\\build_flutter_poc.ps1 -Compare
 ```
 
-O script cria o invólucro Android do módulo pelo próprio Flutter, executa análise e testes, gera AARs e compila o APK de debug.
-Interrompe em caso de erro. Não instala o APK automaticamente e não executa Git.
+Para executar apenas a análise e os testes Flutter, sem Android SDK, use `.\\scripts\\build_flutter_poc.ps1 -CheckOnly`. No Linux/macOS, use o script Python indicado abaixo.
+O script cria o invólucro Android do módulo pelo próprio Flutter, executa análise e testes, gera AARs e compila APKs de debug e release.
+Interrompe em caso de erro. Não instala APKs automaticamente e não executa Git. Os APKs e logs ficam em `.poc_build\\results`.
 O SDK e as dependências exigem internet. Versões efetivas aparecem na saída de flutter --version e flutter doctor.
 O build opt-in acrescenta o sufixo `.flutterpoc` ao `applicationId`, para instalar em paralelo com o UniGuard.
 Instale o APK somente em emulador ou aparelho de teste.
-APK esperado: `app/build/outputs/apk/debug/app-debug.apk`.
+APK de teste esperado: `.poc_build/results/uniguard-flutter-poc-debug.apk`.
 
-No Linux/macOS: `python3 scripts/build_flutter_poc.py`.
+No Linux/macOS: `python3 scripts/build_flutter_poc.py --compare`.
 
 ## Comparação e reversão
 Sem `-PUNIGUARD_FLUTTER_POC=true`, não entram Activity, layout ou dependências Flutter.
