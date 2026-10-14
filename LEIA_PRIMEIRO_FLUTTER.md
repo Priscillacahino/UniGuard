@@ -42,9 +42,9 @@ Para manter o build Android somente Kotlin, não use `-PUNIGUARD_FLUTTER_POC=tru
 
 ## Validação automatizada concluída
 
-A execução [38623377657](https://github.com/Priscillacahino/UniGuard/actions/runs/38623377657) passou em todos os jobs do CI: backend, web, Android + Flutter add-to-app, Firebase Emulator e Android. No job Android + Flutter foram aprovados o flutter analyze, os cinco testes Flutter, a geração dos AARs e os builds Kotlin padrão e Flutter (debug/release).
+A execução mais recente aprovada pode ser consultada na [página de execuções do CI desta branch](https://github.com/Priscillacahino/UniGuard/actions/workflows/ci.yml?query=branch%3Afeat%2Fflutter-add-to-app-history-poc). Na execução registrada para o commit atual, passaram os cinco jobs: backend, web, Android + Flutter add-to-app, Firebase Emulator e Android. No job Android + Flutter foram aprovados o flutter analyze, os cinco testes Flutter, a geração dos AARs e os builds Kotlin padrão e Flutter (debug/release).
 
-Artefatos da execução, incluindo APKs e logs comparativos: [uniguard-flutter-poc-validation](https://github.com/Priscillacahino/UniGuard/actions/runs/38623377657).
+Os APKs e logs comparativos estão nos artefatos da execução correspondente, disponível nessa mesma página do CI.
 
 ## Validação manual e evolução ainda necessárias
 1. Abrir "Histórico demonstrativo", conferir os três registros e o aviso de simulação.
@@ -54,6 +54,7 @@ Artefatos da execução, incluindo APKs e logs comparativos: [uniguard-flutter-p
 5. Validar ausência de regressão do fluxo Kotlin em ambiente controlado, sem enviar pedidos reais.
 6. Antes de dados reais: projetar leitura autenticada por usuário/instituição, revalidar sessão, tratar revogação e offline, testar regras Firebase e impedir exposição cruzada.
 7. Antes de distribuição: compilar release com shrinking e validar instalação/retorno em dispositivo.
+
 ## Estado correto para apresentação
 "UniGuard utiliza Kotlin no Android e React/TypeScript na web. Flutter/Dart está presente em uma prova de conceito add-to-app que demonstra uma tela de histórico com dados fictícios. A POC não substitui o aplicativo Kotlin."
 Os testes automatizados passam no CI do PR; validação em dispositivo, acessibilidade e desempenho seguem pendentes. A POC não representa Flutter em produção nem uma migração completa para multiplataforma.
