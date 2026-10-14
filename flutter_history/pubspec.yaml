@@ -1,0 +1,18 @@
+name: uniguard_history
+description: Histórico demonstrativo Flutter incorporado ao UniGuard Kotlin.
+publish_to: none
+version: 1.0.0+1
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+flutter:
+  uses-material-design: true
+  module:
+    androidX: true
+    androidPackage: com.priscillacahino.uniguardpoc.uniguard_history
+    iosBundleIdentifier: com.priscillacahino.uniguardpoc.uniguardHistory

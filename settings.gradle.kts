@@ -19,6 +19,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        if (providers.gradleProperty("UNIGUARD_FLUTTER_POC").orNull == "true") {
+            maven { url = uri("https://storage.googleapis.com/download.flutter.io") }
+            maven { url = uri("flutter_history/build/host/outputs/repo") }
+        }
     }
 }
 

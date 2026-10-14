@@ -25,3 +25,10 @@ local.properties
 *.pem
 service-account*.json
 firebase-adminsdk*.json
+
+# Prova de conceito Flutter (artefatos gerados)
+.poc_build/
+flutter_history/.android/
+flutter_history/.ios/
+flutter_history/.dart_tool/
+flutter_history/build/

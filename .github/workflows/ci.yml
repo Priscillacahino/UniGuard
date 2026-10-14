@@ -124,6 +124,49 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+  android-flutter-poc:
+    name: Android + Flutter add-to-app — análise, testes e builds de comparação
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Configurar Flutter estável
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.7'
+          channel: stable
+          cache: true
+          cache-dependency-path: flutter_history/pubspec.yaml
+
+      - name: Autorizar Gradle Wrapper
+        run: chmod +x gradlew
+
+      - name: Analisar, testar e compilar builds nativo e Flutter
+        run: python3 scripts/build_flutter_poc.py --compare
+
+      - name: Publicar APKs e logs de comparação
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: uniguard-flutter-poc-validation
+          path: .poc_build/results/
+          if-no-files-found: ignore
+          retention-days: 7
+
   firebase-rules:
     name: Firebase — regras no Emulator
     runs-on: ubuntu-latest
