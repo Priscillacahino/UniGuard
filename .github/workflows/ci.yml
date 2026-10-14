@@ -166,6 +166,28 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+  windows-flutter-check:
+    name: Windows — PowerShell Flutter sem Python
+    runs-on: windows-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Configurar Flutter estável
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.7'
+          channel: stable
+          cache: true
+
+      - name: Analisar e testar Flutter com PowerShell
+        shell: pwsh
+        run: .\scripts\build_flutter_poc.ps1 -CheckOnly
+
   firebase-rules:
     name: Firebase — regras no Emulator
     runs-on: ubuntu-latest
