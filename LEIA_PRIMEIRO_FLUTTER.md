@@ -55,11 +55,8 @@ Artefatos da execução, incluindo APKs e logs comparativos: [uniguard-flutter-p
 6. Antes de dados reais: projetar leitura autenticada por usuário/instituição, revalidar sessão, tratar revogação e offline, testar regras Firebase e impedir exposição cruzada.
 7. Antes de distribuição: compilar release com shrinking e validar instalação/retorno em dispositivo.
 ## Estado correto para apresentação
-"UniGuard utiliza Kotlin no Android e React/TypeScript na web. Uma prova de conceito Flutter e Dart, integrada ao Android pelo modelo add-to-app para demonstrar o histórico, está em revisão.
-Os testes automatizados são executados no CI do PR; a validação em dispositivo e qualquer uso com dados reais seguem pendentes."
-
-O PDF principal continua correto ao apresentar Flutter como evolução proposta. Esta entrega não significa
-que Flutter já esteja em produção ou que o aplicativo completo seja multiplataforma.
+"UniGuard utiliza Kotlin no Android e React/TypeScript na web. Flutter/Dart está presente em uma prova de conceito add-to-app que demonstra uma tela de histórico com dados fictícios. A POC não substitui o aplicativo Kotlin."
+Os testes automatizados passam no CI do PR; validação em dispositivo, acessibilidade e desempenho seguem pendentes. A POC não representa Flutter em produção nem uma migração completa para multiplataforma.
 
 Fontes técnicas:
 - https://docs.flutter.dev/add-to-app
