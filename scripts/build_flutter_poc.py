@@ -66,7 +66,7 @@ repo = SOURCE / 'build' / 'host' / 'outputs' / 'repo'
 if repo.exists():
     shutil.rmtree(repo)
 shutil.copytree(GENERATED / 'build' / 'host' / 'outputs' / 'repo', repo)
-expected = repo / 'com/priscillacahino/uniguardpoc/uniguard_history/flutter_debug/1.0.0'
+expected = repo / 'com/priscillacahino/uniguardpoc/uniguard_history/flutter_debug/1.0'
 if not expected.exists():
     sys.exit('Coordenadas AAR inesperadas. Consulte a saída de build-aar.')
 gradle = [str(ROOT / 'gradlew.bat')] if os.name == 'nt' else ['bash', str(ROOT / 'gradlew')]

@@ -150,7 +150,6 @@ jobs:
           flutter-version: '3.47.7'
           channel: stable
           cache: true
-          cache-dependency-path: flutter_history/pubspec.yaml
 
       - name: Autorizar Gradle Wrapper
         run: chmod +x gradlew

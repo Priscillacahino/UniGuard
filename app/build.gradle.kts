@@ -112,7 +112,7 @@ android {
 }
 if (flutterPocEnabled) {
     dependencies {
-        add("debugImplementation", "com.priscillacahino.uniguardpoc.uniguard_history:flutter_debug:1.0.0")
-        add("releaseImplementation", "com.priscillacahino.uniguardpoc.uniguard_history:flutter_release:1.0.0")
+        add("debugImplementation", "com.priscillacahino.uniguardpoc.uniguard_history:flutter_debug:1.0")
+        add("releaseImplementation", "com.priscillacahino.uniguardpoc.uniguard_history:flutter_release:1.0")
     }
 }
