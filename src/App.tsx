@@ -100,6 +100,13 @@ function sanitizeProfile(profile: UserProfile): UserProfile {
   };
 }
 
+function sanitizeAlertProfile(profile: EmergencyAlert['userProfile']): EmergencyAlert['userProfile'] {
+  return {
+    ...profile,
+    institutionId: profile.institutionId || DEFAULT_INSTITUTION_ID,
+  };
+}
+
 export default function App() {
   // 1. Estados Globais do Usuário e Autenticação
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
@@ -368,7 +375,7 @@ export default function App() {
 
   // Handler para Envio de Alerta SOS pelo Usuário (já com foto capturada)
   const handleSendAlert = (newAlert: EmergencyAlert) => {
-    const safeProfile = sanitizeProfile({
+    const safeProfile = sanitizeAlertProfile({
       ...newAlert.userProfile,
       institutionId: userProfile.institutionId || DEFAULT_INSTITUTION_ID,
     });
