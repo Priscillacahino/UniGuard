@@ -82,6 +82,7 @@ class IntegratedSosActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sos)
+        HistoryEntry.bind(this) // POC opt-in; não modifica o fluxo de SOS.
         numberInput = findViewById(R.id.edtNumeroEmergencia)
         emailInput = findViewById(R.id.edtEmail)
         passwordInput = findViewById(R.id.edtSenha)
@@ -271,6 +272,10 @@ class IntegratedSosActivity : AppCompatActivity() {
     }
 
     private fun triggerSos() {
+        if (BuildConfig.FLUTTER_HISTORY_ENABLED) {
+            statusText.text = "Demonstração: o envio de alertas está desativado nesta POC."
+            return
+        }
         if (preferences.getString(KEY_NUMBER, "").isNullOrBlank()) {
             statusText.text = "Cadastre um número de emergência"
             return

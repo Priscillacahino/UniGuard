@@ -124,6 +124,70 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+  android-flutter-poc:
+    name: Android + Flutter add-to-app — análise, testes e builds de comparação
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Configurar Flutter estável
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.7'
+          channel: stable
+          cache: true
+
+      - name: Autorizar Gradle Wrapper
+        run: chmod +x gradlew
+
+      - name: Analisar, testar e compilar builds nativo e Flutter
+        run: python3 scripts/build_flutter_poc.py --compare
+
+      - name: Publicar APKs e logs de comparação
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: uniguard-flutter-poc-validation
+          path: .poc_build/results/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  windows-flutter-check:
+    name: Windows — PowerShell Flutter sem Python
+    runs-on: windows-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Configurar Flutter estável
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.7'
+          channel: stable
+          cache: true
+
+      - name: Analisar e testar Flutter com PowerShell
+        shell: pwsh
+        run: .\scripts\build_flutter_poc.ps1 -CheckOnly
+
   firebase-rules:
     name: Firebase — regras no Emulator
     runs-on: ubuntu-latest

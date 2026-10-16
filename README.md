@@ -1,5 +1,9 @@
 # 🛡️ UniGuard — Segurança Universitária Georreferenciada
 
+> **POC Flutter + Kotlin em revisão:** consulte [`LEIA_PRIMEIRO_FLUTTER.md`](LEIA_PRIMEIRO_FLUTTER.md).
+> A tela de histórico usa dados fictícios e fica isolada por build opt-in, com SOS bloqueado nesse build. O CI do PR executa a análise, os testes Flutter e builds comparativos; validação em dispositivo segue pendente.
+
+
 > **Versão atual: v0.9.0 — pré-validação institucional.**
 >
 > **Estágio do projeto: intermediário, em evolução para avançado.** O UniGuard não possui integração oficial com a Universidade Federal da Paraíba (UFPB), seus sistemas institucionais, a Superintendência de Segurança, o SAMU ou a Polícia Militar. Usuários, alertas operacionais e fluxos de teste continuam demonstrativos. Já os **indicadores de contexto institucional** apresentados na documentação passam a utilizar dados públicos da CoMu/UFPB, sempre acompanhados de fonte e nota metodológica.

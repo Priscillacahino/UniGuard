@@ -5,13 +5,16 @@ plugins {
 
 // O projeto continua compilando em modo demonstração antes da inclusão do
 // google-services.json. Ao adicionar o arquivo do Firebase, a integração é ativada.
-if (file("google-services.json").exists()) {
+val flutterPocEnabled = providers.gradleProperty("UNIGUARD_FLUTTER_POC").orNull == "true"
+
+if (file("google-services.json").exists() &&
+    providers.gradleProperty("UNIGUARD_FLUTTER_POC").orNull != "true") {
     apply(plugin = "com.google.gms.google-services")
 }
 
 android {
     namespace = "com.priscillacahino.uniguard"
-    compileSdk = 35
+    compileSdk = if (flutterPocEnabled) 36 else 35
 
     defaultConfig {
         applicationId = "com.priscillacahino.uniguard"
@@ -86,4 +89,31 @@ dependencies {
     implementation("com.google.firebase:firebase-functions")
     implementation("com.google.firebase:firebase-appcheck-playintegrity")
     debugImplementation("com.google.firebase:firebase-appcheck-debug")
+}
+
+// Prova de conceito opt-in; o build padrão permanece Kotlin.
+android {
+    buildFeatures { buildConfig = true }
+    defaultConfig {
+        buildConfigField("boolean", "FLUTTER_HISTORY_ENABLED", flutterPocEnabled.toString())
+        if (flutterPocEnabled) {
+            applicationIdSuffix = ".flutterpoc"
+            versionNameSuffix = "-flutter-poc"
+            ndk { abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64") }
+        }
+    }
+    if (flutterPocEnabled) {
+        sourceSets.getByName("debug").res.srcDir("src/flutterPoc/res")
+        sourceSets.getByName("release").res.srcDir("src/flutterPoc/res")
+    }
+    sourceSets.getByName("main") {
+        java.srcDir(if (flutterPocEnabled) "src/flutterPoc/java" else "src/nativeOnly/java")
+        if (flutterPocEnabled) manifest.srcFile("src/flutterPoc/AndroidManifest.xml")
+    }
+}
+if (flutterPocEnabled) {
+    dependencies {
+        add("debugImplementation", "com.priscillacahino.uniguardpoc.uniguard_history:flutter_debug:1.0")
+        add("releaseImplementation", "com.priscillacahino.uniguardpoc.uniguard_history:flutter_release:1.0")
+    }
 }
