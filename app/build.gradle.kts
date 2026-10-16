@@ -74,7 +74,7 @@ dependencies {
     implementation("com.google.android.material:material:1.10.0")
 
     // Módulo oficial de GPS para o botão SOS do UniGuard
-    implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation("com.google.android.gms:play-services-location:21.4.0")
 
     // Testes unitários básicos
     testImplementation("junit:junit:4.13.2")
