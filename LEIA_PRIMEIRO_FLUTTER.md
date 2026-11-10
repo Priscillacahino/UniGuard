@@ -1,9 +1,9 @@
 # UniGuard | Flutter + Kotlin - prova de conceito 0.1.0
 
-**Prova de conceito para revisão por pull request. Ainda não integrada à branch principal nem validada em dispositivo.**
-Base: main, commit 2fae8a064846e3baec6f0163da61c90e1b4bfde3, consultado em 14/10/2026.
+**Prova de conceito integrada à branch `main` em 16/10/2026; validação em dispositivo ainda pendente.**
+Base: commit `e9c9c2e035017fa9dc2d7e6468b347ec595bc14a` da `main`.
 O build opt-in usa identificador Android próprio (`.flutterpoc`) e nome `UniGuard POC`. Para atender ao AAR do Flutter, somente essa variante compila contra API 36; o build Kotlin padrão continua em API 35 e o `minSdk` permanece 24. Os builds POC usam Jetifier desativado e reservam 4 GB de heap ao daemon Gradle.
-O código está nesta branch de revisão; o fluxo de CI executa a análise, os testes Flutter e builds Kotlin/Flutter comparativos.
+O código está na `main` e permanece opt-in: o build Kotlin padrão não depende do Flutter. O CI executa análise, testes Flutter e builds Kotlin/Flutter comparativos.
 
 ## O que foi preparado
 - Módulo Flutter/Dart para histórico demonstrativo, com carregamento, vazio, erro, atualização e retorno.
@@ -18,14 +18,17 @@ O módulo NÃO consulta Firebase, não recebe credenciais e não cria alertas. A
 A POC não deve enviar SMS nem alertas: o acionamento SOS é bloqueado explicitamente nesse build.
 
 ## Como executar no Windows
-Pré-requisitos: Flutter 3.47.7 estável no PATH, Android SDK e JDK 21. Execute na raiz do checkout desta branch. No Windows, use o script PowerShell, que não exige Python:
+Pré-requisitos: Flutter 3.47.7 estável, Android SDK Platforms 35 e 36, Build-Tools 35.0.0, Command-line Tools e JDK 21. O projeto usa AGP 8.9.1 e Gradle 8.11.1 para suporte ao `compileSdk 36`. Execute na raiz do repositório. No Windows, prepare o ambiente e depois compare os APKs:
 
 ```powershell
-# Validação completa e comparação dos APKs:
+# Preparar SDK Android, licenças, JDK 21 e Flutter 3.47.7 em pasta separada:
+.\scripts\prepare_flutter_android_windows.ps1 -InstallFlutterCiVersion
+
+# Validar e comparar os APKs Kotlin e Flutter:
 .\scripts\build_flutter_poc.ps1 -Compare
 ```
 
-Para executar apenas a análise e os testes Flutter, sem Android SDK, use `.\scripts\build_flutter_poc.ps1 -CheckOnly`. No Linux/macOS, use o script Python indicado abaixo.
+Para executar apenas a análise e os testes Flutter, sem Android SDK, use `.\scripts\build_flutter_poc.ps1 -CheckOnly`. O script completo verifica a versão Flutter, JDK 21 e os pacotes Android necessários antes de iniciar a compilação. No Linux/macOS, use o script Python indicado abaixo.
 O script cria o invólucro Android do módulo pelo próprio Flutter, executa análise e testes, gera AARs e compila APKs de debug e release.
 Interrompe em caso de erro. Não instala APKs automaticamente e não executa Git. Os APKs e logs ficam em `.poc_build\results`.
 O SDK e as dependências exigem internet. Versões efetivas aparecem na saída de flutter --version e flutter doctor.
@@ -39,13 +42,13 @@ No Linux/macOS: `python3 scripts/build_flutter_poc.py --compare`.
 Sem `-PUNIGUARD_FLUTTER_POC=true`, não entram Activity, layout ou dependências Flutter.
 Compilação Kotlin padrão: `gradlew.bat :app:assembleDebug` (Windows).
 Para comparar tamanho, copie o APK padrão antes de compilar a POC: ambos usam o mesmo caminho de saída.
-Para manter o build Android somente Kotlin, não use `-PUNIGUARD_FLUTTER_POC=true`. A `main` permanece inalterada até revisão e aprovação do PR.
+Para manter o build Android somente Kotlin, não use `-PUNIGUARD_FLUTTER_POC=true`. A integração está na `main`, mas permanece desativada por padrão.
 
 ## Validação automatizada concluída
 
-A execução mais recente aprovada pode ser consultada na [página de execuções do CI desta branch](https://github.com/Priscillacahino/UniGuard/actions/workflows/ci.yml?query=branch%3Afeat%2Fflutter-add-to-app-history-poc). Na execução registrada para o commit atual, passaram os seis jobs: backend, web, Android + Flutter add-to-app, Firebase Emulator e Android. Nos jobs Android + Flutter e Windows PowerShell foram aprovados o flutter analyze, os cinco testes Flutter, a geração dos AARs e os builds Kotlin padrão e Flutter (debug/release).
+A execução automatizada aprovada em outubro/2026 validou o Flutter 3.47.7, os cinco testes Flutter, a geração dos AARs e os builds Kotlin padrão e Flutter (debug/release). Esta branch atualiza AGP/Gradle/Kotlin para compatibilidade com API 36; a nova combinação precisa passar novamente pelo CI antes de ser incorporada.
 
-Os APKs e logs comparativos estão nos artefatos da execução correspondente, disponível nessa mesma página do CI.
+Consulte os resultados desta atualização em [GitHub Actions](https://github.com/Priscillacahino/UniGuard/actions/workflows/ci.yml?query=branch%3Achore%2Fflutter-sdk-gradle-api36).
 
 ## Validação manual e evolução ainda necessárias
 1. Abrir "Histórico demonstrativo", conferir os três registros e o aviso de simulação.
