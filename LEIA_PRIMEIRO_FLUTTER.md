@@ -18,7 +18,7 @@ O módulo NÃO consulta Firebase, não recebe credenciais e não cria alertas. A
 A POC não deve enviar SMS nem alertas: o acionamento SOS é bloqueado explicitamente nesse build.
 
 ## Como executar no Windows
-Pré-requisitos: Flutter 3.47.7 estável, Android SDK Platforms 35 e 36, Build-Tools 35.0.0, Command-line Tools e JDK 21. O projeto usa AGP 8.9.1 e Gradle 8.11.1 para suporte ao `compileSdk 36`. Execute na raiz do repositório. No Windows, prepare o ambiente e depois compare os APKs:
+Pré-requisitos: Flutter 3.47.7 estável, Android SDK Platforms 35 e 36, Build-Tools 35.0.0, Command-line Tools e JDK 21. O projeto usa AGP 8.9.1 e Gradle 8.11.1 para suporte ao `compileSdk 36`. Para abrir/sincronizar no Android Studio, use Meerkat 2024.3.1 Patch 1 ou mais recente. Execute na raiz do repositório. No Windows, prepare o ambiente e depois compare os APKs:
 
 ```powershell
 # Preparar SDK Android, licenças, JDK 21 e Flutter 3.47.7 em pasta separada:
