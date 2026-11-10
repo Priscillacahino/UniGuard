@@ -226,16 +226,41 @@ elseif ($env:UNIGUARD_FLUTTER_HOME -and (Test-Path (Join-Path $env:UNIGUARD_FLUT
     $FlutterHome = $env:UNIGUARD_FLUTTER_HOME
 }
 else {
-    $flutterCommand = Get-Command flutter -ErrorAction SilentlyContinue
-    if ($flutterCommand) {
-        $FlutterHome = Split-Path (Split-Path $flutterCommand.Source -Parent) -Parent
-        $flutterVersion = (& $flutterCommand.Source --version 2>&1 | Out-String)
-        if ($flutterVersion -match 'Flutter 3\.47\.7\b') {
-            $env:UNIGUARD_FLUTTER_HOME = $FlutterHome
-            [Environment]::SetEnvironmentVariable('UNIGUARD_FLUTTER_HOME', $FlutterHome, 'User')
+    # Procura primeiro instalações paralelas comuns antes de baixar novamente o SDK de 1,8 GB.
+    $knownFlutterHomes = @(
+        'C:\src\flutter-3.47.7',
+        'C:\src\flutter-ci-3.47.7',
+        (Join-Path $env:USERPROFILE 'develop\flutter-3.47.7'),
+        (Join-Path $env:USERPROFILE 'Downloads\flutter-3.47.7')
+    )
+    foreach ($candidateHome in $knownFlutterHomes) {
+        $candidateFlutter = Join-Path $candidateHome 'bin\flutter.bat'
+        if (-not (Test-Path $candidateFlutter)) { continue }
+        $candidateVersion = (& $candidateFlutter --version 2>&1 | Out-String)
+        if ($candidateVersion -match 'Flutter 3\.47\.7\b') {
+            $FlutterHome = $candidateHome
+            break
         }
-        else {
-            Write-Warning 'Flutter 3.47.7 não foi localizado no PATH. O SDK Android será preparado, mas para reproduzir o CI execute este script novamente com -InstallFlutterCiVersion.'
+    }
+
+    if ($FlutterHome) {
+        $env:UNIGUARD_FLUTTER_HOME = $FlutterHome
+        [Environment]::SetEnvironmentVariable('UNIGUARD_FLUTTER_HOME', $FlutterHome, 'User')
+    }
+    else {
+        $flutterCommand = Get-Command flutter -ErrorAction SilentlyContinue
+        if ($flutterCommand) {
+            $currentFlutterHome = Split-Path (Split-Path $flutterCommand.Source -Parent) -Parent
+            $flutterVersion = (& $flutterCommand.Source --version 2>&1 | Out-String)
+            if ($flutterVersion -match 'Flutter 3\.47\.7\b') {
+                $FlutterHome = $currentFlutterHome
+                $env:UNIGUARD_FLUTTER_HOME = $FlutterHome
+                [Environment]::SetEnvironmentVariable('UNIGUARD_FLUTTER_HOME', $FlutterHome, 'User')
+            }
+            else {
+                $FlutterHome = $currentFlutterHome
+                Write-Warning 'Flutter 3.47.7 não foi localizado. O SDK Android será preparado, mas para reproduzir o CI execute este script novamente com -InstallFlutterCiVersion.'
+            }
         }
     }
 }
