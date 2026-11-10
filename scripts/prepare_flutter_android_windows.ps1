@@ -148,6 +148,7 @@ if (-not $androidCommand) {
     throw 'Android CLI foi instalado, mas o executável android não apareceu no PATH. Feche e reabra o PowerShell e execute novamente.'
 }
 Write-Host "Android CLI: $($androidCommand.Source)"
+Invoke-Checked -Executable $androidCommand.Source -Arguments @('update') -Label 'Atualização do Android CLI'
 
 # O SDK manager oficial atual usa android sdk install (não sdkmanager --install).
 $packages = @(
@@ -217,6 +218,7 @@ if ($InstallFlutterCiVersion) {
         New-Item -ItemType Directory -Force -Path (Split-Path $FlutterHome -Parent) | Out-Null
         Move-Item -LiteralPath $extracted -Destination $FlutterHome
         Remove-Item -LiteralPath $staging -Recurse -Force
+        Remove-Item -LiteralPath $archive -Force
     }
 
     $env:UNIGUARD_FLUTTER_HOME = $FlutterHome
@@ -285,10 +287,12 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host ''
 Write-Host '>>> Diagnóstico final Flutter' -ForegroundColor Cyan
-& $Flutter doctor -v
-$doctorExit = $LASTEXITCODE
-if ($doctorExit -ne 0) {
-    Write-Warning 'flutter doctor apontou outras pendências. Confira principalmente a seção Android toolchain; o aviso de Visual Studio C++ não bloqueia a compilação Android.'
+$doctorLines = @(& $Flutter doctor -v 2>&1)
+$doctorLines | Out-Host
+$doctorText = [string]::Join([Environment]::NewLine, [string[]]$doctorLines)
+$androidToolchainLine = $doctorLines | Where-Object { "$_" -match 'Android toolchain - develop for Android devices' } | Select-Object -First 1
+if (-not $androidToolchainLine -or "$androidToolchainLine" -match '\[✗\]|\[!\]') {
+    throw 'O Flutter ainda não reconhece o Android SDK como ferramenta pronta. Consulte o bloco Android toolchain acima antes de compilar.'
 }
 
 Write-Host ''
