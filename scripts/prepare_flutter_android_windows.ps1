@@ -186,6 +186,9 @@ if ($InstallFlutterCiVersion) {
     $FlutterHome = 'C:\src\flutter-3.47.7'
     $flutterExe = Join-Path $FlutterHome 'bin\flutter.bat'
     if (-not (Test-Path $flutterExe)) {
+        if (Test-Path $FlutterHome) {
+            throw "A pasta $FlutterHome já existe, mas não contém bin\flutter.bat. Renomeie-a antes de instalar; o script não apagará conteúdo existente."
+        }
         $driveRoot = [System.IO.Path]::GetPathRoot($FlutterHome)
         $drive = [System.IO.DriveInfo]::new($driveRoot)
         if ($drive.AvailableFreeSpace -lt 8GB) {
@@ -214,13 +217,16 @@ if ($InstallFlutterCiVersion) {
         if (-not (Test-Path (Join-Path $extracted 'bin\flutter.bat'))) {
             throw 'O pacote Flutter foi extraído, mas a estrutura esperada não foi encontrada.'
         }
-        if (Test-Path $FlutterHome) { Remove-Item -LiteralPath $FlutterHome -Recurse -Force }
         New-Item -ItemType Directory -Force -Path (Split-Path $FlutterHome -Parent) | Out-Null
         Move-Item -LiteralPath $extracted -Destination $FlutterHome
         Remove-Item -LiteralPath $staging -Recurse -Force
         Remove-Item -LiteralPath $archive -Force
     }
 
+    $installedFlutterVersion = (& $flutterExe --version 2>&1 | Out-String)
+    if ($installedFlutterVersion -notmatch 'Flutter 3\.47\.7\b') {
+        throw "A instalação em $FlutterHome não é Flutter 3.47.7. O script não substituirá essa pasta."
+    }
     $env:UNIGUARD_FLUTTER_HOME = $FlutterHome
     [Environment]::SetEnvironmentVariable('UNIGUARD_FLUTTER_HOME', $FlutterHome, 'User')
 }
