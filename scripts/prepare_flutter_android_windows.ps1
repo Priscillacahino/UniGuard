@@ -291,7 +291,9 @@ $doctorLines = @(& $Flutter doctor -v 2>&1)
 $doctorLines | Out-Host
 $doctorText = [string]::Join([Environment]::NewLine, [string[]]$doctorLines)
 $androidToolchainLine = $doctorLines | Where-Object { "$_" -match 'Android toolchain - develop for Android devices' } | Select-Object -First 1
-if (-not $androidToolchainLine -or "$androidToolchainLine" -match '\[✗\]|\[!\]') {
+$androidToolchainText = [string]$androidToolchainLine
+$androidToolchainFailed = (-not $androidToolchainLine) -or ($androidToolchainText -match '\[!\]') -or $androidToolchainText.Contains([char]10007)
+if ($androidToolchainFailed) {
     throw 'O Flutter ainda não reconhece o Android SDK como ferramenta pronta. Consulte o bloco Android toolchain acima antes de compilar.'
 }
 
