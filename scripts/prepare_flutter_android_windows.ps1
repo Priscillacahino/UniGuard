@@ -59,8 +59,20 @@ function Get-Java21Home {
     foreach ($candidateJavaHome in ($candidates | Select-Object -Unique)) {
         $java = Join-Path $candidateJavaHome 'bin\java.exe'
         if (-not (Test-Path $java)) { continue }
-        $versionText = (& $java -version 2>&1 | Out-String)
-        if ($versionText -match 'version\s+"21(?:\.|")|openjdk\s+21') {
+        # java -version writes to stderr. Keep that expected output from
+        # becoming a terminating PowerShell error when ErrorActionPreference=Stop.
+        $previousErrorActionPreference = $ErrorActionPreference
+        try {
+            $ErrorActionPreference = 'Continue'
+            $versionOutput = & $java -version 2>&1
+            $javaVersionExitCode = $LASTEXITCODE
+        }
+        finally {
+            $ErrorActionPreference = $previousErrorActionPreference
+        }
+
+        $versionText = $versionOutput | Out-String
+        if ($javaVersionExitCode -eq 0 -and $versionText -match 'version\s+"21(?:\.|")|openjdk\s+21') {
             return $candidateJavaHome
         }
     }
@@ -105,7 +117,7 @@ Write-Host "Android SDK: $SdkPath"
 # Java 21 é necessário para repetir o job Flutter do CI e compatível com o Gradle atualizado.
 $Java21Home = Get-Java21Home
 if (-not $Java21Home) {
-    throw 'JDK 21 não foi localizado. Verifique a instalação anterior do JDK 21 ou instale um JDK 21 (Temurin/Microsoft). O Java 25 atualmente no PATH não será usado neste build.'
+    throw 'JDK 21 não foi localizado. Verifique a instalação anterior do JDK 21 ou instale um JDK 21 (Temurin/Microsoft). A versão Java atualmente configurada não será usada neste build.'
 }
 $env:JAVA_HOME = $Java21Home
 [Environment]::SetEnvironmentVariable('JAVA_HOME', $Java21Home, 'User')
