@@ -56,12 +56,12 @@ function Get-Java21Home {
             ForEach-Object { [void]$candidates.Add($_.FullName) }
     }
 
-    foreach ($home in ($candidates | Select-Object -Unique)) {
-        $java = Join-Path $home 'bin\java.exe'
+    foreach ($candidateJavaHome in ($candidates | Select-Object -Unique)) {
+        $java = Join-Path $candidateJavaHome 'bin\java.exe'
         if (-not (Test-Path $java)) { continue }
         $versionText = (& $java -version 2>&1 | Out-String)
         if ($versionText -match 'version\s+"21(?:\.|")|openjdk\s+21') {
-            return $home
+            return $candidateJavaHome
         }
     }
 
