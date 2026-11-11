@@ -177,6 +177,24 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Validar sintaxe dos scripts PowerShell
+        shell: pwsh
+        run: |
+          $files = @(
+            'scripts/build_flutter_poc.ps1',
+            'scripts/prepare_flutter_android_windows.ps1'
+          )
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            $path = (Resolve-Path $file).Path
+            [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | Format-List
+              throw "Erro de sintaxe no script: $file"
+            }
+          }
+
       - name: Configurar Flutter estável
         uses: subosito/flutter-action@v2
         with:

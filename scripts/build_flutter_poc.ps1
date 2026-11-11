@@ -11,12 +11,25 @@ $Source = Join-Path $Root 'flutter_history'
 $Generated = Join-Path $Root '.poc_build\uniguard_history'
 $Output = Join-Path $Root '.poc_build\results'
 
-$FlutterCommand = Get-Command flutter -ErrorAction SilentlyContinue
-if (-not $FlutterCommand) {
-    throw 'Flutter não encontrado. Instale o Flutter 3.47.7 estável e adicione flutter ao PATH.'
+$Flutter = $null
+if ($env:UNIGUARD_FLUTTER_HOME) {
+    $ConfiguredFlutter = Join-Path $env:UNIGUARD_FLUTTER_HOME 'bin\flutter.bat'
+    if (Test-Path $ConfiguredFlutter) { $Flutter = $ConfiguredFlutter }
 }
-$Flutter = $FlutterCommand.Source
-if (-not $Flutter) { $Flutter = $FlutterCommand.Path }
+if (-not $Flutter) {
+    $FlutterCommand = Get-Command flutter -ErrorAction SilentlyContinue
+    if (-not $FlutterCommand) {
+        throw 'Flutter não encontrado. Execute scripts\prepare_flutter_android_windows.ps1 -InstallFlutterCiVersion.'
+    }
+    $Flutter = $FlutterCommand.Source
+    if (-not $Flutter) { $Flutter = $FlutterCommand.Path }
+}
+
+$FlutterVersionText = (& $Flutter --version 2>&1 | Out-String)
+if ($LASTEXITCODE -ne 0 -or $FlutterVersionText -notmatch 'Flutter 3\.47\.7\b') {
+    throw 'Esta POC foi validada no CI com Flutter 3.47.7. Execute scripts\prepare_flutter_android_windows.ps1 -InstallFlutterCiVersion para instalar essa versão em paralelo à sua instalação atual.'
+}
+Write-Host $FlutterVersionText
 
 New-Item -ItemType Directory -Force -Path $Output | Out-Null
 $Steps = New-Object System.Collections.Generic.List[object]
@@ -89,6 +102,31 @@ Invoke-LoggedStep -Label 'test' -Executable $Flutter -Arguments @('test', '--rep
 if ($CheckOnly) {
     Write-Host 'Análise e testes Flutter concluídos. Android não compilado neste modo.'
     exit 0
+}
+
+# A compilação Android local exige o mesmo JDK e as plataformas usadas pelo CI.
+$JavaExe = if ($env:JAVA_HOME) { Join-Path $env:JAVA_HOME 'bin\java.exe' } else { $null }
+if (-not $JavaExe -or -not (Test-Path $JavaExe)) {
+    throw 'JAVA_HOME não aponta para um JDK válido. Execute scripts\prepare_flutter_android_windows.ps1.'
+}
+$JavaVersionText = (& $JavaExe -version 2>&1 | Out-String)
+if ($JavaVersionText -notmatch 'version\s+"21(?:\.|")|openjdk\s+21') {
+    throw 'A compilação Flutter do UniGuard requer JDK 21. Execute scripts\prepare_flutter_android_windows.ps1.'
+}
+
+$AndroidSdk = if ($env:ANDROID_HOME) { $env:ANDROID_HOME } else { $env:ANDROID_SDK_ROOT }
+if (-not $AndroidSdk -or -not (Test-Path $AndroidSdk)) {
+    throw 'Android SDK não localizado. Execute scripts\prepare_flutter_android_windows.ps1.'
+}
+$RequiredAndroidFiles = @(
+    (Join-Path $AndroidSdk 'platforms\android-35\android.jar'),
+    (Join-Path $AndroidSdk 'platforms\android-36\android.jar'),
+    (Join-Path $AndroidSdk 'build-tools\35.0.0\aapt.exe'),
+    (Join-Path $AndroidSdk 'platform-tools\adb.exe')
+)
+$MissingAndroidFiles = @($RequiredAndroidFiles | Where-Object { -not (Test-Path $_) })
+if ($MissingAndroidFiles.Count -gt 0) {
+    throw ('Android SDK incompleto. Execute scripts\prepare_flutter_android_windows.ps1. Ausentes: ' + ($MissingAndroidFiles -join '; '))
 }
 
 Invoke-LoggedStep -Label 'doctor' -Executable $Flutter -Arguments @('doctor', '-v') -WorkingDirectory $Root

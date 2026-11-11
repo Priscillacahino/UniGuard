@@ -1,7 +1,7 @@
 # 🛡️ UniGuard — Segurança Universitária Georreferenciada
 
-> **POC Flutter + Kotlin em revisão:** consulte [`LEIA_PRIMEIRO_FLUTTER.md`](LEIA_PRIMEIRO_FLUTTER.md).
-> A tela de histórico usa dados fictícios e fica isolada por build opt-in, com SOS bloqueado nesse build. O CI do PR executa a análise, os testes Flutter e builds comparativos; validação em dispositivo segue pendente.
+> **POC Flutter + Kotlin integrada à `main` (opt-in):** consulte [`LEIA_PRIMEIRO_FLUTTER.md`](LEIA_PRIMEIRO_FLUTTER.md).
+> A tela de histórico usa dados fictícios e fica isolada por build opt-in, com SOS bloqueado nesse build. A análise, os testes Flutter e os builds comparativos passaram no CI anterior; a atualização de toolchain para API 36 está em validação. Testes em dispositivo continuam pendentes.
 
 
 > **Versão atual: v0.9.0 — pré-validação institucional.**
