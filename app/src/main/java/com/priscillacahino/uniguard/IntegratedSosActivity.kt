@@ -94,12 +94,13 @@ class IntegratedSosActivity : AppCompatActivity() {
         numberInput.setText(preferences.getString(KEY_NUMBER, ""))
         findViewById<Button>(R.id.btnSalvarNumero).setOnClickListener { saveNumber() }
         purgeExpiredLocalEvidence()
+        statusText.text = "DEMONSTRAÇÃO — nenhum alerta real será enviado."
         configureAppCheck()
         configureAuthentication()
         configureSosButton()
     }
 
-    private fun firebaseConfigured(): Boolean = FirebaseApp.getApps(this).isNotEmpty()
+    private fun firebaseConfigured(): Boolean = false // Demonstração isolada: nunca conecta ao Firebase.
 
     private fun configureAppCheck() {
         if (!firebaseConfigured()) return
@@ -109,8 +110,11 @@ class IntegratedSosActivity : AppCompatActivity() {
 
     private fun configureAuthentication() {
         if (!firebaseConfigured()) {
-            authStatusText.text = "Modo local: configure o Firebase para autenticação institucional."
-            loginButton.isEnabled = false
+            authStatusText.text = "Modo demonstração: use Entrar para simular o vínculo institucional."
+            loginButton.setOnClickListener {
+                institutionAuthorized = true
+                authStatusText.text = "Vínculo institucional simulado (sem autenticação real)."
+            }
             registerButton.isEnabled = false
             return
         }
@@ -272,23 +276,11 @@ class IntegratedSosActivity : AppCompatActivity() {
     }
 
     private fun triggerSos() {
-        if (BuildConfig.FLUTTER_HISTORY_ENABLED) {
-            statusText.text = "Demonstração: o envio de alertas está desativado nesta POC."
+        if (!institutionAuthorized) {
+            statusText.text = "Simule o login institucional antes de acionar o SOS."
             return
         }
-        if (preferences.getString(KEY_NUMBER, "").isNullOrBlank()) {
-            statusText.text = "Cadastre um número de emergência"
-            return
-        }
-        if (firebaseConfigured() && (!institutionAuthorized || FirebaseAuth.getInstance().currentUser?.isEmailVerified != true)) {
-            statusText.text = "Faça login com e-mail verificado antes de acionar o SOS"
-            return
-        }
-        if (!canDispatchAlert()) return
-
-        statusText.text = "SOS acionado. Enviando alerta..."
-        if (!hasPermission(Manifest.permission.SEND_SMS)) smsPermission.launch(Manifest.permission.SEND_SMS)
-        else requestLocationAndDispatch()
+        statusText.text = "SOS SIMULADO — alerta recebido pela central fictícia. Nenhum SMS ou dado enviado."
     }
 
     private fun canDispatchAlert(): Boolean {
@@ -349,6 +341,7 @@ class IntegratedSosActivity : AppCompatActivity() {
     }
 
     private fun dispatchAlert(latitude: Double?, longitude: Double?, accuracy: Float?) {
+        if (!firebaseConfigured()) return // Bloqueio adicional na demonstração.
         if (!canDispatchAlert()) return
 
         val id = UUID.randomUUID().toString()
@@ -565,6 +558,7 @@ class IntegratedSosActivity : AppCompatActivity() {
     }
 
     private fun sendSms(latitude: Double?, longitude: Double?) {
+        if (!firebaseConfigured()) return // Bloqueio adicional na demonstração.
         if (!hasPermission(Manifest.permission.SEND_SMS)) return
         val number = preferences.getString(KEY_NUMBER, "") ?: return
         val location = if (latitude != null && longitude != null)
