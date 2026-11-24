@@ -1,0 +1,32 @@
+name: UniGuard — APK Appetize
+on:
+  push:
+    branches: [demo/appetize-android]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Validate isolated demo
+        run: |
+          test ! -f app/google-services.json
+          grep -F 'private fun firebaseConfigured(): Boolean = false' app/src/main/java/com/priscillacahino/uniguard/IntegratedSosActivity.kt
+          chmod +x gradlew
+          ./gradlew testDebugUnitTest assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: UniGuard-Appetize-demo
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 30
