@@ -157,7 +157,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setIsLoading(false);
       const code = error instanceof Error ? error.message : '';
       const text = code === 'EMAIL_NOT_VERIFIED'
-        ? 'Verifique seu e-mail antes de entrar. Enviamos um novo link de confirmação.'
+        ? 'Verifique seu e-mail antes de entrar. O Firebase aceitou a solicitação de envio; confira também spam e lixo eletrônico.'
+        : code === 'EMAIL_VERIFICATION_SEND_FAILED'
+        ? 'E-mail ainda não verificado. Não foi possível solicitar um novo link de confirmação. Aguarde antes de tentar novamente ou contate a administração.'
         : code === 'NO_ACTIVE_INSTITUTIONAL_MEMBERSHIP'
         ? 'E-mail verificado, mas o vínculo institucional ainda não foi aprovado pela administração.'
         : 'Credenciais inválidas ou conta sem acesso à instituição.';
