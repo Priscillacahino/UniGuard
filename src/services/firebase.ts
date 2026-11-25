@@ -93,9 +93,16 @@ export async function authenticateAccount(email: string, password: string): Prom
   const auth = getAuth(app);
   const credential = await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
   if (!credential.user.emailVerified) {
-    await sendEmailVerification(credential.user).catch(() => undefined);
-    await signOut(auth);
-    throw new Error('EMAIL_NOT_VERIFIED');
+    let requested = false;
+    try {
+      await sendEmailVerification(credential.user);
+      requested = true;
+    } catch {
+      // Do not report success when Firebase rejects the request.
+    } finally {
+      await signOut(auth);
+    }
+    throw new Error(requested ? 'EMAIL_NOT_VERIFIED' : 'EMAIL_VERIFICATION_SEND_FAILED');
   }
 
   const account = await authorizationForUser(credential.user);
